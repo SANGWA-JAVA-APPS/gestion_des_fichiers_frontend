@@ -1,0 +1,458 @@
+// Global SCSS styles for GESTION DES FICHIERS
+// Professional component tree structure with mixins
+
+// === SASS VARIABLES ===
+$primary-color: #2c3e50;
+$secondary-color: #3498db;
+$accent-color: #e74c3c;
+$success-color: #27ae60;
+$warning-color: #f39c12;
+$danger-color: #e74c3c;
+
+// Light backgrounds
+$bg-primary: #ffffff;
+$bg-secondary: #f8f9fa;
+$bg-tertiary: #e9ecef;
+$bg-light: #f4f6f8;
+
+// Text colors
+$text-primary: #2c3e50;
+$text-secondary: #6c757d;
+$text-muted: #adb5bd;
+$text-light: #ffffff;
+
+// Border and shadow
+$border-color: #dee2e6;
+$border-radius: 8px;
+$shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+$shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+$shadow-heavy: 0 8px 16px rgba(0,0,0,0.2);
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$spacing-xxl: 3rem;
+
+// Typography
+$font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.25rem;
+$font-size-xl: 1.5rem;
+$font-size-xxl: 2rem;
+
+// Transitions
+$transition-fast: 0.15s ease-in-out;
+$transition-medium: 0.3s ease-in-out;
+$transition-slow: 0.5s ease-in-out;
+
+// === CSS CUSTOM PROPERTIES ===
+:root {
+  // Light theme color palette
+  --primary-color: #{$primary-color};
+  --secondary-color: #{$secondary-color};
+  --accent-color: #{$accent-color};
+  --success-color: #{$success-color};
+  --warning-color: #{$warning-color};
+  --danger-color: #{$danger-color};
+  
+  // Light backgrounds
+  --bg-primary: #{$bg-primary};
+  --bg-secondary: #{$bg-secondary};
+  --bg-tertiary: #{$bg-tertiary};
+  --bg-light: #{$bg-light};
+  
+  // Text colors
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-muted: #{$text-muted};
+  --text-light: #{$text-light};
+  
+  // Border and shadow
+  --border-color: #{$border-color};
+  --border-radius: #{$border-radius};
+  --shadow-light: #{$shadow-light};
+  --shadow-medium: #{$shadow-medium};
+  --shadow-heavy: #{$shadow-heavy};
+  
+  // Spacing
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-xxl: #{$spacing-xxl};
+  
+  // Typography
+  --font-family-primary: #{$font-family-primary};
+  --font-size-sm: #{$font-size-sm};
+  --font-size-md: #{$font-size-md};
+  --font-size-lg: #{$font-size-lg};
+  --font-size-xl: #{$font-size-xl};
+  --font-size-xxl: #{$font-size-xxl};
+  
+  // Transitions
+  --transition-fast: #{$transition-fast};
+  --transition-medium: #{$transition-medium};
+  --transition-slow: #{$transition-slow};
+}
+
+// Flexbox mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-column-center {
+  @include flex-column;
+  align-items: center;
+  justify-content: center;
+}
+
+// Grid mixins
+@mixin grid-container($columns: 1, $gap: $spacing-md) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+@mixin grid-responsive($mobile: 1, $tablet: 2, $desktop: 3) {
+  display: grid;
+  gap: $spacing-md;
+  grid-template-columns: repeat($mobile, 1fr);
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat($tablet, 1fr);
+  }
+  
+  @media (min-width: 992px) {
+    grid-template-columns: repeat($desktop, 1fr);
+  }
+}
+
+// Card mixins
+@mixin card-base {
+  background: $bg-primary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  box-shadow: $shadow-light;
+  padding: $spacing-lg;
+  transition: all $transition-medium;
+}
+
+@mixin card-hover {
+  &:hover {
+    box-shadow: $shadow-medium;
+    transform: translateY(-2px);
+    cursor: pointer;
+  }
+}
+
+@mixin card-interactive {
+  @include card-base;
+  @include card-hover;
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: $shadow-light;
+  }
+}
+
+// Button mixins
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-lg;
+  border: none;
+  border-radius: $border-radius;
+  font-family: $font-family-primary;
+  font-size: $font-size-md;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all $transition-fast;
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Typography mixins
+@mixin text-truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@mixin text-clamp($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Responsive mixins
+@mixin mobile-only {
+  @media (max-width: 767.98px) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: 992px) {
+    @content;
+  }
+}
+
+@mixin large-desktop-up {
+  @media (min-width: 1200px) {
+    @content;
+  }
+}
+
+// === GLOBAL STYLES ===
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width:' 100%';
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-primary;
+  font-size: $font-size-md;
+  line-height: 1.6;
+  color: $text-primary;
+  background-color: $bg-light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// === COMPONENT STYLES ===
+
+// Navigation components - Non-Bootstrap customization styles
+.navigation-grid-wrapper {
+  max-width: 100%;
+}
+
+.navigation-card {
+  transition: all $transition-medium;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    
+    .navigation-card__icon {
+      transform: scale(1.1);
+    }
+  }
+  
+  &:focus {
+    outline: 3px solid rgba(13, 110, 253, 0.25);
+    outline-offset: 2px;
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+  }
+  
+  &__icon {
+    transition: all $transition-medium;
+  }
+  
+  &__title {
+    transition: color $transition-medium;
+  }
+}
+
+// App container - Basic layout styles
+.app {
+  background-color: $bg-light;
+}
+
+// Navigation components - Full width layout - FORCED CONSISTENCY
+.navigation-grid-wrapper {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.navigation-card {
+  border-radius: $border-radius;
+  transition: all $transition-medium;
+  background: $bg-primary;
+  min-height: 250px;
+  
+  @include mobile-only {
+    min-height: 200px;
+  }
+  
+  @include tablet-up {
+    min-height: 230px;
+  }
+  
+  @include desktop-up {
+    min-height: 250px;
+  }
+  
+  @include large-desktop-up {
+    min-height: 270px;
+  }
+  
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+    
+    .navigation-card__icon {
+      transform: scale(1.15);
+    }
+    
+    .navigation-card__title {
+      color: $secondary-color !important;
+    }
+  }
+  
+  &:focus {
+    outline: 3px solid $secondary-color;
+    outline-offset: 3px;
+  }
+  
+  &:active {
+    transform: translateY(-3px);
+  }
+  
+  &__icon {
+    transition: all $transition-medium;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  }
+  
+  &__title {
+    transition: color $transition-medium;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+  }
+  
+  &__description {
+    line-height: 1.6;
+    
+    @include mobile-only {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    @include tablet-up {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+}
+
+// Utility classes
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: $spacing-xs; }
+.mb-2 { margin-bottom: $spacing-sm; }
+.mb-3 { margin-bottom: $spacing-md; }
+.mb-4 { margin-bottom: $spacing-lg; }
+.mb-5 { margin-bottom: $spacing-xl; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: $spacing-xs; }
+.mt-2 { margin-top: $spacing-sm; }
+.mt-3 { margin-top: $spacing-md; }
+.mt-4 { margin-top: $spacing-lg; }
+.mt-5 { margin-top: $spacing-xl; }
+
+.p-0 { padding: 0; }
+.p-1 { padding: $spacing-xs; }
+.p-2 { padding: $spacing-sm; }
+.p-3 { padding: $spacing-md; }
+.p-4 { padding: $spacing-lg; }
+.p-5 { padding: $spacing-xl; }
+
+// Bootstrap component enhancements - FORCED LAYOUT CONSISTENCY
+
+// Welcome section - Bootstrap typography enhanced
+.welcome-title {
+  font-weight: 600;
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  line-height: 1.3;
+  
+  @include mobile-only {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+  }
+}
+
+// Additional responsive utilities
+.text-responsive {
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+.title-responsive {
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.icon-responsive {
+  font-size: clamp(1.5rem, 6vw, 2.5rem);
+}
+
+// Mobile-first spacing utilities
+@include mobile-only {
+  .mb-mobile-2 { margin-bottom: $spacing-sm; }
+  .mb-mobile-3 { margin-bottom: $spacing-md; }
+  .mt-mobile-2 { margin-top: $spacing-sm; }
+  .mt-mobile-3 { margin-top: $spacing-md; }
+  .p-mobile-2 { padding: $spacing-sm; }
+  .p-mobile-3 { padding: $spacing-md; }
+}
+
+// Touch-friendly improvements
+@media (hover: none) and (pointer: coarse) {
+  .navigation-card {
+    &:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+  }
+  
+  .btn {
+    min-height: 44px; // Minimum touch target size
+    min-width: 44px;
+  }
+}
