@@ -1,0 +1,34 @@
+name: INGENZI REACT APP CI/CD
+
+on:
+  push:  # Runs on any push to any branch
+
+jobs:
+  deploy-react:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 - Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2 - Set up SSH agent
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.MY_LINUX }}
+
+      # Step 3 - Rename dist folder and copy to server
+      - name: Copy and rename dist folder to server
+        run: |
+          mv dist ingenzi
+          scp -r -o StrictHostKeyChecking=no \
+              ingenzi \
+              root@108.181.190.111:/home/administrator/apps_backup/
+
+      # Step 4 - Run remote deploy script
+      - name: Run remote deploy script
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              root@108.181.190.111 \
+              "/bin/bash /home/administrator/apps_backup/shell_cmds/ingenzi.sh"
