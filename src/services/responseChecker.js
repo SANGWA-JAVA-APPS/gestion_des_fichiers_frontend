@@ -142,9 +142,15 @@ export const isSuccessResponse = (response) => {
  * @returns {any} - The data from response
  */
 export const extractResponseData = (response) => {
+  // Handle paginated responses with 'content' field
+  if (response?.data?.content) {
+    return response.data.content;
+  }
+  // Handle standard responses with 'data' field
   if (response?.data?.data) {
     return response.data.data;
   }
+  // Handle direct data responses
   if (response?.data) {
     return response.data;
   }

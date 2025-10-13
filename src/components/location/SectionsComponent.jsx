@@ -23,13 +23,29 @@ const SectionsComponent = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError('');
       // Load sections and modules
-      const sectionsData = await getAllSections();
-      const modulesData = await getAllModules();
-      setSections(sectionsData);
-      setModules(modulesData);
+      const [sectionsData, modulesData] = await Promise.all([
+        getAllSections(),
+        getAllModules()
+      ]);
+      
+      console.log('Sections data received:', sectionsData);
+      console.log('Modules data received:', modulesData);
+      
+      // Ensure data is an array
+      const sectionsArray = Array.isArray(sectionsData) ? sectionsData : 
+                           (sectionsData?.content || sectionsData?.data || []);
+      const modulesArray = Array.isArray(modulesData) ? modulesData : 
+                          (modulesData?.content || modulesData?.data || []);
+      
+      setSections(sectionsArray);
+      setModules(modulesArray);
     } catch (err) {
-      setError('Failed to load sections: ' + err.message);
+      console.error('Error loading data:', err);
+      setError('Failed to load sections: ' + (err.message || 'Unknown error'));
+      setSections([]);
+      setModules([]);
     } finally {
       setLoading(false);
     }

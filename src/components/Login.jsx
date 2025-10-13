@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { loginUser } from '../services/Inserts';
+import { setUserInfo } from '../services/authUtils';
 
 const Login = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState({
@@ -26,12 +27,22 @@ const Login = ({ onLoginSuccess }) => {
       const response = await loginUser(formData);
       
       if (response.success) {
-        // Call success callback to redirect
+        // Store user information in localStorage
+        setUserInfo(response);
+        
+        console.log('Login successful:', {
+          username: response.username,
+          role: response.role,
+          fullName: response.fullName
+        });
+        
+        // Call success callback to redirect to dashboard
         onLoginSuccess();
       } else {
         setError(response.message || 'Login failed');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message || 'An error occurred during login');
     } finally {
       setLoading(false);

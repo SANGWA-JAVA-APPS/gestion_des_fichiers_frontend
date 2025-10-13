@@ -232,6 +232,9 @@ export const getAllLocationEntities = async () => {
 export const getLocationEntitiesByCountry = async (countryId) => {
   try {
     const response = await apiClient.get(`/location/entities/country/${countryId}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get entities by country error:', error);
@@ -243,6 +246,9 @@ export const getLocationEntitiesByCountry = async (countryId) => {
 export const getLocationEntityById = async (id) => {
   try {
     const response = await apiClient.get(`/location/entities/${id}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get location entity by ID error:', error);
@@ -254,6 +260,9 @@ export const getLocationEntityById = async (id) => {
 export const getAllModules = async () => {
   try {
     const response = await apiClient.get('/location/modules');
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get modules error:', error);
@@ -265,6 +274,9 @@ export const getAllModules = async () => {
 export const getModulesByLocationEntity = async (entityId) => {
   try {
     const response = await apiClient.get(`/location/modules/entity/${entityId}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get modules by entity error:', error);
@@ -276,6 +288,9 @@ export const getModulesByLocationEntity = async (entityId) => {
 export const getModuleById = async (id) => {
   try {
     const response = await apiClient.get(`/location/modules/${id}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get module by ID error:', error);
@@ -287,6 +302,9 @@ export const getModuleById = async (id) => {
 export const getAllSections = async () => {
   try {
     const response = await apiClient.get('/location/sections');
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get sections error:', error);
@@ -298,6 +316,9 @@ export const getAllSections = async () => {
 export const getSectionsByModule = async (moduleId) => {
   try {
     const response = await apiClient.get(`/location/sections/module/${moduleId}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get sections by module error:', error);
@@ -309,6 +330,9 @@ export const getSectionsByModule = async (moduleId) => {
 export const getSectionById = async (id) => {
   try {
     const response = await apiClient.get(`/location/sections/${id}`);
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
     return response.data;
   } catch (error) {
     console.error('Get section by ID error:', error);

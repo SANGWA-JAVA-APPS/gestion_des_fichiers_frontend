@@ -23,13 +23,29 @@ const ModulesComponent = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError('');
       // Load modules and location entities
-      const modulesData = await getAllModules();
-      const entitiesData = await getAllLocationEntities();
-      setModules(modulesData);
-      setLocationEntities(entitiesData);
+      const [modulesData, entitiesData] = await Promise.all([
+        getAllModules(),
+        getAllLocationEntities()
+      ]);
+      
+      console.log('Modules data received:', modulesData);
+      console.log('Entities data received:', entitiesData);
+      
+      // Ensure data is an array
+      const modulesArray = Array.isArray(modulesData) ? modulesData : 
+                          (modulesData?.content || modulesData?.data || []);
+      const entitiesArray = Array.isArray(entitiesData) ? entitiesData : 
+                           (entitiesData?.content || entitiesData?.data || []);
+      
+      setModules(modulesArray);
+      setLocationEntities(entitiesArray);
     } catch (err) {
-      setError('Failed to load modules: ' + err.message);
+      console.error('Error loading data:', err);
+      setError('Failed to load modules: ' + (err.message || 'Unknown error'));
+      setModules([]);
+      setLocationEntities([]);
     } finally {
       setLoading(false);
     }

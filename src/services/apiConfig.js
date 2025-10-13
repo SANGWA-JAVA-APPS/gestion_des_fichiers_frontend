@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // Base URL for the Spring Boot backend
-// const API_BASE_URL = 'http://localhost:8104/api';
-const API_BASE_URL = 'https://ingenzi.codeguru-pro.com/api';
+const API_BASE_URL = 'http://localhost:8104/api';
+// const API_BASE_URL = 'https://ingenzi.codeguru-pro.com/api';
 
 // Create axios instance with default configuration
 const apiClient = axios.create({
