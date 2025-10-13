@@ -225,7 +225,7 @@ export const texts = {
         en: "Construction Permit Ref."
       },
       dateValidation: {
-        fr: "Date de Validation",
+        fr: "Date de Validation.",
         en: "Validation Date"
       },
       dateEstimeeTravaux: {
