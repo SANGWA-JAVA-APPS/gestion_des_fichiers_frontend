@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllCommAssetLand } from '../../services/GetRequests';
-import { createCommAssetLand } from '../../services/Inserts';
-import { updateCommAssetLand, deleteCommAssetLand } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts, getAllSections } from '../../services/GetRequests';
+import { createCommAssetLand, createCommAssetLandWithFile } from '../../services/Inserts';
+import { updateCommAssetLand, updateCommAssetLandWithFile, deleteCommAssetLand } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts, getAllSections } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const CommAssetLandComponent = () => {
@@ -13,9 +13,9 @@ const CommAssetLandComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [sections, setSections] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     description: '',
     reference: '',
@@ -54,14 +54,12 @@ const CommAssetLandComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData, sectionsData] = await Promise.all([
+      const [statusesData, accountsData, sectionsData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts(),
         getAllSections()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
       setSections(Array.isArray(sectionsData) ? sectionsData : []);
     } catch (err) {
@@ -83,6 +81,7 @@ const CommAssetLandComponent = () => {
         status: { id: item.status?.id || '' },
         section: { id: item.section?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -96,6 +95,7 @@ const CommAssetLandComponent = () => {
         status: { id: '' },
         section: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -114,6 +114,7 @@ const CommAssetLandComponent = () => {
       status: { id: '' },
       section: { id: '' }
     });
+    setSelectedFile(null);
     setError('');
   };
 
@@ -133,26 +134,70 @@ const CommAssetLandComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      
-      const dataToSubmit = {
-        ...formData,
-        dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-        section: formData.section.id ? { id: parseInt(formData.section.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updateCommAssetLand(editingItem.id, dataToSubmit);
-      } else {
-        await createCommAssetLand(dataToSubmit);
+
+      // Check if file is required for new entries
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
       }
+
+      if (selectedFile) {
+        // Handle file upload scenario
+        const formDataToSend = new FormData();
+
+        // Add file
+        formDataToSend.append('file', selectedFile);
+
+        // Add other form fields
+        formDataToSend.append('reference', formData.reference);
+        if (formData.description) formDataToSend.append('description', formData.description);
+        if (formData.dateObtention) {
+          formDataToSend.append('dateObtention', new Date(formData.dateObtention).toISOString());
+        }
+        if (formData.coordonneesGps) formDataToSend.append('coordonneesGps', formData.coordonneesGps);
+        if (formData.emplacement) formDataToSend.append('emplacement', formData.emplacement);
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        if (formData.section.id) formDataToSend.append('sectionId', parseInt(formData.section.id));
+
+        // Add status for updates
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        // Call appropriate API based on create or update
+        if (editingItem) {
+          await updateCommAssetLandWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createCommAssetLandWithFile(formDataToSend);
+        }
+      } else {
+        // Handle update without file
+        const dataToSubmit = {
+          ...formData,
+          dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
+          section: formData.section.id ? { id: parseInt(formData.section.id) } : null
+        };
+
+        // Only include status for updates
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updateCommAssetLand(editingItem.id, dataToSubmit);
+        }
+      }
+
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -197,17 +242,17 @@ const CommAssetLandComponent = () => {
             <Card.Header className="d-flex justify-content-between align-items-center">
               <h4 className="mb-0">{getText('document.commAssetLand', language)}</h4>
               <div>
-                <Button 
-                  variant="primary" 
-                  size="sm" 
+                <Button
+                  variant="primary"
+                  size="sm"
                   className="me-2"
                   onClick={() => handleShowModal()}
                 >
                   <i className="bi bi-plus-circle me-1"></i>
                   {getText('common.add', language)}
                 </Button>
-                <Button 
-                  variant="outline-secondary" 
+                <Button
+                  variant="outline-secondary"
                   size="sm"
                   onClick={loadData}
                 >
@@ -222,7 +267,7 @@ const CommAssetLandComponent = () => {
                   {error}
                 </Alert>
               )}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -287,7 +332,7 @@ const CommAssetLandComponent = () => {
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div>
-                    {language === 'fr' 
+                    {language === 'fr'
                       ? `Page ${currentPage + 1} sur ${totalPages}`
                       : `Page ${currentPage + 1} of ${totalPages}`
                     }
@@ -321,7 +366,7 @@ const CommAssetLandComponent = () => {
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingItem 
+            {editingItem
               ? `${getText('common.edit', language)} ${getText('document.commAssetLand', language)}`
               : `${getText('common.add', language)} ${getText('document.commAssetLand', language)}`
             }
@@ -334,7 +379,7 @@ const CommAssetLandComponent = () => {
                 {error}
               </Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -426,19 +471,24 @@ const CommAssetLandComponent = () => {
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select
-                    name="document.id"
-                    value={formData.document.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => (
-                      <option key={doc.id} value={doc.id}>
-                        {doc.fileName || doc.name || `Document ${doc.id}`}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={3}>

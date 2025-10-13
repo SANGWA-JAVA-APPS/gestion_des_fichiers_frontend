@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { getAllCargoDamage } from '../../services/GetRequests';
-import { createCargoDamage } from '../../services/Inserts';
-import { updateCargoDamage, deleteCargoDamage } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts } from '../../services/GetRequests';
+import { createCargoDamage, createCargoDamageWithFile } from '../../services/Inserts';
+import { updateCargoDamage, updateCargoDamageWithFile, deleteCargoDamage } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const CargoDamageComponent = () => {
@@ -13,8 +13,8 @@ const CargoDamageComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     refeRequest: '',
     description: '',
@@ -52,13 +52,11 @@ const CargoDamageComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData] = await Promise.all([
+      const [statusesData, accountsData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -78,6 +76,7 @@ const CargoDamageComponent = () => {
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -90,6 +89,7 @@ const CargoDamageComponent = () => {
         document: { id: '' },
         status: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -97,6 +97,7 @@ const CargoDamageComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setSelectedFile(null);
     setError('');
   };
 
@@ -116,25 +117,56 @@ const CargoDamageComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      const dataToSubmit = {
-        ...formData,
-        dateRequest: formData.dateRequest ? new Date(formData.dateRequest).toISOString() : null,
-        dateContract: formData.dateContract ? new Date(formData.dateContract).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updateCargoDamage(editingItem.id, dataToSubmit);
-      } else {
-        await createCargoDamage(dataToSubmit);
+
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
       }
+
+      if (selectedFile) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', selectedFile);
+        if (formData.refeRequest) formDataToSend.append('refeRequest', formData.refeRequest);
+        if (formData.description) formDataToSend.append('description', formData.description);
+        if (formData.quotationContractNum) formDataToSend.append('quotationContractNum', formData.quotationContractNum);
+        if (formData.dateRequest) formDataToSend.append('dateRequest', new Date(formData.dateRequest).toISOString());
+        if (formData.dateContract) formDataToSend.append('dateContract', new Date(formData.dateContract).toISOString());
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        if (editingItem) {
+          await updateCargoDamageWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createCargoDamageWithFile(formDataToSend);
+        }
+      } else {
+        const dataToSubmit = {
+          ...formData,
+          dateRequest: formData.dateRequest ? new Date(formData.dateRequest).toISOString() : null,
+          dateContract: formData.dateContract ? new Date(formData.dateContract).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null
+        };
+
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updateCargoDamage(editingItem.id, dataToSubmit);
+        }
+      }
+
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -188,7 +220,7 @@ const CargoDamageComponent = () => {
             </Card.Header>
             <Card.Body>
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -260,7 +292,7 @@ const CargoDamageComponent = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -309,10 +341,24 @@ const CargoDamageComponent = () => {
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select name="document.id" value={formData.document.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => <option key={doc.id} value={doc.id}>{doc.fileName || doc.name || `Document ${doc.id}`}</option>)}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={4}>

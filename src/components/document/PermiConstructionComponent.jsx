@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllPermiConstruction } from '../../services/GetRequests';
-import { createPermiConstruction } from '../../services/Inserts';
-import { updatePermiConstruction, deletePermiConstruction } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts, getAllSectionCategories } from '../../services/GetRequests';
+import { createPermiConstruction, createPermiConstructionWithFile } from '../../services/Inserts';
+import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts, getAllSectionCategories } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const PermiConstructionComponent = () => {
@@ -13,9 +13,9 @@ const PermiConstructionComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [sectionCategories, setSectionCategories] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     referenceTitreFoncier: '',
     refPermisConstuire: '',
@@ -53,14 +53,12 @@ const PermiConstructionComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData, categoriesData] = await Promise.all([
+      const [statusesData, accountsData, categoriesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts(),
         getAllSectionCategories()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
       setSectionCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (err) {
@@ -81,6 +79,7 @@ const PermiConstructionComponent = () => {
         status: { id: item.status?.id || '' },
         sectionCategory: { id: item.sectionCategory?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -93,6 +92,7 @@ const PermiConstructionComponent = () => {
         status: { id: '' },
         sectionCategory: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -110,6 +110,7 @@ const PermiConstructionComponent = () => {
       status: { id: '' },
       sectionCategory: { id: '' }
     });
+    setSelectedFile(null);
     setError('');
   };
 
@@ -129,26 +130,59 @@ const PermiConstructionComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      
-      const dataToSubmit = {
-        ...formData,
-        dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
-        dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-        sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updatePermiConstruction(editingItem.id, dataToSubmit);
+
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
+      }
+
+      if (selectedFile) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', selectedFile);
+        formDataToSend.append('referenceTitreFoncier', formData.referenceTitreFoncier);
+        formDataToSend.append('refPermisConstuire', formData.refPermisConstuire);
+        if (formData.dateValidation) {
+          formDataToSend.append('dateValidation', new Date(formData.dateValidation).toISOString());
+        }
+        if (formData.dateEstimeeTravaux) {
+          formDataToSend.append('dateEstimeeTravaux', new Date(formData.dateEstimeeTravaux).toISOString());
+        }
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        if (formData.sectionCategory.id) formDataToSend.append('sectionCategoryId', parseInt(formData.sectionCategory.id));
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        if (editingItem) {
+          await updatePermiConstructionWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createPermiConstructionWithFile(formDataToSend);
+        }
       } else {
-        await createPermiConstruction(dataToSubmit);
+        const dataToSubmit = {
+          ...formData,
+          dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
+          dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
+          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
+        };
+
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updatePermiConstruction(editingItem.id, dataToSubmit);
+        }
       }
       handleCloseModal();
       loadData();
@@ -194,17 +228,17 @@ const PermiConstructionComponent = () => {
             <Card.Header className="d-flex justify-content-between align-items-center">
               <h4 className="mb-0">{getText('document.permiConstruction', language)}</h4>
               <div>
-                <Button 
-                  variant="primary" 
-                  size="sm" 
+                <Button
+                  variant="primary"
+                  size="sm"
                   className="me-2"
                   onClick={() => handleShowModal()}
                 >
                   <i className="bi bi-plus-circle me-1"></i>
                   {getText('common.add', language)}
                 </Button>
-                <Button 
-                  variant="outline-secondary" 
+                <Button
+                  variant="outline-secondary"
                   size="sm"
                   onClick={loadData}
                 >
@@ -219,7 +253,7 @@ const PermiConstructionComponent = () => {
                   {error}
                 </Alert>
               )}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -278,7 +312,7 @@ const PermiConstructionComponent = () => {
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div>
-                    {language === 'fr' 
+                    {language === 'fr'
                       ? `Page ${currentPage + 1} sur ${totalPages}`
                       : `Page ${currentPage + 1} of ${totalPages}`
                     }
@@ -312,7 +346,7 @@ const PermiConstructionComponent = () => {
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingItem 
+            {editingItem
               ? `${getText('common.edit', language)} ${getText('document.permiConstruction', language)}`
               : `${getText('common.add', language)} ${getText('document.permiConstruction', language)}`
             }
@@ -325,7 +359,7 @@ const PermiConstructionComponent = () => {
                 {error}
               </Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -402,19 +436,24 @@ const PermiConstructionComponent = () => {
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select
-                    name="document.id"
-                    value={formData.document.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => (
-                      <option key={doc.id} value={doc.id}>
-                        {doc.fileName || doc.name || `Document ${doc.id}`}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={3}>

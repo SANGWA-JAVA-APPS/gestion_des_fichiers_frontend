@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { getAllCertLicenses } from '../../services/GetRequests';
-import { createCertLicenses } from '../../services/Inserts';
-import { updateCertLicenses, deleteCertLicenses } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts } from '../../services/GetRequests';
+import { createCertLicenses, createCertLicensesWithFile } from '../../services/Inserts';
+import { updateCertLicenses, updateCertLicensesWithFile, deleteCertLicenses } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const CertLicensesComponent = () => {
@@ -13,8 +13,8 @@ const CertLicensesComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     description: '',
     agentCertifica: '',
@@ -52,13 +52,11 @@ const CertLicensesComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData] = await Promise.all([
+      const [statusesData, accountsData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -78,6 +76,7 @@ const CertLicensesComponent = () => {
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -90,6 +89,7 @@ const CertLicensesComponent = () => {
         document: { id: '' },
         status: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -97,6 +97,7 @@ const CertLicensesComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setSelectedFile(null);
     setError('');
   };
 
@@ -116,24 +117,55 @@ const CertLicensesComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      const dataToSubmit = {
-        ...formData,
-        dateCertificate: formData.dateCertificate ? new Date(formData.dateCertificate).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updateCertLicenses(editingItem.id, dataToSubmit);
-      } else {
-        await createCertLicenses(dataToSubmit);
+
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
       }
+
+      if (selectedFile) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', selectedFile);
+        if (formData.description) formDataToSend.append('description', formData.description);
+        if (formData.agentCertifica) formDataToSend.append('agentCertifica', formData.agentCertifica);
+        if (formData.numeroAgent) formDataToSend.append('numeroAgent', formData.numeroAgent);
+        if (formData.dateCertificate) formDataToSend.append('dateCertificate', new Date(formData.dateCertificate).toISOString());
+        if (formData.dureeCertificat) formDataToSend.append('dureeCertificat', formData.dureeCertificat);
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        if (editingItem) {
+          await updateCertLicensesWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createCertLicensesWithFile(formDataToSend);
+        }
+      } else {
+        const dataToSubmit = {
+          ...formData,
+          dateCertificate: formData.dateCertificate ? new Date(formData.dateCertificate).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null
+        };
+
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updateCertLicenses(editingItem.id, dataToSubmit);
+        }
+      }
+
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -187,7 +219,7 @@ const CertLicensesComponent = () => {
             </Card.Header>
             <Card.Body>
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -259,7 +291,7 @@ const CertLicensesComponent = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-            
+
             <Form.Group className="mb-3">
               <Form.Label>{getText('document.fields.description', language)} *</Form.Label>
               <Form.Control as="textarea" rows={2} name="description" value={formData.description} onChange={handleChange} required />
@@ -308,10 +340,24 @@ const CertLicensesComponent = () => {
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select name="document.id" value={formData.document.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => <option key={doc.id} value={doc.id}>{doc.fileName || doc.name || `Document ${doc.id}`}</option>)}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={4}>

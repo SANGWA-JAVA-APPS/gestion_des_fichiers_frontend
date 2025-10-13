@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllAccordConcession } from '../../services/GetRequests';
-import { createAccordConcession } from '../../services/Inserts';
-import { updateAccordConcession, deleteAccordConcession } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts, getAllSectionCategories } from '../../services/GetRequests';
+import { createAccordConcession, createAccordConcessionWithFile } from '../../services/Inserts';
+import { updateAccordConcession, updateAccordConcessionWithFile, deleteAccordConcession } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts, getAllSectionCategories } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const AccordConcessionComponent = () => {
@@ -13,9 +13,9 @@ const AccordConcessionComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [sectionCategories, setSectionCategories] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     contratConcession: '',
     emplacement: '',
@@ -55,14 +55,12 @@ const AccordConcessionComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData, categoriesData] = await Promise.all([
+      const [statusesData, accountsData, categoriesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts(),
         getAllSectionCategories()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
       setSectionCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (err) {
@@ -85,6 +83,7 @@ const AccordConcessionComponent = () => {
         status: { id: item.status?.id || '' },
         sectionCategory: { id: item.sectionCategory?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -99,6 +98,7 @@ const AccordConcessionComponent = () => {
         status: { id: '' },
         sectionCategory: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -106,6 +106,7 @@ const AccordConcessionComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setSelectedFile(null);
     setError('');
   };
 
@@ -125,27 +126,60 @@ const AccordConcessionComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      
-      const dataToSubmit = {
-        ...formData,
-        dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
-        dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-        sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updateAccordConcession(editingItem.id, dataToSubmit);
-      } else {
-        await createAccordConcession(dataToSubmit);
+
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
       }
+
+      if (selectedFile) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', selectedFile);
+        formDataToSend.append('contratConcession', formData.contratConcession);
+        if (formData.emplacement) formDataToSend.append('emplacement', formData.emplacement);
+        if (formData.coordonneesGps) formDataToSend.append('coordonneesGps', formData.coordonneesGps);
+        if (formData.rapportTransfertGestion) formDataToSend.append('rapportTransfertGestion', formData.rapportTransfertGestion);
+        if (formData.dateSignature) formDataToSend.append('dateSignature', new Date(formData.dateSignature).toISOString());
+        if (formData.dateExpiration) formDataToSend.append('dateExpiration', new Date(formData.dateExpiration).toISOString());
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        if (formData.sectionCategory.id) formDataToSend.append('sectionCategoryId', parseInt(formData.sectionCategory.id));
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        if (editingItem) {
+          await updateAccordConcessionWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createAccordConcessionWithFile(formDataToSend);
+        }
+      } else {
+        const dataToSubmit = {
+          ...formData,
+          dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
+          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
+          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
+        };
+
+        // Only include status for updates (backend sets default status on creation)
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updateAccordConcession(editingItem.id, dataToSubmit);
+        }
+      }
+
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -202,7 +236,7 @@ const AccordConcessionComponent = () => {
             </Card.Header>
             <Card.Body>
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -274,7 +308,7 @@ const AccordConcessionComponent = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
-            
+
             <Form.Group className="mb-3">
               <Form.Label>{getText('document.fields.contratConcession', language)} *</Form.Label>
               <Form.Control type="text" name="contratConcession" value={formData.contratConcession} onChange={handleChange} required />
@@ -328,10 +362,24 @@ const AccordConcessionComponent = () => {
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select name="document.id" value={formData.document.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => <option key={doc.id} value={doc.id}>{doc.fileName || doc.name || `Document ${doc.id}`}</option>)}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={3}>

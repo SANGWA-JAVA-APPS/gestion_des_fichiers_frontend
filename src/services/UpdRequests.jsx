@@ -296,6 +296,20 @@ export const updateNormeLoi = async (id, data) => {
   }
 };
 
+export const updateNormeLoiWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/norme-loi/${id}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update norme loi with file error:', error);
+    throw error.response?.data || { message: 'Failed to update norme loi with file' };
+  }
+};
+
 export const deleteNormeLoi = async (id) => {
   try {
     const response = await apiClient.delete(`/document/norme-loi/${id}`);
@@ -314,6 +328,20 @@ export const updateCommAssetLand = async (id, data) => {
   } catch (error) {
     console.error('Update comm asset land error:', error);
     throw error.response?.data || { message: 'Failed to update comm asset land' };
+  }
+};
+
+export const updateCommAssetLandWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/comm-asset-land/${id}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update comm asset land with file error:', error);
+    throw error.response?.data || { message: 'Failed to update comm asset land with file' };
   }
 };
 
@@ -338,6 +366,20 @@ export const updatePermiConstruction = async (id, data) => {
   }
 };
 
+export const updatePermiConstructionWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/permi-construction/${id}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update permi construction with file error:', error);
+    throw error.response?.data || { message: 'Failed to update permi construction with file' };
+  }
+};
+
 export const deletePermiConstruction = async (id) => {
   try {
     const response = await apiClient.delete(`/document/permi-construction/${id}`);
@@ -359,6 +401,18 @@ export const updateAccordConcession = async (id, data) => {
   }
 };
 
+export const updateAccordConcessionWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/accord-concession/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update accord concession with file error:', error);
+    throw error.response?.data || { message: 'Failed to update accord concession with file' };
+  }
+};
+
 export const deleteAccordConcession = async (id) => {
   try {
     const response = await apiClient.delete(`/document/accord-concession/${id}`);
@@ -377,6 +431,18 @@ export const updateEstate = async (id, data) => {
   } catch (error) {
     console.error('Update estate error:', error);
     throw error.response?.data || { message: 'Failed to update estate' };
+  }
+};
+
+export const updateEstateWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/estate/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update estate with file error:', error);
+    throw error.response?.data || { message: 'Failed to update estate with file' };
   }
 };
 
@@ -419,6 +485,18 @@ export const updateCertLicenses = async (id, data) => {
   } catch (error) {
     console.error('Update cert licenses error:', error);
     throw error.response?.data || { message: 'Failed to update cert licenses' };
+  }
+};
+
+export const updateCertLicensesWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/cert-licenses/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update cert licenses with file error:', error);
+    throw error.response?.data || { message: 'Failed to update cert licenses with file' };
   }
 };
 
@@ -524,6 +602,18 @@ export const updateCargoDamage = async (id, data) => {
   } catch (error) {
     console.error('Update cargo damage error:', error);
     throw error.response?.data || { message: 'Failed to update cargo damage' };
+  }
+};
+
+export const updateCargoDamageWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/cargo-damage/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update cargo damage with file error:', error);
+    throw error.response?.data || { message: 'Failed to update cargo damage with file' };
   }
 };
 

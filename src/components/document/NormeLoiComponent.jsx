@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllNormeLoi } from '../../services/GetRequests';
-import { createNormeLoi } from '../../services/Inserts';
-import { updateNormeLoi, deleteNormeLoi } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllDocuments, getAllAccounts } from '../../services/GetRequests';
+import { createNormeLoi, createNormeLoiWithFile } from '../../services/Inserts';
+import { updateNormeLoi, updateNormeLoiWithFile, deleteNormeLoi } from '../../services/UpdRequests';
+import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
 const NormeLoiComponent = () => {
@@ -13,7 +13,6 @@ const NormeLoiComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [formData, setFormData] = useState({
     reference: '',
@@ -24,6 +23,7 @@ const NormeLoiComponent = () => {
     document: { id: '' },
     status: { id: '' }
   });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [language] = useState('fr');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -51,13 +51,11 @@ const NormeLoiComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, docsData, accountsData] = await Promise.all([
+      const [statusesData, accountsData] = await Promise.all([
         getAllDocStatuses(),
-        getAllDocuments(),
         getAllAccounts()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setDocuments(Array.isArray(docsData) ? docsData : []);
       setAccounts(Array.isArray(accountsData) ? accountsData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -76,6 +74,7 @@ const NormeLoiComponent = () => {
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' }
       });
+      setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
@@ -87,6 +86,7 @@ const NormeLoiComponent = () => {
         document: { id: '' },
         status: { id: '' }
       });
+      setSelectedFile(null);
     }
     setShowModal(true);
   };
@@ -103,6 +103,7 @@ const NormeLoiComponent = () => {
       document: { id: '' },
       status: { id: '' }
     });
+    setSelectedFile(null);
     setError('');
   };
 
@@ -122,26 +123,67 @@ const NormeLoiComponent = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      
-      // Format date for API
-      const dataToSubmit = {
-        ...formData,
-        dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
-        doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-        document: formData.document.id ? { id: parseInt(formData.document.id) } : null
-      };
-      
-      // Only include status for updates (backend sets default status on creation)
-      if (editingItem) {
-        dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-        await updateNormeLoi(editingItem.id, dataToSubmit);
-      } else {
-        await createNormeLoi(dataToSubmit);
+
+      // Check if file is required for new entries
+      if (!editingItem && !selectedFile) {
+        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        return;
       }
+
+      if (selectedFile) {
+        // Handle file upload scenario
+        const formDataToSend = new FormData();
+
+        // Add file
+        formDataToSend.append('file', selectedFile);
+
+        // Add other form fields
+        formDataToSend.append('reference', formData.reference);
+        if (formData.description) formDataToSend.append('description', formData.description);
+        if (formData.dateVigueur) {
+          formDataToSend.append('dateVigueur', new Date(formData.dateVigueur).toISOString());
+        }
+        if (formData.domaineApplication) formDataToSend.append('domaineApplication', formData.domaineApplication);
+        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+
+        // Add status for updates
+        if (editingItem && formData.status.id) {
+          formDataToSend.append('statusId', parseInt(formData.status.id));
+        }
+
+        // Call appropriate API based on create or update
+        if (editingItem) {
+          await updateNormeLoiWithFile(editingItem.id, formDataToSend);
+        } else {
+          await createNormeLoiWithFile(formDataToSend);
+        }
+      } else {
+        // Handle update without file
+        const dataToSubmit = {
+          ...formData,
+          dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
+          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null
+        };
+
+        // Only include status for updates
+        if (editingItem) {
+          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
+          await updateNormeLoi(editingItem.id, dataToSubmit);
+        }
+      }
+
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -186,17 +228,17 @@ const NormeLoiComponent = () => {
             <Card.Header className="d-flex justify-content-between align-items-center">
               <h4 className="mb-0">{getText('document.normeLoi', language)}</h4>
               <div>
-                <Button 
-                  variant="primary" 
-                  size="sm" 
+                <Button
+                  variant="primary"
+                  size="sm"
                   className="me-2"
                   onClick={() => handleShowModal()}
                 >
                   <i className="bi bi-plus-circle me-1"></i>
                   {getText('common.add', language)}
                 </Button>
-                <Button 
-                  variant="outline-secondary" 
+                <Button
+                  variant="outline-secondary"
                   size="sm"
                   onClick={loadData}
                 >
@@ -211,7 +253,7 @@ const NormeLoiComponent = () => {
                   {error}
                 </Alert>
               )}
-              
+
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -273,7 +315,7 @@ const NormeLoiComponent = () => {
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div>
-                    {language === 'fr' 
+                    {language === 'fr'
                       ? `Page ${currentPage + 1} sur ${totalPages}`
                       : `Page ${currentPage + 1} of ${totalPages}`
                     }
@@ -308,7 +350,7 @@ const NormeLoiComponent = () => {
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingItem 
+            {editingItem
               ? `${getText('common.edit', language)} ${getText('document.normeLoi', language)}`
               : `${getText('common.add', language)} ${getText('document.normeLoi', language)}`
             }
@@ -321,7 +363,7 @@ const NormeLoiComponent = () => {
                 {error}
               </Alert>
             )}
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -394,19 +436,24 @@ const NormeLoiComponent = () => {
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Select
-                    name="document.id"
-                    value={formData.document.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {documents.map(doc => (
-                      <option key={doc.id} value={doc.id}>
-                        {doc.fileName || doc.name || `Document ${doc.id}`}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingItem}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingItem && formData.document?.id && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
               <Col md={4}>

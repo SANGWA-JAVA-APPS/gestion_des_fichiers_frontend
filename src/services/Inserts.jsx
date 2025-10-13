@@ -4,7 +4,7 @@ import { apiClient } from './apiConfig';
 export const loginUser = async (credentials) => {
   try {
     const response = await apiClient.post('/auth/login', credentials);
-    
+
     if (response.data.success) {
       // Store tokens and user info in localStorage
       localStorage.setItem('authToken', response.data.token);
@@ -15,7 +15,7 @@ export const loginUser = async (credentials) => {
         role: response.data.role
       }));
     }
-    
+
     return response.data;
   } catch (error) {
     console.error('Login error:', error);
@@ -174,6 +174,21 @@ export const createNormeLoi = async (data) => {
   }
 };
 
+// Create norme loi with file upload
+export const createNormeLoiWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/norme-loi/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create norme loi with file error:', error);
+    throw error.response?.data || { message: 'Failed to create norme loi with file' };
+  }
+};
+
 // Create comm asset land
 export const createCommAssetLand = async (data) => {
   try {
@@ -182,6 +197,21 @@ export const createCommAssetLand = async (data) => {
   } catch (error) {
     console.error('Create comm asset land error:', error);
     throw error.response?.data || { message: 'Failed to create comm asset land' };
+  }
+};
+
+// Create comm asset land with file upload
+export const createCommAssetLandWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/comm-asset-land/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create comm asset land with file error:', error);
+    throw error.response?.data || { message: 'Failed to create comm asset land with file' };
   }
 };
 
@@ -196,6 +226,21 @@ export const createPermiConstruction = async (data) => {
   }
 };
 
+// Create permi construction with file upload
+export const createPermiConstructionWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/permi-construction/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create permi construction with file error:', error);
+    throw error.response?.data || { message: 'Failed to create permi construction with file' };
+  }
+};
+
 // Create accord concession
 export const createAccordConcession = async (data) => {
   try {
@@ -207,6 +252,18 @@ export const createAccordConcession = async (data) => {
   }
 };
 
+export const createAccordConcessionWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/accord-concession/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create accord concession with file error:', error);
+    throw error.response?.data || { message: 'Failed to create accord concession with file' };
+  }
+};
+
 // Create estate
 export const createEstate = async (data) => {
   try {
@@ -215,6 +272,18 @@ export const createEstate = async (data) => {
   } catch (error) {
     console.error('Create estate error:', error);
     throw error.response?.data || { message: 'Failed to create estate' };
+  }
+};
+
+export const createEstateWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/estate/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create estate with file error:', error);
+    throw error.response?.data || { message: 'Failed to create estate with file' };
   }
 };
 
@@ -237,6 +306,18 @@ export const createCertLicenses = async (data) => {
   } catch (error) {
     console.error('Create cert licenses error:', error);
     throw error.response?.data || { message: 'Failed to create cert licenses' };
+  }
+};
+
+export const createCertLicensesWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/cert-licenses/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create cert licenses with file error:', error);
+    throw error.response?.data || { message: 'Failed to create cert licenses with file' };
   }
 };
 
@@ -292,6 +373,18 @@ export const createCargoDamage = async (data) => {
   } catch (error) {
     console.error('Create cargo damage error:', error);
     throw error.response?.data || { message: 'Failed to create cargo damage' };
+  }
+};
+
+export const createCargoDamageWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/cargo-damage/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create cargo damage with file error:', error);
+    throw error.response?.data || { message: 'Failed to create cargo damage with file' };
   }
 };
 

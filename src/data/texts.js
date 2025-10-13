@@ -5,7 +5,7 @@ export const texts = {
     fr: "GESTION DES FICHIERS",
     en: "FILE MANAGEMENT"
   },
-  
+
   // Navigation menu items
   navigation: {
     location: {
@@ -21,7 +21,7 @@ export const texts = {
       en: "DOCUMENT"
     }
   },
-  
+
   // Common UI elements
   common: {
     welcome: {
@@ -65,7 +65,7 @@ export const texts = {
       en: "An error occurred"
     }
   },
-  
+
   // Page descriptions
   descriptions: {
     location: {
@@ -81,7 +81,7 @@ export const texts = {
       en: "Manage documents and files"
     }
   },
-  
+
   // Document Management
   document: {
     // Document Menu Items
@@ -153,7 +153,7 @@ export const texts = {
       fr: "Réclamations de Tiers",
       en: "Third Party Claims"
     },
-    
+
     // Common Document Fields
     fields: {
       id: {
@@ -181,8 +181,8 @@ export const texts = {
         en: "Done By"
       },
       docId: {
-        fr: "Document ID",
-        en: "Document ID"
+        fr: "Document",
+        en: "Document"
       },
       status: {
         fr: "Statut",
@@ -421,7 +421,7 @@ export const texts = {
         en: "Department in Charge"
       }
     },
-    
+
     // Document Status Values
     statusValues: {
       applicable: {
@@ -465,7 +465,7 @@ export const texts = {
         en: "Validated"
       }
     },
-    
+
     // Section Category Values
     categoryValues: {
       financial: {
@@ -529,7 +529,7 @@ export const texts = {
         en: "SOP"
       }
     },
-    
+
     // Actions
     actions: {
       addNew: {
@@ -545,7 +545,7 @@ export const texts = {
         en: "Refresh"
       }
     },
-    
+
     // Messages
     messages: {
       loadSuccess: {
@@ -586,7 +586,7 @@ export const defaultLanguage = 'en';
 export const getText = (path, language = defaultLanguage) => {
   const keys = path.split('.');
   let current = texts;
-  
+
   for (const key of keys) {
     if (current[key] === undefined) {
       console.warn(`Text key "${path}" not found`);
@@ -594,16 +594,16 @@ export const getText = (path, language = defaultLanguage) => {
     }
     current = current[key];
   }
-  
+
   if (typeof current === 'object' && current[language]) {
     return current[language];
   }
-  
+
   // Fallback to default language if requested language not found
   if (typeof current === 'object' && current[defaultLanguage]) {
     return current[defaultLanguage];
   }
-  
+
   console.warn(`Translation for "${path}" in language "${language}" not found`);
   return path;
 };
