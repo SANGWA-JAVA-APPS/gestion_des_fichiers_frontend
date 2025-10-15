@@ -15,12 +15,10 @@ const UserDashboard = ({ onLogout }) => {
         return (
           <div>
             <h3 className="mb-4">My Dashboard</h3>
-            
             <Alert variant="info" className="mb-4">
               <i className="fas fa-info-circle me-2"></i>
               <strong>Welcome!</strong> You can view and manage your personal documents here.
             </Alert>
-
             <Row className="g-4">
               <Col xs={12} md={6}>
                 <Card className="text-center shadow-sm border-primary h-100">
