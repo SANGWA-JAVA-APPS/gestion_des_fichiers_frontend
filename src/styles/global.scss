@@ -460,3 +460,20 @@ body {
 .transparentDiv{
   background-color: transparent !important;
 }
+
+// Document Navigation Styles
+.document-nav-item {
+  font-size: 0.85rem;
+  
+  i {
+    font-size: 0.8rem;
+  }
+  
+  @include mobile-only {
+    font-size: 0.8rem;
+    
+    i {
+      font-size: 0.75rem;
+    }
+  }
+}

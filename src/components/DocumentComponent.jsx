@@ -19,6 +19,27 @@ const DocumentComponent = () => {
   const [activeTab, setActiveTab] = useState('docStatus');
   const [language] = useState('en');
 
+  // Reusable styles for navigation items
+  const getNavLinkStyle = (tabName) => ({
+    backgroundColor: activeTab === tabName ? '#ffefa6ff' : 'transparent',
+    color: activeTab === tabName ? '#000' : 'inherit',
+    fontWeight: activeTab === tabName ? 'bold' : 'normal',
+    cursor: 'pointer'
+  });
+
+  // Navigation items configuration
+  const navigationItems = [
+    { key: 'docStatus', icon: 'fas fa-tag', textKey: 'document.docStatus' },
+    { key: 'sectionCategory', icon: 'fas fa-folder', textKey: 'document.sectionCategory' },
+    { key: 'normeLoi', icon: 'fas fa-gavel', textKey: 'document.normeLoi' },
+    { key: 'commAssetLand', icon: 'fas fa-map-marked', textKey: 'document.commAssetLand' },
+    { key: 'permiConstruction', icon: 'fas fa-hard-hat', textKey: 'document.permiConstruction' },
+    { key: 'accordConcession', icon: 'fas fa-handshake', textKey: 'document.accordConcession' },
+    { key: 'estate', icon: 'fas fa-building', textKey: 'document.estate' },
+    { key: 'certLicenses', icon: 'fas fa-certificate', textKey: 'document.certLicenses' },
+    { key: 'cargoDamage', icon: 'fas fa-box-open', textKey: 'document.cargoDamage' }
+  ];
+
   const renderActiveComponent = () => {
     switch (activeTab) {
       case 'docStatus':
@@ -43,14 +64,13 @@ const DocumentComponent = () => {
         return <DocStatusComponent />;
     }
   };
-
   return (
     <div className="document-management">
-      <Row className="mb-3">
+      <Row className="mb-2  ">
         <Col>
           <h3 className="mb-3">
             <i className="fas fa-file-alt me-2"></i>
-            {getText('document.title', language) || 'Gestion des Documents'}
+            {language === 'fr' ? 'Gestion des Documents' : 'Document Management'}
           </h3>
         </Col>
       </Row>
@@ -63,78 +83,18 @@ const DocumentComponent = () => {
             </Card.Header>
             <Card.Body className="p-0">
               <Nav className="flex-column">
-                <Nav.Link 
-                  active={activeTab === 'docStatus'} 
-                  onClick={() => setActiveTab('docStatus')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-tag me-2"></i>
-                  {getText('document.docStatus', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'sectionCategory'} 
-                  onClick={() => setActiveTab('sectionCategory')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-folder me-2"></i>
-                  {getText('document.sectionCategory', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'normeLoi'} 
-                  onClick={() => setActiveTab('normeLoi')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-gavel me-2"></i>
-                  {getText('document.normeLoi', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'commAssetLand'} 
-                  onClick={() => setActiveTab('commAssetLand')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-map-marked me-2"></i>
-                  {getText('document.commAssetLand', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'permiConstruction'} 
-                  onClick={() => setActiveTab('permiConstruction')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-hard-hat me-2"></i>
-                  {getText('document.permiConstruction', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'accordConcession'} 
-                  onClick={() => setActiveTab('accordConcession')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-handshake me-2"></i>
-                  {getText('document.accordConcession', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'estate'} 
-                  onClick={() => setActiveTab('estate')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-building me-2"></i>
-                  {getText('document.estate', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'certLicenses'} 
-                  onClick={() => setActiveTab('certLicenses')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-certificate me-2"></i>
-                  {getText('document.certLicenses', language)}
-                </Nav.Link>
-                <Nav.Link 
-                  active={activeTab === 'cargoDamage'} 
-                  onClick={() => setActiveTab('cargoDamage')}
-                  className="border-bottom"
-                >
-                  <i className="fas fa-box-open me-2"></i>
-                  {getText('document.cargoDamage', language)}
-                </Nav.Link>
+                {navigationItems.map((item) => (
+                  <Nav.Link 
+                    key={item.key}
+                    active={activeTab === item.key} 
+                    onClick={() => setActiveTab(item.key)}
+                    className="border-bottom document-nav-item"
+                    style={getNavLinkStyle(item.key)}
+                  >
+                    <i className={`${item.icon} me-2`}></i>
+                    {getText(item.textKey, language)}
+                  </Nav.Link>
+                ))}
               </Nav>
             </Card.Body>
           </Card>

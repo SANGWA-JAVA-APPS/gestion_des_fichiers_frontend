@@ -230,7 +230,7 @@ const AdminDashboard = ({ onLogout }) => {
   return (
     <Container 
       fluid 
-      className="min-vh-100 p-0"
+      className="min-vh-100 p-0 "
       style={{
         // backgroundImage: `url(${DashboardBg})`,
         backgroundSize: 'cover',
@@ -240,7 +240,7 @@ const AdminDashboard = ({ onLogout }) => {
       }}
     >
       {/* Header */}
-      <Row className="g-0 bg-primary text-white shadow">
+      <Row className="g-0  bg-primary text-white shadow">
         <Col xs={12} className="py-3">
           <Container>
             <Row className="align-items-center">
@@ -374,7 +374,7 @@ const AdminDashboard = ({ onLogout }) => {
       {/* Main Content Area */}
       <Row className="g-0">
         <Col xs={12} className="py-4">
-          <Container>
+          <Container fluid >
             <Card className="border-0 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
               <Card.Body className="p-4">
                 {renderContent()}
