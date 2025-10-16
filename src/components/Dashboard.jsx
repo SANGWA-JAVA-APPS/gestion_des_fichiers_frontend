@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Navbar, Nav, NavDropdown, Button } from 'react-bootstrap';
 import { getUserInfo } from '../services/authUtils';
 import { logoutUser } from '../services/UpdRequests';
+import DashboardBg from '../assets/DashbaordBg.png';
+
+console.log('Dashboard.jsx file loaded, DashboardBg:', DashboardBg);
 
 // Location Components
 import CountryComponent from './location/CountryComponent';
@@ -17,12 +20,18 @@ import RolesComponent from './user/RolesComponent';
 import DocumentComponent from './DocumentComponent';
 
 const Dashboard = ({ onLogout }) => {
+  console.log('Dashboard component mounting...'); // First log
+  
   const [activeComponent, setActiveComponent] = useState('country');
   const [userInfo, setUserInfo] = useState(null);
+  const [showBackground, setShowBackground] = useState(true); // Toggle for background
 
   useEffect(() => {
+    console.log('Dashboard useEffect running...'); // Second log
     const user = getUserInfo();
     setUserInfo(user);
+    console.log('Dashboard Background Image:', DashboardBg); // Third log
+    console.log('Show Background:', showBackground); // Fourth log
   }, []);
 
   const handleLogout = async () => {
@@ -146,11 +155,35 @@ const Dashboard = ({ onLogout }) => {
 
       {/* Main Content */}
       <Row className="g-0 flex-grow-1">
-        <Col xs={12} className="py-4 bg-white">
+        <Col 
+          xs={12} 
+          className="py-4" 
+          style={{
+            ...(showBackground && {
+              backgroundImage: `url(${DashboardBg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed'
+            }),
+            minHeight: '100vh',
+            backgroundColor: showBackground ? 'transparent' : '#f8f9fa'
+          }}
+        >
           <Container>
             <Row>
               <Col xs={12}>
-                <Card className="border-0 shadow-sm">
+                {/* Toggle button for debugging */}
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="mb-3"
+                  onClick={() => setShowBackground(!showBackground)}
+                >
+                  {showBackground ? 'Hide' : 'Show'} Background
+                </Button>
+                
+                <Card className="border-0 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                   <Card.Body className="p-4">
                     {renderActiveComponent()}
                   </Card.Body>

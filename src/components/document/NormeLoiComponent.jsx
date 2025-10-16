@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllNormeLoi } from '../../services/GetRequests';
 import { createNormeLoi, createNormeLoiWithFile } from '../../services/Inserts';
-import { updateNormeLoi, updateNormeLoiWithFile, deleteNormeLoi } from '../../services/UpdRequests';
+import { updateNormeLoi, deleteNormeLoi } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
@@ -141,46 +141,45 @@ const NormeLoiComponent = () => {
         return;
       }
 
-      if (selectedFile) {
-        // Handle file upload scenario
+      // For CREATE with file
+      if (!editingItem && selectedFile) {
+        // Handle file upload scenario for NEW items
         const formDataToSend = new FormData();
 
         // Add file
         formDataToSend.append('file', selectedFile);
 
-        // Add other form fields
-        formDataToSend.append('reference', formData.reference);
-        if (formData.description) formDataToSend.append('description', formData.description);
-        if (formData.dateVigueur) {
-          formDataToSend.append('dateVigueur', new Date(formData.dateVigueur).toISOString());
-        }
-        if (formData.domaineApplication) formDataToSend.append('domaineApplication', formData.domaineApplication);
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
+        // Build normeLoi object as JSON
+        const normeLoiData = {
+          reference: formData.reference,
+          description: formData.description || null,
+          dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
+          domaineApplication: formData.domaineApplication || null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
 
-        // Add status for updates
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        // Add normeLoi as JSON blob
+        formDataToSend.append('normeLoi', new Blob([JSON.stringify(normeLoiData)], {
+          type: 'application/json'
+        }));
 
-        // Call appropriate API based on create or update
-        if (editingItem) {
-          await updateNormeLoiWithFile(editingItem.id, formDataToSend);
-        } else {
-          await createNormeLoiWithFile(formDataToSend);
-        }
-      } else {
-        // Handle update without file
+        await createNormeLoiWithFile(formDataToSend);
+      } else if (editingItem) {
+        // Handle UPDATE (with or without file - backend doesn't support file update yet)
         const dataToSubmit = {
           ...formData,
           dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
           doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-          document: formData.document.id ? { id: parseInt(formData.document.id) } : null
+          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
-        // Only include status for updates
-        if (editingItem) {
-          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-          await updateNormeLoi(editingItem.id, dataToSubmit);
+        await updateNormeLoi(editingItem.id, dataToSubmit);
+
+        // Show info message if user selected a new file (not supported yet)
+        if (selectedFile) {
+          console.warn('File update not yet supported by backend. Document was not changed.');
         }
       }
 
@@ -229,19 +228,13 @@ const NormeLoiComponent = () => {
               <h4 className="mb-0">{getText('document.normeLoi', language)}</h4>
               <div>
                 <Button
-                  variant="primary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleShowModal()}
-                >
+                  variant="primary"    size="sm"      className="me-2"
+                  onClick={() => handleShowModal()}                >
                   <i className="bi bi-plus-circle me-1"></i>
                   {getText('common.add', language)}
                 </Button>
                 <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={loadData}
-                >
+                  variant="outline-secondary"                  size="sm"                  onClick={loadData}                >
                   <i className="bi bi-arrow-clockwise me-1"></i>
                   {getText('document.actions.refresh', language)}
                 </Button>

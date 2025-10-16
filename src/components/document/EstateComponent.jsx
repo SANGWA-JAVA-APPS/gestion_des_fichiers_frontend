@@ -140,16 +140,23 @@ const EstateComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        formDataToSend.append('reference', formData.reference);
-        if (formData.estateType) formDataToSend.append('estateType', formData.estateType);
-        if (formData.emplacement) formDataToSend.append('emplacement', formData.emplacement);
-        if (formData.coordonneesGps) formDataToSend.append('coordonneesGps', formData.coordonneesGps);
-        if (formData.dateOfBuilding) formDataToSend.append('dateOfBuilding', new Date(formData.dateOfBuilding).toISOString());
-        if (formData.comments) formDataToSend.append('comments', formData.comments);
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        
+        // Build estate object as JSON
+        const estateData = {
+          reference: formData.reference,
+          estateType: formData.estateType || null,
+          emplacement: formData.emplacement || null,
+          coordonneesGps: formData.coordonneesGps || null,
+          dateOfBuilding: formData.dateOfBuilding ? new Date(formData.dateOfBuilding).toISOString() : null,
+          comments: formData.comments || null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
+
+        // Add estate as JSON blob
+        formDataToSend.append('estate', new Blob([JSON.stringify(estateData)], {
+          type: 'application/json'
+        }));
 
         if (editingItem) {
           await updateEstateWithFile(editingItem.id, formDataToSend);

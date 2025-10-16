@@ -177,7 +177,7 @@ export const createNormeLoi = async (data) => {
 // Create norme loi with file upload
 export const createNormeLoiWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/norme-loi/upload', formData, {
+    const response = await apiClient.post('/document/norme-loi', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -203,7 +203,7 @@ export const createCommAssetLand = async (data) => {
 // Create comm asset land with file upload
 export const createCommAssetLandWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/comm-asset-land/upload', formData, {
+    const response = await apiClient.post('/document/comm-asset-land', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -229,7 +229,7 @@ export const createPermiConstruction = async (data) => {
 // Create permi construction with file upload
 export const createPermiConstructionWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/permi-construction/upload', formData, {
+    const response = await apiClient.post('/document/permi-construction', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -254,7 +254,7 @@ export const createAccordConcession = async (data) => {
 
 export const createAccordConcessionWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/accord-concession/upload', formData, {
+    const response = await apiClient.post('/document/accord-concession', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -277,7 +277,7 @@ export const createEstate = async (data) => {
 
 export const createEstateWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/estate/upload', formData, {
+    const response = await apiClient.post('/document/estate', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -311,7 +311,7 @@ export const createCertLicenses = async (data) => {
 
 export const createCertLicensesWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/cert-licenses/upload', formData, {
+    const response = await apiClient.post('/document/cert-licenses', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -378,7 +378,7 @@ export const createCargoDamage = async (data) => {
 
 export const createCargoDamageWithFile = async (formData) => {
   try {
-    const response = await apiClient.post('/document/cargo-damage/upload', formData, {
+    const response = await apiClient.post('/document/cargo-damage', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;

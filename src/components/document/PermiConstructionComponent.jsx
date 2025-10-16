@@ -150,19 +150,22 @@ const PermiConstructionComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        formDataToSend.append('referenceTitreFoncier', formData.referenceTitreFoncier);
-        formDataToSend.append('refPermisConstuire', formData.refPermisConstuire);
-        if (formData.dateValidation) {
-          formDataToSend.append('dateValidation', new Date(formData.dateValidation).toISOString());
-        }
-        if (formData.dateEstimeeTravaux) {
-          formDataToSend.append('dateEstimeeTravaux', new Date(formData.dateEstimeeTravaux).toISOString());
-        }
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (formData.sectionCategory.id) formDataToSend.append('sectionCategoryId', parseInt(formData.sectionCategory.id));
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        
+        // Build permiConstruction object as JSON
+        const permiConstructionData = {
+          numeroPermis: formData.refPermisConstuire,  // Backend expects numeroPermis
+          referenceTitreFoncier: formData.referenceTitreFoncier,
+          dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
+          dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
+
+        // Add permiConstruction as JSON blob
+        formDataToSend.append('permiConstruction', new Blob([JSON.stringify(permiConstructionData)], {
+          type: 'application/json'
+        }));
 
         if (editingItem) {
           await updatePermiConstructionWithFile(editingItem.id, formDataToSend);

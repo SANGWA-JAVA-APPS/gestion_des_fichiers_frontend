@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllCommAssetLand } from '../../services/GetRequests';
 import { createCommAssetLand, createCommAssetLandWithFile } from '../../services/Inserts';
-import { updateCommAssetLand, updateCommAssetLandWithFile, deleteCommAssetLand } from '../../services/UpdRequests';
+import { updateCommAssetLand, deleteCommAssetLand } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts, getAllSections } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 
@@ -152,49 +152,48 @@ const CommAssetLandComponent = () => {
         return;
       }
 
-      if (selectedFile) {
-        // Handle file upload scenario
+      // For CREATE with file
+      if (!editingItem && selectedFile) {
+        // Handle file upload scenario for NEW items
         const formDataToSend = new FormData();
 
         // Add file
         formDataToSend.append('file', selectedFile);
 
-        // Add other form fields
-        formDataToSend.append('reference', formData.reference);
-        if (formData.description) formDataToSend.append('description', formData.description);
-        if (formData.dateObtention) {
-          formDataToSend.append('dateObtention', new Date(formData.dateObtention).toISOString());
-        }
-        if (formData.coordonneesGps) formDataToSend.append('coordonneesGps', formData.coordonneesGps);
-        if (formData.emplacement) formDataToSend.append('emplacement', formData.emplacement);
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (formData.section.id) formDataToSend.append('sectionId', parseInt(formData.section.id));
+        // Build commAssetLand object as JSON
+        const commAssetLandData = {
+          reference: formData.reference,
+          description: formData.description || null,
+          dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
+          coordonneesGps: formData.coordonneesGps || null,
+          emplacement: formData.emplacement || null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null,
+          section: formData.section.id ? { id: parseInt(formData.section.id) } : null
+        };
 
-        // Add status for updates
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        // Add commAssetLand as JSON blob
+        formDataToSend.append('commAssetLand', new Blob([JSON.stringify(commAssetLandData)], {
+          type: 'application/json'
+        }));
 
-        // Call appropriate API based on create or update
-        if (editingItem) {
-          await updateCommAssetLandWithFile(editingItem.id, formDataToSend);
-        } else {
-          await createCommAssetLandWithFile(formDataToSend);
-        }
-      } else {
-        // Handle update without file
+        await createCommAssetLandWithFile(formDataToSend);
+      } else if (editingItem) {
+        // Handle UPDATE (with or without file - backend doesn't support file update yet)
         const dataToSubmit = {
           ...formData,
           dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
           doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-          section: formData.section.id ? { id: parseInt(formData.section.id) } : null
+          section: formData.section.id ? { id: parseInt(formData.section.id) } : null,
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
-        // Only include status for updates
-        if (editingItem) {
-          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-          await updateCommAssetLand(editingItem.id, dataToSubmit);
+        await updateCommAssetLand(editingItem.id, dataToSubmit);
+
+        // Show info message if user selected a new file (not supported yet)
+        if (selectedFile) {
+          console.warn('File update not yet supported by backend. Document was not changed.');
         }
       }
 

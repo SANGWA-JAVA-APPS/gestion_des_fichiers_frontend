@@ -137,15 +137,22 @@ const CargoDamageComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        if (formData.refeRequest) formDataToSend.append('refeRequest', formData.refeRequest);
-        if (formData.description) formDataToSend.append('description', formData.description);
-        if (formData.quotationContractNum) formDataToSend.append('quotationContractNum', formData.quotationContractNum);
-        if (formData.dateRequest) formDataToSend.append('dateRequest', new Date(formData.dateRequest).toISOString());
-        if (formData.dateContract) formDataToSend.append('dateContract', new Date(formData.dateContract).toISOString());
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        
+        // Build cargoDamage object as JSON
+        const cargoDamageData = {
+          refeRequest: formData.refeRequest || null,
+          description: formData.description || null,
+          quotationContractNum: formData.quotationContractNum || null,
+          dateRequest: formData.dateRequest ? new Date(formData.dateRequest).toISOString() : null,
+          dateContract: formData.dateContract ? new Date(formData.dateContract).toISOString() : null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
+
+        // Add cargoDamage as JSON blob
+        formDataToSend.append('cargoDamage', new Blob([JSON.stringify(cargoDamageData)], {
+          type: 'application/json'
+        }));
 
         if (editingItem) {
           await updateCargoDamageWithFile(editingItem.id, formDataToSend);

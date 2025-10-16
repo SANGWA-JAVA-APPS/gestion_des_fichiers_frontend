@@ -146,17 +146,25 @@ const AccordConcessionComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        formDataToSend.append('contratConcession', formData.contratConcession);
-        if (formData.emplacement) formDataToSend.append('emplacement', formData.emplacement);
-        if (formData.coordonneesGps) formDataToSend.append('coordonneesGps', formData.coordonneesGps);
-        if (formData.rapportTransfertGestion) formDataToSend.append('rapportTransfertGestion', formData.rapportTransfertGestion);
-        if (formData.dateSignature) formDataToSend.append('dateSignature', new Date(formData.dateSignature).toISOString());
-        if (formData.dateExpiration) formDataToSend.append('dateExpiration', new Date(formData.dateExpiration).toISOString());
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (formData.sectionCategory.id) formDataToSend.append('sectionCategoryId', parseInt(formData.sectionCategory.id));
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        
+        // Build accordConcession object as JSON
+        const accordConcessionData = {
+          numeroAccord: formData.contratConcession,  // Backend expects numeroAccord
+          contratConcession: formData.contratConcession,  // Also keep original field
+          emplacement: formData.emplacement || null,
+          coordonneesGps: formData.coordonneesGps || null,
+          rapportTransfertGestion: formData.rapportTransfertGestion || null,
+          dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
+          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
+
+        // Add accordConcession as JSON blob
+        formDataToSend.append('accordConcession', new Blob([JSON.stringify(accordConcessionData)], {
+          type: 'application/json'
+        }));
 
         if (editingItem) {
           await updateAccordConcessionWithFile(editingItem.id, formDataToSend);

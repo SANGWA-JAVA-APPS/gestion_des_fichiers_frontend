@@ -137,15 +137,22 @@ const CertLicensesComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        if (formData.description) formDataToSend.append('description', formData.description);
-        if (formData.agentCertifica) formDataToSend.append('agentCertifica', formData.agentCertifica);
-        if (formData.numeroAgent) formDataToSend.append('numeroAgent', formData.numeroAgent);
-        if (formData.dateCertificate) formDataToSend.append('dateCertificate', new Date(formData.dateCertificate).toISOString());
-        if (formData.dureeCertificat) formDataToSend.append('dureeCertificat', formData.dureeCertificat);
-        if (formData.doneBy.id) formDataToSend.append('doneById', parseInt(formData.doneBy.id));
-        if (editingItem && formData.status.id) {
-          formDataToSend.append('statusId', parseInt(formData.status.id));
-        }
+        
+        // Build certLicense object as JSON
+        const certLicenseData = {
+          description: formData.description || null,
+          agentCertifica: formData.agentCertifica || null,
+          numeroAgent: formData.numeroAgent || null,
+          dateCertificate: formData.dateCertificate ? new Date(formData.dateCertificate).toISOString() : null,
+          dureeCertificat: formData.dureeCertificat || null,
+          doneBy: { id: parseInt(formData.doneBy.id) },
+          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+        };
+
+        // Add certLicense as JSON blob
+        formDataToSend.append('certLicense', new Blob([JSON.stringify(certLicenseData)], {
+          type: 'application/json'
+        }));
 
         if (editingItem) {
           await updateCertLicensesWithFile(editingItem.id, formDataToSend);

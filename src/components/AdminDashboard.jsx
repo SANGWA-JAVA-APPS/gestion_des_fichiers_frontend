@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Nav, Button, NavDropdown } from 'react-bootstrap';
 import { getUserInfo } from '../services/authUtils';
+import DashboardBg from '../assets/DashbaordBg.png';
+
+console.log('AdminDashboard.jsx loaded, DashboardBg:', DashboardBg);
 
 // Dashboard Stats
 import DashboardStats from './DashboardStats';
@@ -19,15 +22,19 @@ import RolesComponent from './user/RolesComponent';
 import DocumentComponent from './DocumentComponent';
 
 const AdminDashboard = ({ onLogout }) => {
+  console.log('AdminDashboard component mounting...');
+  
   const [activeTab, setActiveTab] = useState('overview');
   const userInfo = getUserInfo();
+  
+  console.log('AdminDashboard Background Image:', DashboardBg);
 
   const renderContent = () => {
     switch (activeTab) {
       // Overview Dashboard
       case 'overview':
         return (
-          <div>
+          <div className='transparentDiv'>
             <DashboardStats userRole={userInfo?.role} />
             
             <Row className="g-4 mt-4">
@@ -221,7 +228,17 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   return (
-    <Container fluid className="min-vh-100 p-0 bg-light">
+    <Container 
+      fluid 
+      className="min-vh-100 p-0"
+      style={{
+        // backgroundImage: `url(${DashboardBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       {/* Header */}
       <Row className="g-0 bg-primary text-white shadow">
         <Col xs={12} className="py-3">
@@ -358,7 +375,7 @@ const AdminDashboard = ({ onLogout }) => {
       <Row className="g-0">
         <Col xs={12} className="py-4">
           <Container>
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
               <Card.Body className="p-4">
                 {renderContent()}
               </Card.Body>
