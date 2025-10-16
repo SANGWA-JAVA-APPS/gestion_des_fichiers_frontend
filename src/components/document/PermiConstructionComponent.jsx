@@ -3,8 +3,10 @@ import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } fro
 import { getAllPermiConstruction } from '../../services/GetRequests';
 import { createPermiConstruction, createPermiConstructionWithFile } from '../../services/Inserts';
 import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllAccounts, getAllSectionCategories } from '../../services/GetRequests';
+import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
+import SearchComponent from '../SearchComponent';
+import HeaderTitle from '../HeaderTitle';
 
 const PermiConstructionComponent = () => {
   const [data, setData] = useState([]);
@@ -30,6 +32,14 @@ const PermiConstructionComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
+  
+  // Search state
+  const [searchFilters, setSearchFilters] = useState({
+    statusFilter: '',
+    searchText: '',
+    dateStart: '',
+    dateEnd: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -64,6 +74,26 @@ const PermiConstructionComponent = () => {
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
+  };
+
+  // Handle search
+  const handleSearch = (searchData) => {
+    console.log('=== SEARCH COMPONENT VALUES ===');
+    console.log('All Search Data:', searchData);
+    console.log('Dropdown (Status Filter):', searchData.dropdown);
+    console.log('Textbox 1 (Search Text):', searchData.textbox1);
+    console.log('Textbox 2:', searchData.textbox2);
+    console.log('Textbox 3:', searchData.textbox3);
+    console.log('Date Start:', searchData.dateStart);
+    console.log('Date End:', searchData.dateEnd);
+    console.log('===============================');
+    
+    setSearchFilters({
+      statusFilter: searchData.dropdown,
+      searchText: searchData.textbox1,
+      dateStart: searchData.dateStart,
+      dateEnd: searchData.dateEnd
+    });
   };
 
   const handleShowModal = (item = null) => {
@@ -228,29 +258,58 @@ const PermiConstructionComponent = () => {
       <Row className="mb-4">
         <Col>
           <Card>
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <h4 className="mb-0">{getText('document.permiConstruction', language)}</h4>
-              <div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => handleShowModal()}
-                >
-                  <i className="bi bi-plus-circle me-1"></i>
-                  {getText('common.add', language)}
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  onClick={loadData}
-                >
-                  <i className="bi bi-arrow-clockwise me-1"></i>
-                  {getText('document.actions.refresh', language)}
-                </Button>
-              </div>
+            <Card.Header>
+              <Row className="align-items-center">
+                <Col xs={12} md={6} lg={3}>
+                  <HeaderTitle>{getText('document.permiConstruction', language)}</HeaderTitle>
+                </Col>
+                <Col xs={12} md={6} lg={9} className="text-end">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="me-2"
+                    onClick={() => handleShowModal()}>
+                    <i className="bi bi-plus-circle me-1"></i>
+                    {getText('common.add', language)}
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={loadData}>
+                    <i className="bi bi-arrow-clockwise me-1"></i>
+                    {getText('document.actions.refresh', language)}
+                  </Button>
+                </Col>
+              </Row>
             </Card.Header>
             <Card.Body>
+              {/* Search Component */}
+              <SearchComponent
+                dropdownLabel="Filter"
+                dropdownItems={[]}
+                dropdownValue={searchFilters.statusFilter}
+                onDropdownChange={(value) => setSearchFilters({...searchFilters, statusFilter: value})}
+                
+                textbox1Label="Search"
+                textbox1Placeholder="Enter search term..."
+                textbox1Value={searchFilters.searchText}
+                onTextbox1Change={(value) => setSearchFilters({...searchFilters, searchText: value})}
+                
+                dateStartLabel="From Date"
+                dateStartValue={searchFilters.dateStart}
+                onDateStartChange={(value) => setSearchFilters({...searchFilters, dateStart: value})}
+                
+                dateEndLabel="To Date"
+                dateEndValue={searchFilters.dateEnd}
+                onDateEndChange={(value) => setSearchFilters({...searchFilters, dateEnd: value})}
+                
+                onSearch={handleSearch}
+                searchButtonText="Search"
+                
+                showTextbox2={false}
+                showTextbox3={false}
+              />
+              
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError('')}>
                   {error}

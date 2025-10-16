@@ -23,7 +23,7 @@ const DocumentComponent = () => {
   const getNavLinkStyle = (tabName) => ({
     backgroundColor: activeTab === tabName ? '#ffefa6ff' : 'transparent',
     color: activeTab === tabName ? '#000' : 'inherit',
-    fontWeight: activeTab === tabName ? 'bold' : 'normal',
+    
     cursor: 'pointer'
   });
 
@@ -65,13 +65,13 @@ const DocumentComponent = () => {
     }
   };
   return (
-    <div className="document-management">
+    <div className="document-management" >
       <Row className="mb-2  ">
         <Col>
-          <h3 className="mb-3">
+          <h5 className="mb-3">
             <i className="fas fa-file-alt me-2"></i>
             {language === 'fr' ? 'Gestion des Documents' : 'Document Management'}
-          </h3>
+          </h5>
         </Col>
       </Row>
 

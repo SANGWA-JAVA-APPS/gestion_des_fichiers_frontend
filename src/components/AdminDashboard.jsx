@@ -242,7 +242,7 @@ const AdminDashboard = ({ onLogout }) => {
       {/* Header */}
       <Row className="g-0  bg-primary text-white shadow">
         <Col xs={12} className="py-3">
-          <Container>
+          <Container> 
             <Row className="align-items-center">
               <Col>
                 <h4 className="mb-0 fw-bold">
@@ -373,10 +373,10 @@ const AdminDashboard = ({ onLogout }) => {
 
       {/* Main Content Area */}
       <Row className="g-0">
-        <Col xs={12} className="py-4">
-          <Container fluid >
+        <Col xs={12} className="p-0  p-0" >
+          <Container fluid className=' m-0 mt-1' >
             <Card className="border-0 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
-              <Card.Body className="p-4">
+              <Card.Body className="p-2">
                 {renderContent()}
               </Card.Body>
             </Card>

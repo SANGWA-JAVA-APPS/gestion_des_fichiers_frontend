@@ -5,6 +5,8 @@ import { createCargoDamage, createCargoDamageWithFile } from '../../services/Ins
 import { updateCargoDamage, updateCargoDamageWithFile, deleteCargoDamage } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
+import SearchComponent from '../SearchComponent';
+import HeaderTitle from '../HeaderTitle';
 
 const CargoDamageComponent = () => {
   const [data, setData] = useState([]);
@@ -29,6 +31,14 @@ const CargoDamageComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
+  
+  // Search filters state
+  const [searchFilters, setSearchFilters] = useState({
+    statusFilter: '',
+    searchText: '',
+    dateStart: '',
+    dateEnd: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -61,6 +71,26 @@ const CargoDamageComponent = () => {
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
+  };
+
+  // Handle search
+  const handleSearch = (searchData) => {
+    console.log('=== SEARCH COMPONENT VALUES ===');
+    console.log('All Search Data:', searchData);
+    console.log('Dropdown (Status Filter):', searchData.dropdown);
+    console.log('Textbox 1 (Search Text):', searchData.textbox1);
+    console.log('Textbox 2:', searchData.textbox2);
+    console.log('Textbox 3:', searchData.textbox3);
+    console.log('Date Start:', searchData.dateStart);
+    console.log('Date End:', searchData.dateEnd);
+    console.log('===============================');
+    
+    setSearchFilters({
+      statusFilter: searchData.dropdown,
+      searchText: searchData.textbox1,
+      dateStart: searchData.dateStart,
+      dateEnd: searchData.dateEnd
+    });
   };
 
   const handleShowModal = (item = null) => {
@@ -214,18 +244,47 @@ const CargoDamageComponent = () => {
       <Row className="mb-4">
         <Col>
           <Card>
-            <Card.Header className="d-flex justify-content-between align-items-center">
-              <h4 className="mb-0">{getText('document.cargoDamage', language)}</h4>
-              <div>
-                <Button variant="primary" size="sm" className="me-2" onClick={() => handleShowModal()}>
-                  <i className="bi bi-plus-circle me-1"></i>{getText('common.add', language)}
-                </Button>
-                <Button variant="outline-secondary" size="sm" onClick={loadData}>
-                  <i className="bi bi-arrow-clockwise me-1"></i>{getText('document.actions.refresh', language)}
-                </Button>
-              </div>
+            <Card.Header>
+              <Row className="align-items-center">
+                <Col xs={12} md={6} lg={3}>
+                  <HeaderTitle>{getText('document.cargoDamage', language)}</HeaderTitle>
+                </Col>
+                <Col xs={12} md={6} lg={9} className="text-end">
+                  <Button variant="primary" size="sm" className="me-2" onClick={() => handleShowModal()}>
+                    <i className="bi bi-plus-circle me-1"></i>{getText('common.add', language)}
+                  </Button>
+                  <Button variant="outline-secondary" size="sm" onClick={loadData}>
+                    <i className="bi bi-arrow-clockwise me-1"></i>{getText('document.actions.refresh', language)}
+                  </Button>
+                </Col>
+              </Row>
             </Card.Header>
             <Card.Body>
+              <SearchComponent
+                dropdownLabel="Status"
+                dropdownItems={[]}
+                dropdownValue={searchFilters.statusFilter}
+                onDropdownChange={(e) => setSearchFilters({ ...searchFilters, statusFilter: e.target.value })}
+                
+                textbox1Label="Search"
+                textbox1Placeholder="Enter search term..."
+                textbox1Value={searchFilters.searchText}
+                onTextbox1Change={(e) => setSearchFilters({ ...searchFilters, searchText: e.target.value })}
+                showTextbox2={false}
+                showTextbox3={false}
+                
+                dateStartLabel="From Date"
+                dateStartValue={searchFilters.dateStart}
+                onDateStartChange={(e) => setSearchFilters({ ...searchFilters, dateStart: e.target.value })}
+                
+                dateEndLabel="To Date"
+                dateEndValue={searchFilters.dateEnd}
+                onDateEndChange={(e) => setSearchFilters({ ...searchFilters, dateEnd: e.target.value })}
+                
+                onSearch={handleSearch}
+                searchButtonText="Search"
+              />
+
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
               <div className="table-responsive">

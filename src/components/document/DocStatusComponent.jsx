@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Table,
-  Modal,
-  Form,
-  Alert,
-  Spinner,
+  Row,  Col,  Card,  Button,
+  Table,  Modal,  Form,  Alert,  Spinner,
 } from "react-bootstrap";
 import { getAllDocStatuses } from "../../services/GetRequests";
 import { createDocStatus } from "../../services/Inserts";
 import { updateDocStatus, deleteDocStatus } from "../../services/UpdRequests";
 import { getText } from "../../data/texts";
 import SearchComponent from "../SearchComponent";
+import HeaderTitle from "../HeaderTitle";
 
 const DocStatusComponent = () => {
   const [data, setData] = useState([]);
@@ -59,7 +53,16 @@ const DocStatusComponent = () => {
 
   // Handle search
   const handleSearch = (searchData) => {
-    console.log('Search data:', searchData);
+    console.log('=== SEARCH COMPONENT VALUES ===');
+    console.log('All Search Data:', searchData);
+    console.log('Dropdown (Status Filter):', searchData.dropdown);
+    console.log('Textbox 1 (Search Text):', searchData.textbox1);
+    console.log('Textbox 2:', searchData.textbox2);
+    console.log('Textbox 3:', searchData.textbox3);
+    console.log('Date Start:', searchData.dateStart);
+    console.log('Date End:', searchData.dateEnd);
+    console.log('===============================');
+    
     // Implement your search logic here
     // You can filter the data based on searchData
     setSearchFilters({
@@ -157,9 +160,7 @@ const DocStatusComponent = () => {
             <Card.Header>
               <Row className="align-items-center">
                 <Col xs={12} md={6} lg={3}>
-                  <h4 className="mb-0">
-                    {getText("document.docStatus", language)}
-                  </h4>
+                  <HeaderTitle>{getText("document.docStatus", language)}</HeaderTitle>
                 </Col>
                 <Col xs={12} md={6} lg={9} className="text-end">
                   <Button  
