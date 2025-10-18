@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Nav } from 'react-bootstrap';
+import { Row, Col, Card, Nav, Button, Offcanvas } from 'react-bootstrap';
 import { getText } from '../data/texts';
 
 // Import all document components
@@ -18,6 +18,13 @@ import {
 const DocumentComponent = () => {
   const [activeTab, setActiveTab] = useState('docStatus');
   const [language] = useState('en');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  // Handle menu item click and close mobile sidebar
+  const handleTabChange = (tabKey) => {
+    setActiveTab(tabKey);
+    setShowMobileSidebar(false); // Close sidebar on mobile after selection
+  };
 
   // Reusable styles for navigation items
   const getNavLinkStyle = (tabName) => ({
@@ -65,18 +72,32 @@ const DocumentComponent = () => {
     }
   };
   return (
-    <div className="document-management" >
-      <Row className="mb-2  ">
+    <div className="document-management">
+      <Row className="mb-2">
         <Col>
-          <h5 className="mb-3">
-            <i className="fas fa-file-alt me-2"></i>
-            {language === 'fr' ? 'Gestion des Documents' : 'Document Management'}
-          </h5>
+          <div className="d-flex justify-content-between align-items-center">
+            <h5 className="mb-3">
+              <i className="fas fa-file-alt me-2"></i>
+              {language === 'fr' ? 'Gestion des Documents' : 'Document Management'}
+            </h5>
+            
+            {/* Mobile Sidebar Toggle Button - Visible only on small screens */}
+            <Button 
+              variant="primary" 
+              size="sm"
+              onClick={() => setShowMobileSidebar(true)}
+              className="d-md-none mb-3"
+            >
+              <i className="fas fa-bars me-2"></i>
+              {language === 'fr' ? 'Menu' : 'Menu'}
+            </Button>
+          </div>
         </Col>
       </Row>
 
       <Row>
-        <Col md={3} lg={2}>
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <Col md={3} lg={2} className="d-none d-md-block">
           <Card className="mb-3">
             <Card.Header className="bg-primary text-white">
               <strong>{language === 'fr' ? 'Types de Documents' : 'Document Types'}</strong>
@@ -87,7 +108,7 @@ const DocumentComponent = () => {
                   <Nav.Link 
                     key={item.key}
                     active={activeTab === item.key} 
-                    onClick={() => setActiveTab(item.key)}
+                    onClick={() => handleTabChange(item.key)}
                     className="border-bottom document-nav-item"
                     style={getNavLinkStyle(item.key)}
                   >
@@ -108,7 +129,43 @@ const DocumentComponent = () => {
           </Card>
         </Col>
 
-        <Col md={9} lg={10}>
+        {/* Mobile Offcanvas Sidebar - Visible only on mobile */}
+        <Offcanvas 
+          show={showMobileSidebar} 
+          onHide={() => setShowMobileSidebar(false)}
+          placement="start"
+          className="d-md-none"
+        >
+          <Offcanvas.Header closeButton className="bg-primary text-white">
+            <Offcanvas.Title>
+              <i className="fas fa-file-alt me-2"></i>
+              {language === 'fr' ? 'Types de Documents' : 'Document Types'}
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body className="p-0">
+            <Nav className="flex-column">
+              {navigationItems.map((item) => (
+                <Nav.Link 
+                  key={item.key}
+                  active={activeTab === item.key} 
+                  onClick={() => handleTabChange(item.key)}
+                  className={`py-3 px-4 border-bottom ${activeTab === item.key ? 'bg-primary text-white' : 'text-dark'}`}
+                >
+                  <i className={`${item.icon} me-3`}></i>
+                  {getText(item.textKey, language)}
+                </Nav.Link>
+              ))}
+            </Nav>
+            
+            <div className="p-3 bg-light text-center border-top mt-auto">
+              <small className="text-muted">
+                {language === 'fr' ? '9/17 types disponibles' : '9/17 types available'}
+              </small>
+            </div>
+          </Offcanvas.Body>
+        </Offcanvas>
+
+        <Col xs={12} md={9} lg={10}>
           <div className="document-content">
             {renderActiveComponent()}
           </div>
