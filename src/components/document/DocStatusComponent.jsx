@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Row,  Col,  Card,  Button,
-  Table,  Modal,  Form,  Alert,  Spinner,
+  Row, Col, Card, Button,
+  Table, Modal, Form, Alert, Spinner,
 } from "react-bootstrap";
 import { getAllDocStatuses } from "../../services/GetRequests";
 import { createDocStatus } from "../../services/Inserts";
@@ -15,12 +15,14 @@ const DocStatusComponent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
   });
   const [language] = useState("fr"); // Can be made dynamic with context
-  
+
   // Search state
   const [searchFilters, setSearchFilters] = useState({
     statusFilter: '',
@@ -42,8 +44,8 @@ const DocStatusComponent = () => {
     } catch (err) {
       setError(
         getText("document.messages.loadError", language) +
-          ": " +
-          (err.message || "Unknown error")
+        ": " +
+        (err.message || "Unknown error")
       );
       console.error("Load error:", err);
     } finally {
@@ -62,7 +64,7 @@ const DocStatusComponent = () => {
     console.log('Date Start:', searchData.dateStart);
     console.log('Date End:', searchData.dateEnd);
     console.log('===============================');
-    
+
     // Implement your search logic here
     // You can filter the data based on searchData
     setSearchFilters({
@@ -116,28 +118,40 @@ const DocStatusComponent = () => {
     } catch (err) {
       setError(
         getText("document.messages.saveError", language) +
-          ": " +
-          (err.message || "Unknown error")
+        ": " +
+        (err.message || "Unknown error")
       );
       console.error("Save error:", err);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm(getText("document.messages.confirmDelete", language))) {
-      try {
-        setError("");
-        await deleteDocStatus(id);
-        loadData();
-      } catch (err) {
-        setError(
-          getText("document.messages.deleteError", language) +
-            ": " +
-            (err.message || "Unknown error")
-        );
-        console.error("Delete error:", err);
-      }
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setError("");
+      await deleteDocStatus(itemToDelete.id);
+      loadData();
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    } catch (err) {
+      setError(
+        getText("document.messages.deleteError", language) +
+        ": " +
+        (err.message || "Unknown error")
+      );
+      console.error("Delete error:", err);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
   };
 
   if (loading) {
@@ -154,6 +168,34 @@ const DocStatusComponent = () => {
 
   return (
     <div className="doc-status-component">
+      <style jsx>{`
+        .action-buttons .btn {
+          font-size: 0.8rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          transition: all 0.2s ease-in-out;
+        }
+        .action-buttons .btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .action-buttons .btn-outline-warning:hover {
+          background-color: #ffc107;
+          border-color: #ffc107;
+          color: #000;
+        }
+        .action-buttons .btn-outline-danger:hover {
+          background-color: #dc3545;
+          border-color: #dc3545;
+          color: white;
+        }
+        @media (max-width: 576px) {
+          .action-buttons .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+          }
+        }
+      `}</style>
       <Row className="mb-4">
         <Col>
           <Card>
@@ -163,10 +205,10 @@ const DocStatusComponent = () => {
                   <HeaderTitle>{getText("document.docStatus", language)}</HeaderTitle>
                 </Col>
                 <Col xs={12} md={6} lg={9} className="text-end">
-                  <Button  
-                    variant="primary"    
-                    size="sm"  
-                    className="me-2"                  
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="me-2"
                     onClick={() => handleShowModal()}>
                     <i className="bi bi-plus-circle me-1"></i>
                     {getText("common.add", language)}
@@ -187,26 +229,26 @@ const DocStatusComponent = () => {
                 dropdownLabel="Status"
                 dropdownItems={data.map(item => ({ value: item.name, label: item.name }))}
                 dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({...searchFilters, statusFilter: value})}
-                
+                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
+
                 textbox1Label="Search Name"
                 textbox1Placeholder="Enter status name..."
                 textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({...searchFilters, searchText: value})}
-                
+                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
+
                 dateStartLabel="From Date"
                 dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({...searchFilters, dateStart: value})}
-                
+                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
+
                 dateEndLabel="To Date"
                 dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({...searchFilters, dateEnd: value})}
-                
+                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
+
                 onSearch={handleSearch} searchButtonText="Search"
-                
+
                 showTextbox2={false} showTextbox3={false}
               />
-              
+
               {error && (
                 <Alert
                   variant="danger"
@@ -222,10 +264,7 @@ const DocStatusComponent = () => {
                     <tr>
                       <th>{getText("document.fields.id", language)}</th>
                       <th>{getText("document.fields.name", language)}</th>
-                      <th className="text-center" style={{ width: "150px" }}>
-                        {getText("common.edit", language)} /{" "}
-                        {getText("common.delete", language)}
-                      </th>
+                      <th className="text-center" style={{ width: "200px" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -243,19 +282,35 @@ const DocStatusComponent = () => {
                           <td>{item.id}</td>
                           <td>{item.name}</td>
                           <td className="text-center">
-                            <Button
-                              variant="warning"
-                              size="sm"
-                              className="me-2"
-                              onClick={() => handleShowModal(item)}>
-                              <i className="bi bi-pencil"></i>
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleDelete(item.id)}>
-                              <i className="bi bi-trash"></i>
-                            </Button>
+                            <div className="d-flex gap-1 justify-content-center action-buttons">
+                              {/* Edit Button */}
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => handleShowModal(item)}
+                                className="d-flex align-items-center"
+                                title={getText('common.edit', language)}
+                              >
+                                <i className="bi bi-pencil me-1"></i>
+                                <span className="d-none d-sm-inline">
+                                  {getText('common.edit', language)}
+                                </span>
+                              </Button>
+
+                              {/* Delete Button */}
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleDeleteClick(item)}
+                                className="d-flex align-items-center"
+                                title={getText('common.delete', language)}
+                              >
+                                <i className="bi bi-trash me-1"></i>
+                                <span className="d-none d-sm-inline">
+                                  {getText('common.delete', language)}
+                                </span>
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -274,13 +329,13 @@ const DocStatusComponent = () => {
           <Modal.Title>
             {editingItem
               ? `${getText("common.edit", language)} ${getText(
-                  "document.docStatus",
-                  language
-                )}`
+                "document.docStatus",
+                language
+              )}`
               : `${getText("common.add", language)} ${getText(
-                  "document.docStatus",
-                  language
-                )}`}
+                "document.docStatus",
+                language
+              )}`}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
@@ -323,6 +378,45 @@ const DocStatusComponent = () => {
             </Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={handleDeleteCancel} centered>
+        <Modal.Header closeButton className="bg-danger text-white">
+          <Modal.Title className="d-flex align-items-center">
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {getText('common.confirmDelete', language)}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <div className="text-center">
+            <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
+            <h5 className="mt-3 mb-3">
+              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+            </h5>
+            {itemToDelete && (
+              <div className="bg-light p-3 rounded">
+                <strong>{getText('document.fields.name', language)}:</strong> {itemToDelete.name}
+              </div>
+            )}
+            <p className="text-muted mt-3 mb-0">
+              <i className="bi bi-info-circle me-1"></i>
+              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="bg-light">
+          <div className="d-flex gap-2 w-100 justify-content-end">
+            <Button variant="outline-secondary" onClick={handleDeleteCancel}>
+              <i className="bi bi-x-circle me-2"></i>
+              {getText('common.cancel', language)}
+            </Button>
+            <Button variant="danger" onClick={handleDeleteConfirm}>
+              <i className="bi bi-trash me-2"></i>
+              {getText('common.delete', language)}
+            </Button>
+          </div>
+        </Modal.Footer>
       </Modal>
     </div>
   );

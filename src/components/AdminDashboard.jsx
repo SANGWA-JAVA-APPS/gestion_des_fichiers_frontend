@@ -23,11 +23,11 @@ import DocumentComponent from './DocumentComponent';
 
 const AdminDashboard = ({ onLogout }) => {
   console.log('AdminDashboard component mounting...');
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userInfo = getUserInfo();
-  
+
   console.log('AdminDashboard Background Image:', DashboardBg);
 
   const handleMenuItemClick = (tab) => {
@@ -42,7 +42,7 @@ const AdminDashboard = ({ onLogout }) => {
         return (
           <div className='transparentDiv'>
             <DashboardStats userRole={userInfo?.role} />
-            
+
             <Row className="g-4 mt-4">
               <Col xs={12}>
                 <h4 className="mb-3">Quick Access</h4>
@@ -98,7 +98,7 @@ const AdminDashboard = ({ onLogout }) => {
             </Row>
           </div>
         );
-      
+
       // Location Management
       case 'country':
         return (
@@ -149,16 +149,16 @@ const AdminDashboard = ({ onLogout }) => {
       case 'sections':
       case 'sections-list':
         return <SectionsComponent />;
-            // User Management
+      // User Management
       case 'account':
         return <AccountComponent />;
       case 'roles':
         return <RolesComponent />;
-      
+
       // Document Management
       case 'document':
         return <DocumentComponent />;
-      
+
       // Archive Documents
       case 'archive':
         return (
@@ -181,7 +181,7 @@ const AdminDashboard = ({ onLogout }) => {
             </Card>
           </div>
         );
-      
+
       // Expiring Documents
       case 'expiry':
         return (
@@ -204,7 +204,7 @@ const AdminDashboard = ({ onLogout }) => {
             </Card>
           </div>
         );
-      
+
       // Active Documents
       case 'activeDocs':
         return (
@@ -227,15 +227,15 @@ const AdminDashboard = ({ onLogout }) => {
             </Card>
           </div>
         );
-      
+
       default:
         return <div>Select an option from the menu</div>;
     }
   };
 
   return (
-    <Container 
-      fluid 
+    <Container
+      fluid
       className="min-vh-100 p-0 "
       style={{
         // backgroundImage: `url(${DashboardBg})`,
@@ -246,62 +246,61 @@ const AdminDashboard = ({ onLogout }) => {
       }}
     >
       {/* Header */}
-      <Row className="g-0  bg-primary text-white shadow">
+      <Row className="g-0 modern-navbar">
         <Col xs={12} className="py-3">
-          <Container> 
+          <Container>
             <Row className="align-items-center">
-              <Col xs={12} md="auto" className="mb-2 mb-md-0">
-                <h4 className="mb-0 fw-bold">
-                  <i className="fas fa-shield-alt me-2"></i>
-                  <span className="d-none d-sm-inline">INGENZI - Admin Panel</span>
-                  <span className="d-inline d-sm-none">INGENZI</span>
-                </h4>
-                <small className="text-light opacity-75 d-none d-md-block">
-                  Welcome, {userInfo?.fullName} | Role: {userInfo?.role}
-                </small>
+              {/* Left Side - INGENZI Brand */}
+              <Col xs="auto">
+                <div className="navbar-brand">
+                  <i className="fas fa-shield-alt me-3"></i>
+                  <div>
+                    <h4 className="mb-0 fw-bold">INGENZI</h4>
+                    <small className="text-muted">Admin Panel</small>
+                  </div>
+                </div>
               </Col>
-              <Col xs={12} md="auto" className="ms-md-auto">
-                <div className="d-flex gap-2 align-items-center flex-wrap">
-                  {/* Archive Button */}
-                  <Button 
-                    variant="outline-light" 
+
+              {/* Center - Action Buttons */}
+              <Col className="text-center">
+                <div className="d-flex gap-2 justify-content-center">
+                  <Button
+                    variant="outline-light"
                     size="sm"
-                    onClick={() => handleMenuItemClick('archive')}
+                    onClick={() => setActiveTab('archive')}
                     className="d-flex align-items-center"
                   >
-                    <i className="fas fa-archive me-1 me-md-2"></i>
-                    <span className="d-none d-sm-inline">Archive</span>
+                    <i className="fas fa-archive me-2"></i>
+                    Archive
                   </Button>
-                  
-                  {/* Expiry Button */}
-                  <Button 
-                    variant="outline-warning" 
+
+                  <Button
+                    variant="outline-warning"
                     size="sm"
-                    onClick={() => handleMenuItemClick('expiry')}
+                    onClick={() => setActiveTab('expiry')}
                     className="d-flex align-items-center"
                   >
-                    <i className="fas fa-clock me-1 me-md-2"></i>
-                    <span className="d-none d-sm-inline">Expiry</span>
+                    <i className="fas fa-clock me-2"></i>
+                    Expiry
                   </Button>
-                  
-                  {/* Active Docs Button */}
-                  <Button 
-                    variant="outline-success" 
+
+                  <Button
+                    variant="outline-success"
                     size="sm"
-                    onClick={() => handleMenuItemClick('activeDocs')}
+                    onClick={() => setActiveTab('activeDocs')}
                     className="d-flex align-items-center"
                   >
-                    <i className="fas fa-check-circle me-1 me-md-2"></i>
-                    <span className="d-none d-sm-inline">Active Docs</span>
+                    <i className="fas fa-check-circle me-2"></i>
+                    Active Docs
                   </Button>
                   
-                  {/* Divider - Hidden on mobile */}
-                  <div className="vr bg-light opacity-50 d-none d-md-block" style={{height: '30px'}}></div>
+                  {/* Divider */}
+                  <div className="vr bg-light opacity-50" style={{height: '30px'}}></div>
                   
                   {/* Logout Button */}
                   <Button variant="outline-light" size="sm" onClick={onLogout}>
-                    <i className="fas fa-sign-out-alt me-1 me-md-2"></i>
-                    <span className="d-none d-sm-inline">Logout</span>
+                    <i className="fas fa-sign-out-alt me-2"></i>
+                    Logout
                   </Button>
                 </div>
               </Col>
@@ -314,145 +313,66 @@ const AdminDashboard = ({ onLogout }) => {
       <Row className="g-0 bg-white border-bottom shadow-sm">
         <Col xs={12}>
           <Container>
-            {/* Mobile Hamburger Menu Button - Visible only on small screens */}
-            <Navbar expand="lg" className="p-0">
-              <Navbar.Toggle 
-                aria-controls="responsive-navbar-nav" 
-                onClick={() => setShowMobileMenu(true)}
-                className="border-0 d-lg-none"
-              >
-                <i className="fas fa-bars fa-lg text-primary"></i>
-              </Navbar.Toggle>
-
-              {/* Desktop Navigation - Hidden on mobile */}
-              <Nav variant="tabs" className="border-0 d-none d-lg-flex">
-                <Nav.Item>
-                  <Nav.Link 
-                    active={activeTab === 'overview'} 
-                    onClick={() => handleMenuItemClick('overview')}
-                    className="text-dark"
-                  >
-                    <i className="fas fa-th-large me-2"></i>
-                    Dashboard
-                  </Nav.Link>
-                </Nav.Item>
-                
-                {/* Users Dropdown Menu */}
-                <NavDropdown 
-                  title={
-                    <span className="text-dark">
-                      <i className="fas fa-users me-2"></i>
-                      Users
-                    </span>
-                  } 
-                  id="users-nav-dropdown"
-                  active={activeTab === 'account' || activeTab === 'roles'}
+            <Nav variant="tabs" className="border-0">
+              <Nav.Item>
+                <Nav.Link 
+                  active={activeTab === 'overview'} 
+                  onClick={() => setActiveTab('overview')}
+                  className="text-dark"
                 >
-                  <NavDropdown.Item 
-                    onClick={() => handleMenuItemClick('account')}
-                    active={activeTab === 'account'}
-                  >
-                    <i className="fas fa-user me-2"></i>
-                    Accounts
-                  </NavDropdown.Item>
-                  <NavDropdown.Item 
-                    onClick={() => handleMenuItemClick('roles')}
-                    active={activeTab === 'roles'}
-                  >
-                    <i className="fas fa-user-tag me-2"></i>
-                    Roles
-                  </NavDropdown.Item>
-                </NavDropdown>
-                
-                <Nav.Item>
-                  <Nav.Link 
-                    active={activeTab === 'document'} 
-                    onClick={() => handleMenuItemClick('document')}
-                    className="text-dark"
-                  >
-                    <i className="fas fa-file-alt me-2"></i>
-                    Documents
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link 
-                    active={activeTab === 'country'} 
-                    onClick={() => handleMenuItemClick('country')}
-                    className="text-dark"
-                  >
-                    <i className="fas fa-map-marker-alt me-2"></i>
-                    Locations
-                  </Nav.Link>
-                </Nav.Item>
-              </Nav>
-            </Navbar>
-
-            {/* Mobile Offcanvas Menu - Visible only on small screens */}
-            <Offcanvas 
-              show={showMobileMenu} 
-              onHide={() => setShowMobileMenu(false)}
-              placement="start"
-              className="d-lg-none"
-            >
-              <Offcanvas.Header closeButton className="bg-primary text-white">
-                <Offcanvas.Title>
-                  <i className="fas fa-shield-alt me-2"></i>
-                  Navigation Menu
-                </Offcanvas.Title>
-              </Offcanvas.Header>
-              <Offcanvas.Body className="p-0">
-                <Nav className="flex-column">
-                  <Nav.Link 
-                    active={activeTab === 'overview'} 
-                    onClick={() => handleMenuItemClick('overview')}
-                    className={`py-3 px-4 border-bottom ${activeTab === 'overview' ? 'bg-primary text-white' : 'text-dark'}`}
-                  >
-                    <i className="fas fa-th-large me-3"></i>
-                    Dashboard
-                  </Nav.Link>
-                  
-                  <div className="px-4 py-2 bg-light border-bottom">
-                    <small className="text-muted fw-bold">USER MANAGEMENT</small>
-                  </div>
-                  <Nav.Link 
-                    onClick={() => handleMenuItemClick('account')}
-                    className={`py-3 px-4 border-bottom ${activeTab === 'account' ? 'bg-primary text-white' : 'text-dark'}`}
-                  >
-                    <i className="fas fa-user me-3"></i>
-                    Accounts
-                  </Nav.Link>
-                  <Nav.Link 
-                    onClick={() => handleMenuItemClick('roles')}
-                    className={`py-3 px-4 border-bottom ${activeTab === 'roles' ? 'bg-primary text-white' : 'text-dark'}`}
-                  >
-                    <i className="fas fa-user-tag me-3"></i>
-                    Roles
-                  </Nav.Link>
-                  
-                  <div className="px-4 py-2 bg-light border-bottom">
-                    <small className="text-muted fw-bold">CONTENT</small>
-                  </div>
-                  <Nav.Link 
-                    onClick={() => handleMenuItemClick('document')}
-                    className={`py-3 px-4 border-bottom ${activeTab === 'document' ? 'bg-primary text-white' : 'text-dark'}`}
-                  >
-                    <i className="fas fa-file-alt me-3"></i>
-                    Documents
-                  </Nav.Link>
-                  
-                  <div className="px-4 py-2 bg-light border-bottom">
-                    <small className="text-muted fw-bold">SETTINGS</small>
-                  </div>
-                  <Nav.Link 
-                    onClick={() => handleMenuItemClick('country')}
-                    className={`py-3 px-4 border-bottom ${activeTab === 'country' ? 'bg-primary text-white' : 'text-dark'}`}
-                  >
-                    <i className="fas fa-map-marker-alt me-3"></i>
-                    Locations
-                  </Nav.Link>
-                </Nav>
-              </Offcanvas.Body>
-            </Offcanvas>
+                  <i className="fas fa-th-large me-2"></i>
+                  Dashboard
+                </Nav.Link>
+              </Nav.Item>
+              
+              {/* Users Dropdown Menu */}
+              <NavDropdown 
+                title={
+                  <span className="text-dark">
+                    <i className="fas fa-users me-2"></i>
+                    Users
+                  </span>
+                } 
+                id="users-nav-dropdown"
+                active={activeTab === 'account' || activeTab === 'roles'}
+              >
+                <NavDropdown.Item 
+                  onClick={() => setActiveTab('account')}
+                  active={activeTab === 'account'}
+                >
+                  <i className="fas fa-user me-2"></i>
+                  Accounts
+                </NavDropdown.Item>
+                <NavDropdown.Item 
+                  onClick={() => setActiveTab('roles')}
+                  active={activeTab === 'roles'}
+                >
+                  <i className="fas fa-user-tag me-2"></i>
+                  Roles
+                </NavDropdown.Item>
+              </NavDropdown>
+              
+              <Nav.Item>
+                <Nav.Link 
+                  active={activeTab === 'document'} 
+                  onClick={() => setActiveTab('document')}
+                  className="text-dark"
+                >
+                  <i className="fas fa-file-alt me-2"></i>
+                  Documents
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link 
+                  active={activeTab === 'country'} 
+                  onClick={() => setActiveTab('country')}
+                  className="text-dark"
+                >
+                  <i className="fas fa-map-marker-alt me-2"></i>
+                  Locations
+                </Nav.Link>
+              </Nav.Item>
+            </Nav>
           </Container>
         </Col>
       </Row>
@@ -469,6 +389,260 @@ const AdminDashboard = ({ onLogout }) => {
           </Container>
         </Col>
       </Row>
+
+      <style jsx>{`
+        /* Modern Navbar Styling */
+        .modern-navbar {
+          background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar-brand {
+          display: flex;
+          align-items: center;
+        }
+        
+        .navbar-brand i {
+          font-size: 1.8rem;
+          color: #fff;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar-brand h4 {
+          color: #fff;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+          font-weight: 700;
+          letter-spacing: 0.5px;
+        }
+        
+        .navbar-brand small {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.75rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        /* Action Buttons */
+        .action-btn {
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+          font-weight: 500;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+        }
+        
+        .action-btn:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          color: #fff;
+        }
+        
+        .action-btn.btn-outline-warning {
+          border-color: #ffc107;
+          color: #ffc107;
+        }
+        
+        .action-btn.btn-outline-warning:hover {
+          background: #ffc107;
+          color: #000;
+        }
+        
+        .action-btn.btn-outline-success {
+          border-color: #28a745;
+          color: #28a745;
+        }
+        
+        .action-btn.btn-outline-success:hover {
+          background: #28a745;
+          color: #fff;
+        }
+        
+        /* Profile Section */
+        .profile-section {
+          position: relative;
+        }
+        
+        .profile-trigger {
+          display: flex;
+          align-items: center;
+          padding: 0.5rem 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
+        }
+        
+        .profile-trigger:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: translateY(-1px);
+        }
+        
+        .profile-avatar {
+          width: 36px;
+          height: 36px;
+          background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+          color: #0d6efd;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 14px;
+          margin-right: 0.75rem;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-info {
+          text-align: left;
+        }
+        
+        .profile-name {
+          color: #fff;
+          font-weight: 600;
+          font-size: 0.9rem;
+          line-height: 1.2;
+        }
+        
+        .profile-role {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.75rem;
+          font-weight: 500;
+        }
+        
+        .profile-arrow {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.8rem;
+          margin-left: 0.5rem;
+          transition: transform 0.3s ease;
+        }
+        
+        .profile-trigger:hover .profile-arrow {
+          transform: rotate(180deg);
+        }
+        
+        /* Dropdown Menu */
+        .profile-dropdown .dropdown-toggle::after {
+          display: none;
+        }
+        
+        .profile-dropdown .dropdown-menu {
+          border: none;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+          border-radius: 12px;
+          padding: 0;
+          min-width: 280px;
+          margin-top: 0.75rem;
+          overflow: hidden;
+          backdrop-filter: blur(20px);
+        }
+        
+        .profile-header {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          padding: 1.5rem;
+          border-bottom: 1px solid #dee2e6;
+        }
+        
+        .profile-header-content {
+          display: flex;
+          align-items: center;
+        }
+        
+        .profile-avatar-large {
+          width: 48px;
+          height: 48px;
+          background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 18px;
+          margin-right: 1rem;
+          box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        }
+        
+        .profile-details {
+          flex: 1;
+        }
+        
+        .profile-name-large {
+          font-weight: 700;
+          color: #212529;
+          font-size: 1rem;
+          margin-bottom: 0.25rem;
+        }
+        
+        .profile-email {
+          color: #6c757d;
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+        
+        .profile-item {
+          padding: 0.75rem 1.5rem;
+          transition: all 0.2s ease;
+          border: none;
+          background: none;
+          color: #495057;
+          font-weight: 500;
+        }
+        
+        .profile-item:hover {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          color: #212529;
+          transform: translateX(4px);
+        }
+        
+        .profile-item i {
+          width: 20px;
+          text-align: center;
+        }
+        
+        .logout-item {
+          color: #dc3545;
+        }
+        
+        .logout-item:hover {
+          background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+          color: #dc2626;
+        }
+        
+        .profile-dropdown .dropdown-divider {
+          margin: 0;
+          border-color: #dee2e6;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .action-btn span {
+            display: none !important;
+          }
+          
+          .action-btn {
+            padding: 0.5rem;
+            min-width: 40px;
+          }
+          
+          .profile-trigger {
+            padding: 0.5rem;
+          }
+          
+          .profile-avatar {
+            margin-right: 0.5rem;
+          }
+        }
+      `}</style>
     </Container>
   );
 };

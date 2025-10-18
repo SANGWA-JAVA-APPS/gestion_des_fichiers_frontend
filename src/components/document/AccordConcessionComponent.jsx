@@ -7,13 +7,16 @@ import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
+import { API_BASE_URL } from '../../services/apiConfig';
 
 const AccordConcessionComponent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [sectionCategories, setSectionCategories] = useState([]);
@@ -34,7 +37,7 @@ const AccordConcessionComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
-  
+
   // Search state
   const [searchFilters, setSearchFilters] = useState({
     statusFilter: '',
@@ -89,7 +92,7 @@ const AccordConcessionComponent = () => {
     console.log('Date Start:', searchData.dateStart);
     console.log('Date End:', searchData.dateEnd);
     console.log('===============================');
-    
+
     setSearchFilters({
       statusFilter: searchData.dropdown,
       searchText: searchData.textbox1,
@@ -176,7 +179,7 @@ const AccordConcessionComponent = () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-        
+
         // Build accordConcession object as JSON
         const accordConcessionData = {
           numeroAccord: formData.contratConcession,  // Backend expects numeroAccord
@@ -226,16 +229,89 @@ const AccordConcessionComponent = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm(getText('document.messages.confirmDelete', language))) {
-      try {
-        setError('');
-        await deleteAccordConcession(id);
-        loadData();
-      } catch (err) {
-        setError(getText('document.messages.deleteError', language) + ': ' + (err.message || 'Unknown error'));
-        console.error('Delete error:', err);
+  const handleDeleteClick = (item) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setError('');
+      await deleteAccordConcession(itemToDelete.id);
+      loadData();
+      setShowDeleteModal(false);
+      setItemToDelete(null);
+    } catch (err) {
+      setError(getText('document.messages.deleteError', language) + ': ' + (err.message || 'Unknown error'));
+      console.error('Delete error:', err);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+  };
+
+  const handleViewDocument = async (documentId) => {
+    if (!documentId) {
+      alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('authToken');
+
+      // First, get the document metadata to extract file path
+      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!documentResponse.ok) {
+        throw new Error('Failed to fetch document metadata');
       }
+
+      const documentData = await documentResponse.json();
+      const filePath = documentData.data?.filePath;
+
+      if (!filePath) {
+        throw new Error('File path not found in document data');
+      }
+
+      // Now fetch the actual file content using the file path
+      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!fileResponse.ok) {
+        throw new Error('Failed to download file');
+      }
+
+      const blob = await fileResponse.blob();
+      const url = URL.createObjectURL(blob);
+
+      // Open the file in a new tab
+      const win = window.open(url, '_blank');
+      if (!win) {
+        // If popup was blocked, create a download link
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = documentData.data?.originalFileName || 'document';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+    } catch (err) {
+      console.error('View document error:', err);
+      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
     }
   };
 
@@ -256,6 +332,39 @@ const AccordConcessionComponent = () => {
 
   return (
     <div className="accord-concession-component">
+      <style jsx>{`
+        .action-buttons .btn {
+          font-size: 0.8rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          transition: all 0.2s ease-in-out;
+        }
+        .action-buttons .btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .action-buttons .btn-outline-primary:hover {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+          color: white;
+        }
+        .action-buttons .btn-outline-warning:hover {
+          background-color: #ffc107;
+          border-color: #ffc107;
+          color: #000;
+        }
+        .action-buttons .btn-outline-danger:hover {
+          background-color: #dc3545;
+          border-color: #dc3545;
+          color: white;
+        }
+        @media (max-width: 576px) {
+          .action-buttons .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+          }
+        }
+      `}</style>
       <Row className="mb-4">
         <Col>
           <Card>
@@ -282,28 +391,28 @@ const AccordConcessionComponent = () => {
                 dropdownLabel="Filter"
                 dropdownItems={[]}
                 dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({...searchFilters, statusFilter: value})}
-                
+                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
+
                 textbox1Label="Search"
                 textbox1Placeholder="Enter search term..."
                 textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({...searchFilters, searchText: value})}
-                
+                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
+
                 dateStartLabel="From Date"
                 dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({...searchFilters, dateStart: value})}
-                
+                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
+
                 dateEndLabel="To Date"
                 dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({...searchFilters, dateEnd: value})}
-                
+                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
+
                 onSearch={handleSearch}
                 searchButtonText="Search"
-                
+
                 showTextbox2={false}
                 showTextbox3={false}
               />
-              
+
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
               <div className="table-responsive">
@@ -316,7 +425,7 @@ const AccordConcessionComponent = () => {
                       <th>{getText('document.fields.dateSignature', language)}</th>
                       <th>{getText('document.fields.dateExpiration', language)}</th>
                       <th>{getText('document.sectionCategory', language)}</th>
-                      <th className="text-center" style={{ width: '150px' }}>Actions</th>
+                      <th className="text-center" style={{ width: '200px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -336,12 +445,51 @@ const AccordConcessionComponent = () => {
                           <td>{formatDate(item.dateExpiration)}</td>
                           <td><Badge bg="info">{item.sectionCategory?.name || '-'}</Badge></td>
                           <td className="text-center">
-                            <Button variant="warning" size="sm" className="me-2" onClick={() => handleShowModal(item)}>
-                              <i className="bi bi-pencil"></i>
-                            </Button>
-                            <Button variant="danger" size="sm" onClick={() => handleDelete(item.id)}>
-                              <i className="bi bi-trash"></i>
-                            </Button>
+                            <div className="d-flex gap-1 justify-content-center action-buttons">
+                              {/* View Document Button */}
+                              {item.document?.id && (
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  onClick={() => handleViewDocument(item.document.id)}
+                                  className="d-flex align-items-center"
+                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                >
+                                  <i className="bi bi-eye me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {language === 'fr' ? 'Voir' : 'View'}
+                                  </span>
+                                </Button>
+                              )}
+
+                              {/* Edit Button */}
+                              <Button
+                                variant="outline-warning"
+                                size="sm"
+                                onClick={() => handleShowModal(item)}
+                                className="d-flex align-items-center"
+                                title={getText('common.edit', language)}
+                              >
+                                <i className="bi bi-pencil me-1"></i>
+                                <span className="d-none d-sm-inline">
+                                  {getText('common.edit', language)}
+                                </span>
+                              </Button>
+
+                              {/* Delete Button */}
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => handleDeleteClick(item)}
+                                className="d-flex align-items-center"
+                                title={getText('common.delete', language)}
+                              >
+                                <i className="bi bi-trash me-1"></i>
+                                <span className="d-none d-sm-inline">
+                                  {getText('common.delete', language)}
+                                </span>
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -476,6 +624,51 @@ const AccordConcessionComponent = () => {
             <Button variant="primary" type="submit">{getText('common.save', language)}</Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={handleDeleteCancel} centered>
+        <Modal.Header closeButton className="bg-danger text-white">
+          <Modal.Title className="d-flex align-items-center">
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            {getText('common.confirmDelete', language)}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <div className="text-center">
+            <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
+            <h5 className="mt-3 mb-3">
+              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+            </h5>
+            {itemToDelete && (
+              <div className="bg-light p-3 rounded">
+                <strong>{getText('document.fields.contratConcession', language)}:</strong> {itemToDelete.contratConcession}
+                {itemToDelete.emplacement && (
+                  <>
+                    <br />
+                    <strong>{getText('document.fields.emplacement', language)}:</strong> {itemToDelete.emplacement}
+                  </>
+                )}
+              </div>
+            )}
+            <p className="text-muted mt-3 mb-0">
+              <i className="bi bi-info-circle me-1"></i>
+              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="bg-light">
+          <div className="d-flex gap-2 w-100 justify-content-end">
+            <Button variant="outline-secondary" onClick={handleDeleteCancel}>
+              <i className="bi bi-x-circle me-2"></i>
+              {getText('common.cancel', language)}
+            </Button>
+            <Button variant="danger" onClick={handleDeleteConfirm}>
+              <i className="bi bi-trash me-2"></i>
+              {getText('common.delete', language)}
+            </Button>
+          </div>
+        </Modal.Footer>
       </Modal>
     </div>
   );
