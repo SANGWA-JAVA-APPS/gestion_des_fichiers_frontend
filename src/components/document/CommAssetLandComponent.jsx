@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCommAssetLand } from '../../services/GetRequests';
 import { createCommAssetLand, createCommAssetLandWithFile } from '../../services/Inserts';
 import { updateCommAssetLand, deleteCommAssetLand } from '../../services/UpdRequests';
@@ -7,7 +7,14 @@ import { getAllDocStatuses, getAllAccounts, getAllSections } from '../../service
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
+import DocumentDetailsView from './DocumentDetailsView';
+import DownloadConfirmationModal from './DownloadConfirmationModal';
 import { API_BASE_URL } from '../../services/apiConfig';
+import * as downloadService from '../../services/downloadService';
+import pdfIcon from '../../assets/documents_icons/pdf.png';
+import excelIcon from '../../assets/documents_icons/excel.png';
+import wordIcon from '../../assets/documents_icons/word.png';
+import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 
 const CommAssetLandComponent = () => {
   const [data, setData] = useState([]);
@@ -36,6 +43,13 @@ const CommAssetLandComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
+
+  // New state for details and download modals
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [fileToDownload, setFileToDownload] = useState(null);
+  const [activeView, setActiveView] = useState('table'); // 'table' or 'cards'
 
   // Search state
   const [searchFilters, setSearchFilters] = useState({
@@ -263,65 +277,46 @@ const CommAssetLandComponent = () => {
     setItemToDelete(null);
   };
 
-  const handleViewDocument = async (documentId) => {
-    if (!documentId) {
+  const handleShowDetails = (item) => {
+    setSelectedDocument(item);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedDocument(null);
+  };
+
+  const handleTitleClick = (item) => {
+    if (item?.document) {
+      setFileToDownload(item.document);
+      setShowDownloadModal(true);
+    } else {
       alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-      return;
     }
+  };
 
-    try {
-      const token = localStorage.getItem('authToken');
-
-      // First, get the document metadata to extract file path
-      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!documentResponse.ok) {
-        throw new Error('Failed to fetch document metadata');
-      }
-
-      const documentData = await documentResponse.json();
-      const filePath = documentData.data?.filePath;
-
-      if (!filePath) {
-        throw new Error('File path not found in document data');
-      }
-
-      // Now fetch the actual file content using the file path
-      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await fileResponse.blob();
-      const url = URL.createObjectURL(blob);
-
-      // Open the file in a new tab
-      const win = window.open(url, '_blank');
-      if (!win) {
-        // If popup was blocked, create a download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = documentData.data?.originalFileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-    } catch (err) {
-      console.error('View document error:', err);
-      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
+  const handleConfirmDownload = () => {
+    if (fileToDownload) {
+      downloadService.downloadFile(fileToDownload);
+      setShowDownloadModal(false);
+      setFileToDownload(null);
     }
+  };
+
+  const handleCancelDownload = () => {
+    setShowDownloadModal(false);
+    setFileToDownload(null);
+  };
+
+  const getDocumentIcon = (contentType) => {
+    if (!contentType) return pdfIcon;
+    const type = contentType.toLowerCase();
+    if (type.includes('pdf')) return pdfIcon;
+    if (type.includes('excel') || type.includes('spreadsheet')) return excelIcon;
+    if (type.includes('word') || type.includes('document')) return wordIcon;
+    if (type.includes('powerpoint') || type.includes('presentation')) return powerpointIcon;
+    return pdfIcon;
   };
 
   const formatDate = (dateString) => {

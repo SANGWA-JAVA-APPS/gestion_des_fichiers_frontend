@@ -22,6 +22,74 @@ export const texts = {
     }
   },
 
+  // Admin Dashboard Menu
+  adminMenu: {
+    systemNavigation: {
+      fr: "Navigation du Système",
+      en: "System Navigation"
+    },
+    dashboard: {
+      fr: "Tableau de Bord",
+      en: "Dashboard"
+    },
+    documents: {
+      fr: "Documents",
+      en: "Documents"
+    },
+    archive: {
+      fr: "Archive",
+      en: "Archive"
+    },
+    expiringSoon: {
+      fr: "Expirant Bientôt",
+      en: "Expiring Soon"
+    },
+    activeDocs: {
+      fr: "Documents Actifs",
+      en: "Active Docs"
+    },
+    userManagement: {
+      fr: "Gestion des Utilisateurs",
+      en: "User Management"
+    },
+    userAccounts: {
+      fr: "Comptes Utilisateurs",
+      en: "User Accounts"
+    },
+    userRoles: {
+      fr: "Rôles Utilisateurs",
+      en: "User Roles"
+    },
+    locationManagement: {
+      fr: "Gestion des Localisations",
+      en: "Location Management"
+    },
+    countries: {
+      fr: "Pays",
+      en: "Countries"
+    },
+    entities: {
+      fr: "Entités",
+      en: "Entities"
+    },
+    modules: {
+      fr: "Modules",
+      en: "Modules"
+    },
+    sections: {
+      fr: "Sections",
+      en: "Sections"
+    },
+    systemSettings: {
+      fr: "Paramètres Système",
+      en: "System Settings"
+    },
+    systemConfig: {
+      fr: "Configuration Système",
+      en: "System Config"
+    }
+  },
+
   // Common UI elements
   common: {
     welcome: {

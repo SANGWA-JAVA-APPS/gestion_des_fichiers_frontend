@@ -1,34 +1,47 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Card, Nav, Button, NavDropdown, Navbar, Offcanvas } from 'react-bootstrap';
-import { getUserInfo } from '../services/authUtils';
-import DashboardBg from '../assets/DashbaordBg.png';
-
-console.log('AdminDashboard.jsx loaded, DashboardBg:', DashboardBg);
+import React, { useState } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Nav,
+  Button,
+  NavDropdown,
+  Navbar,
+  Offcanvas,
+} from "react-bootstrap";
+import { getUserInfo } from "../services/authUtils";
+import DashboardBg from "../assets/AdminDashBg.png";
 
 // Dashboard Stats
-import DashboardStats from './DashboardStats';
+import DashboardStats from "./DashboardStats";
 
 // Location Components
-import CountryComponent from './location/CountryComponent';
-import EntityComponent from './location/EntityComponent';
-import ModulesComponent from './location/ModulesComponent';
-import SectionsComponent from './location/SectionsComponent';
+import CountryComponent from "./location/CountryComponent";
+import EntityComponent from "./location/EntityComponent";
+import ModulesComponent from "./location/ModulesComponent";
+import SectionsComponent from "./location/SectionsComponent";
 
 // User Components
-import AccountComponent from './user/AccountComponent';
-import RolesComponent from './user/RolesComponent';
+import AccountComponent from "./user/AccountComponent";
+import RolesComponent from "./user/RolesComponent";
 
 // Document Components
-import DocumentComponent from './DocumentComponent';
+import DocumentComponent from "./DocumentComponent";
 
+// Navigation Menu Component
+import MenuBox from "./MenuBox";
+import { FaLifeRing } from "react-icons/fa";
+import { FaArtstation } from "react-icons/fa";
+import { useEffect } from "react";
 const AdminDashboard = ({ onLogout }) => {
-  console.log('AdminDashboard component mounting...');
+  console.log("AdminDashboard component mounting...");
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userInfo = getUserInfo();
 
-  console.log('AdminDashboard Background Image:', DashboardBg);
+  console.log("AdminDashboard Background Image:", DashboardBg);
 
   const handleMenuItemClick = (tab) => {
     setActiveTab(tab);
@@ -38,69 +51,16 @@ const AdminDashboard = ({ onLogout }) => {
   const renderContent = () => {
     switch (activeTab) {
       // Overview Dashboard
-      case 'overview':
+      case "overview":
         return (
-          <div className='transparentDiv'>
-            <DashboardStats userRole={userInfo?.role} />
-
-            <Row className="g-4 mt-4">
-              <Col xs={12}>
-                <h4 className="mb-3">Quick Access</h4>
-              </Col>
-              <Col xs={12} md={6} lg={3}>
-                <Card className="text-center shadow-sm border-primary h-100">
-                  <Card.Body>
-                    <i className="fas fa-users fa-3x text-primary mb-3"></i>
-                    <Card.Title>User Management</Card.Title>
-                    <Card.Text>Manage all user accounts and roles</Card.Text>
-                    <Button variant="primary" size="sm" onClick={() => setActiveTab('account')}>
-                      Manage Users
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} md={6} lg={3}>
-                <Card className="text-center shadow-sm border-success h-100">
-                  <Card.Body>
-                    <i className="fas fa-file-alt fa-3x text-success mb-3"></i>
-                    <Card.Title>Documents</Card.Title>
-                    <Card.Text>View and manage all documents</Card.Text>
-                    <Button variant="success" size="sm" onClick={() => setActiveTab('document')}>
-                      View Documents
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} md={6} lg={3}>
-                <Card className="text-center shadow-sm border-info h-100">
-                  <Card.Body>
-                    <i className="fas fa-map-marker-alt fa-3x text-info mb-3"></i>
-                    <Card.Title>Locations</Card.Title>
-                    <Card.Text>Configure locations and entities</Card.Text>
-                    <Button variant="info" size="sm" onClick={() => setActiveTab('country')}>
-                      Manage Locations
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} md={6} lg={3}>
-                <Card className="text-center shadow-sm border-warning h-100">
-                  <Card.Body>
-                    <i className="fas fa-cog fa-3x text-warning mb-3"></i>
-                    <Card.Title>System Settings</Card.Title>
-                    <Card.Text>Configure system parameters</Card.Text>
-                    <Button variant="warning" size="sm" onClick={() => setActiveTab('roles')}>
-                      Settings
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+          <div className="transparentDiv">
+            <MenuBox setActiveTab={setActiveTab} />
+            {/* <DashboardStats userRole={userInfo?.role} /> */}
           </div>
         );
 
       // Location Management
-      case 'country':
+      case "country":
         return (
           <div>
             <h3 className="mb-4">
@@ -109,22 +69,22 @@ const AdminDashboard = ({ onLogout }) => {
             </h3>
             <Nav variant="pills" className="mb-4">
               <Nav.Item>
-                <Nav.Link onClick={() => setActiveTab('country-list')}>
+                <Nav.Link onClick={() => setActiveTab("country-list")}>
                   <i className="fas fa-globe me-2"></i>Countries
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => setActiveTab('entity-list')}>
+                <Nav.Link onClick={() => setActiveTab("entity-list")}>
                   <i className="fas fa-building me-2"></i>Entities
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => setActiveTab('modules-list')}>
+                <Nav.Link onClick={() => setActiveTab("modules-list")}>
                   <i className="fas fa-cubes me-2"></i>Modules
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link onClick={() => setActiveTab('sections-list')}>
+                <Nav.Link onClick={() => setActiveTab("sections-list")}>
                   <i className="fas fa-layer-group me-2"></i>Sections
                 </Nav.Link>
               </Nav.Item>
@@ -133,34 +93,35 @@ const AdminDashboard = ({ onLogout }) => {
               <Card.Body className="text-center py-5">
                 <i className="fas fa-map-marker-alt fa-5x text-info mb-3"></i>
                 <h5>Select a location type to manage</h5>
-                <p className="text-muted">Choose from Countries, Entities, Modules, or Sections above</p>
+                <p className="text-muted">
+                  Choose from Countries, Entities, Modules, or Sections above
+                </p>
               </Card.Body>
             </Card>
           </div>
         );
-      case 'country-list':
+      case "country-list":
         return <CountryComponent />;
-      case 'entity':
-      case 'entity-list':
+      case "entity":
+      case "entity-list":
         return <EntityComponent />;
-      case 'modules':
-      case 'modules-list':
+      case "modules":
+      case "modules-list":
         return <ModulesComponent />;
-      case 'sections':
-      case 'sections-list':
+      case "sections":
+      case "sections-list":
         return <SectionsComponent />;
       // User Management
-      case 'account':
+      case "account":
         return <AccountComponent />;
-      case 'roles':
+      case "roles":
         return <RolesComponent />;
-
       // Document Management
-      case 'document':
+      case "document":
         return <DocumentComponent />;
 
       // Archive Documents
-      case 'archive':
+      case "archive":
         return (
           <div>
             <h3 className="mb-4">
@@ -170,11 +131,13 @@ const AdminDashboard = ({ onLogout }) => {
             <Card className="shadow-sm">
               <Card.Body>
                 <p className="text-muted mb-3">
-                  View and manage archived documents. These documents are no longer active but are retained for records.
+                  View and manage archived documents. These documents are no
+                  longer active but are retained for records.
                 </p>
                 <div className="alert alert-info">
                   <i className="fas fa-info-circle me-2"></i>
-                  <strong>Coming Soon:</strong> Archive management functionality will be implemented here.
+                  <strong>Coming Soon:</strong> Archive management functionality
+                  will be implemented here.
                 </div>
                 {/* TODO: Implement archived documents list */}
               </Card.Body>
@@ -183,7 +146,7 @@ const AdminDashboard = ({ onLogout }) => {
         );
 
       // Expiring Documents
-      case 'expiry':
+      case "expiry":
         return (
           <div>
             <h3 className="mb-4">
@@ -193,11 +156,13 @@ const AdminDashboard = ({ onLogout }) => {
             <Card className="shadow-sm">
               <Card.Body>
                 <p className="text-muted mb-3">
-                  Monitor documents that are approaching their expiry date. Take action before they expire.
+                  Monitor documents that are approaching their expiry date. Take
+                  action before they expire.
                 </p>
                 <div className="alert alert-warning">
                   <i className="fas fa-exclamation-triangle me-2"></i>
-                  <strong>Coming Soon:</strong> Expiring documents tracking will be implemented here.
+                  <strong>Coming Soon:</strong> Expiring documents tracking will
+                  be implemented here.
                 </div>
                 {/* TODO: Implement expiring documents list with filters (7 days, 30 days, etc.) */}
               </Card.Body>
@@ -206,7 +171,7 @@ const AdminDashboard = ({ onLogout }) => {
         );
 
       // Active Documents
-      case 'activeDocs':
+      case "activeDocs":
         return (
           <div>
             <h3 className="mb-4">
@@ -216,11 +181,13 @@ const AdminDashboard = ({ onLogout }) => {
             <Card className="shadow-sm">
               <Card.Body>
                 <p className="text-muted mb-3">
-                  View all currently active documents in the system. These are valid and in use.
+                  View all currently active documents in the system. These are
+                  valid and in use.
                 </p>
                 <div className="alert alert-success">
                   <i className="fas fa-check me-2"></i>
-                  <strong>Coming Soon:</strong> Active documents overview will be implemented here.
+                  <strong>Coming Soon:</strong> Active documents overview will
+                  be implemented here.
                 </div>
                 {/* TODO: Implement active documents list with status breakdown */}
               </Card.Body>
@@ -232,165 +199,196 @@ const AdminDashboard = ({ onLogout }) => {
         return <div>Select an option from the menu</div>;
     }
   };
+  const [changeToOverview, setChangeToOverview] = useState(false);
 
+  const changeToOverviewAgain = () => {
+    setActiveTab("overview");
+  };
+  useEffect(() => {
+    // Effect logic here
+    if (changeToOverview) {
+      return (
+        <div className="transparentDiv">
+          <MenuBox setActiveTab={setActiveTab} />
+          
+          {/* <DashboardStats userRole={userInfo?.role} /> */}
+        </div>
+      );
+    }
+  }, [activeTab]);
   return (
-    <Container
-      fluid
-      className="min-vh-100 p-0 "
-      style={{
-        // backgroundImage: `url(${DashboardBg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      {/* Header */}
-      <Row className="g-0 modern-navbar">
-        <Col xs={12} className="py-3">
-          <Container>
-            <Row className="align-items-center">
-              {/* Left Side - INGENZI Brand */}
-              <Col xs="auto">
-                <div className="navbar-brand">
-                  <i className="fas fa-shield-alt me-3"></i>
-                  <div>
-                    <h4 className="mb-0 fw-bold">INGENZI</h4>
-                    <small className="text-muted">Admin Panel</small>
+    <>
+      {activeTab==='overview' &&<div className="dashboardOverlay "> </div>}
+
+      <Container
+        fluid
+        className="min-vh-100 p-0  hasIndex2 "
+        style={{
+          backgroundImage: `url(${`overview` == activeTab ? DashboardBg : ``})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed",
+        }}>
+        {/* Header */}
+        <Row
+          className="g-0 modern-navbar  "
+          style={{ borderBotton: "1px solid #fff important" }}>
+          <Col xs={12} className="py-3">
+            <Container>
+              <Row className="align-items-center">
+                {/* Left Side - INGENZI Brand */}
+                <Col xs="auto">
+                  <div className="navbar-brand">
+                    <i className="fas fa-shield-alt me-3"></i>
+                    <div>
+                      <h4
+                        className="mb-0 fw-bold"
+                        style={{ cursor: "pointer" }}
+                        onClick={changeToOverviewAgain}>
+                        INGENZI
+                      </h4>
+                      <small className="text-muted">Admin Panel</small>
+                    </div>
                   </div>
-                </div>
-              </Col>
+                </Col>
 
-              {/* Center - Action Buttons */}
-              <Col className="text-center">
-                <div className="d-flex gap-2 justify-content-center">
-                  <Button
-                    variant="outline-light"
-                    size="sm"
-                    onClick={() => setActiveTab('archive')}
-                    className="d-flex align-items-center"
-                  >
-                    <i className="fas fa-archive me-2"></i>
-                    Archive
-                  </Button>
+                {/* Center - Action Buttons */}
+                <Col className="text-center">
+                  <div className="d-flex gap-2 justify-content-center">
+                    <Button
+                      variant="outline-light"
+                      size="sm"
+                      onClick={() => setActiveTab("archive")}
+                      className="d-flex align-items-center">
+                      <i className="fas fa-archive me-2"></i>
+                      Archive
+                    </Button>
 
-                  <Button
-                    variant="outline-warning"
-                    size="sm"
-                    onClick={() => setActiveTab('expiry')}
-                    className="d-flex align-items-center"
-                  >
-                    <i className="fas fa-clock me-2"></i>
-                    Expiry
-                  </Button>
+                    <Button
+                      variant="outline-warning"
+                      size="sm"
+                      onClick={() => setActiveTab("expiry")}
+                      className="d-flex align-items-center">
+                      <i className="fas fa-clock me-2"></i>
+                      Expiry
+                    </Button>
 
-                  <Button
-                    variant="outline-success"
-                    size="sm"
-                    onClick={() => setActiveTab('activeDocs')}
-                    className="d-flex align-items-center"
-                  >
-                    <i className="fas fa-check-circle me-2"></i>
-                    Active Docs
-                  </Button>
-                  
-                  {/* Divider */}
-                  <div className="vr bg-light opacity-50" style={{height: '30px'}}></div>
-                  
-                  {/* Logout Button */}
-                  <Button variant="outline-light" size="sm" onClick={onLogout}>
-                    <i className="fas fa-sign-out-alt me-2"></i>
-                    Logout
-                  </Button>
-                </div>
-              </Col>
-            </Row>
-          </Container>
-        </Col>
-      </Row>
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      onClick={() => setActiveTab("activeDocs")}
+                      className="d-flex align-items-center">
+                      <i className="fas fa-check-circle me-2"></i>
+                      Active Docs
+                    </Button>
 
-      {/* Navigation Tabs - Desktop and Mobile Responsive */}
-      <Row className="g-0 bg-white border-bottom shadow-sm">
-        <Col xs={12}>
-          <Container>
-            <Nav variant="tabs" className="border-0">
-              <Nav.Item>
-                <Nav.Link 
-                  active={activeTab === 'overview'} 
-                  onClick={() => setActiveTab('overview')}
-                  className="text-dark"
-                >
-                  <i className="fas fa-th-large me-2"></i>
-                  Dashboard
-                </Nav.Link>
-              </Nav.Item>
-              
-              {/* Users Dropdown Menu */}
-              <NavDropdown 
-                title={
-                  <span className="text-dark">
-                    <i className="fas fa-users me-2"></i>
-                    Users
-                  </span>
-                } 
-                id="users-nav-dropdown"
-                active={activeTab === 'account' || activeTab === 'roles'}
-              >
-                <NavDropdown.Item 
-                  onClick={() => setActiveTab('account')}
-                  active={activeTab === 'account'}
-                >
-                  <i className="fas fa-user me-2"></i>
-                  Accounts
-                </NavDropdown.Item>
-                <NavDropdown.Item 
-                  onClick={() => setActiveTab('roles')}
-                  active={activeTab === 'roles'}
-                >
-                  <i className="fas fa-user-tag me-2"></i>
-                  Roles
-                </NavDropdown.Item>
-              </NavDropdown>
-              
-              <Nav.Item>
-                <Nav.Link 
-                  active={activeTab === 'document'} 
-                  onClick={() => setActiveTab('document')}
-                  className="text-dark"
-                >
-                  <i className="fas fa-file-alt me-2"></i>
-                  Documents
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link 
-                  active={activeTab === 'country'} 
-                  onClick={() => setActiveTab('country')}
-                  className="text-dark"
-                >
-                  <i className="fas fa-map-marker-alt me-2"></i>
-                  Locations
-                </Nav.Link>
-              </Nav.Item>
-            </Nav>
-          </Container>
-        </Col>
-      </Row>
+                    {/* Divider */}
+                    <div
+                      className="vr bg-light opacity-50"
+                      style={{ height: "30px" }}></div>
 
-      {/* Main Content Area - Fully Responsive */}
-      <Row className="g-0">
-        <Col xs={12} className="p-0">
-          <Container fluid className="m-0 mt-1 px-2 px-md-3">
-            <Card className="border-0 shadow-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
-              <Card.Body className="p-2 p-md-3 p-lg-4">
-                {renderContent()}
-              </Card.Body>
-            </Card>
-          </Container>
-        </Col>
-      </Row>
+                    {/* Logout Button */}
+                    <Button
+                      variant="outline-light"
+                      size="sm"
+                      onClick={onLogout}>
+                      <i className="fas fa-sign-out-alt me-2"></i>
+                      Logout
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+            </Container>
+          </Col>
+        </Row>
 
-      <style jsx>{`
+        {/* Navigation Tabs - Desktop and Mobile Responsive */}
+        <Row className={`g-0 bg-white border-bottom shadow-sm  ${activeTab === "overview" ? "d-none" : ""}`}>
+          <Col xs={12}>
+            <Container>
+              <Nav variant="tabs" className="border-0">
+                <Nav.Item>
+                  <Nav.Link
+                    active={activeTab === "overview"}
+                    onClick={() => setActiveTab("overview")}
+                    className="text-dark">
+                    <i className="fas fa-th-large me-2"></i>
+                    Dashboard
+                  </Nav.Link>
+                </Nav.Item>
+
+                {/* Users Dropdown Menu */}
+                <NavDropdown
+                  title={
+                    <span className="text-dark">
+                      <i className="fas fa-users me-2"></i>
+                      Users
+                    </span>
+                  }
+                  id="users-nav-dropdown"
+                  active={activeTab === "account" || activeTab === "roles"}>
+                  <NavDropdown.Item
+                    onClick={() => setActiveTab("account")}
+                    active={activeTab === "account"}>
+                    <i className="fas fa-user me-2"></i>
+                    Accounts
+                  </NavDropdown.Item>
+                  <NavDropdown.Item
+                    onClick={() => setActiveTab("roles")}
+                    active={activeTab === "roles"}>
+                    <i className="fas fa-user-tag me-2"></i>
+                    Roles
+                  </NavDropdown.Item>
+                </NavDropdown>
+
+                <Nav.Item>
+                  <Nav.Link
+                    active={activeTab === "document"}
+                    onClick={() => setActiveTab("document")}
+                    className="text-dark">
+                    <i className="fas fa-file-alt me-2"></i>
+                    Documents
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link
+                    active={activeTab === "country"}
+                    onClick={() => setActiveTab("country")}
+                    className="text-dark">
+                    <i className="fas fa-map-marker-alt me-2"></i>
+                    Locations
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
+            </Container>
+          </Col>
+        </Row>
+
+        {/* Main Content Area - Fully Responsive */}
+        <Row className="g-0 ">
+          <Col xs={12} className="p-0  d-flex justify-content-center ">
+            <Container
+              fluid={activeTab !== "overview"}
+              className="m-0 mt-1 px-2 px-md-3">
+              <Card
+                className={`border-0 shadow-sm ${
+                  "overview" === activeTab ? "adminLightkBg" : "adminDarkBg"
+                } `}
+                style={{
+                  backgroundColor: `${
+                    `overview` == activeTab ? "transparent" : "#fff"
+                  }`,
+                }}>
+                <Card.Body className="p-2 p-md-3 p-lg-4">
+                  {renderContent()}
+                </Card.Body>
+              </Card>
+            </Container>
+          </Col>
+        </Row>
+
+        <style>{`
         /* Modern Navbar Styling */
         .modern-navbar {
           background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
@@ -643,7 +641,8 @@ const AdminDashboard = ({ onLogout }) => {
           }
         }
       `}</style>
-    </Container>
+      </Container>
+    </>
   );
 };
 

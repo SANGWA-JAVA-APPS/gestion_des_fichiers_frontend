@@ -214,6 +214,32 @@ $transition-slow: 0.5s ease-in-out;
   overflow: hidden;
 }
 
+// Text clamp utility class for 3 lines
+.text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  max-height: calc(1.5em * 3); // 3 lines based on line-height
+}
+
+// Text truncate utility class for single line with ellipsis
+.text-truncate-single {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
+  
+  &:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+  }
+}
+
 // Responsive mixins
 @mixin mobile-only {
   @media (max-width: 767.98px) {
@@ -474,6 +500,94 @@ body {
     
     i {
       font-size: 0.75rem;
+    }
+  }
+}
+.adminDashBg{
+  color:#dadada;
+}
+.adminDarkBg{
+  color:#272727;
+}
+.adminLightkBg{
+  color:#fff;
+}
+.dashboardOverlay{
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background-color:rgba(52, 25, 73, 0.5);
+    z-index: 1;
+     
+    // @include flex-center  ;
+    }
+  .hasIndex2{
+      position:relative;
+      z-index:   2;
+    } 
+    .adminIconBg{
+      background-color: #171e3d;
+    }
+    
+// AdminCArdmenu hover effects
+.hover-lift {
+  transition: all $transition-medium;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+    background-color: #e3e3edff !important;
+    
+    .adminIconBg {
+      background-color: #0d6efd !important;
+      transform: scale(1.05);
+      transition: all $transition-medium;
+    }
+    
+    p {
+      color: #0d6efd !important;
+    }
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+// Document Card with Top-Left Corner Icon
+.doc-card-with-icon {
+  position: relative;
+  overflow: visible;
+  background-color: #f8f9fa; // Light gray background
+  
+  .doc-icon-badge {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    width: 32px;
+    height: 32px;
+    z-index: 10;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: all $transition-medium;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
   }
 }

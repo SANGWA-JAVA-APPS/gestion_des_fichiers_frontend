@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCargoDamage } from '../../services/GetRequests';
 import { createCargoDamage, createCargoDamageWithFile } from '../../services/Inserts';
 import { updateCargoDamage, updateCargoDamageWithFile, deleteCargoDamage } from '../../services/UpdRequests';
@@ -7,7 +7,14 @@ import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
+import DocumentDetailsView from './DocumentDetailsView';
+import DownloadConfirmationModal from './DownloadConfirmationModal';
 import { API_BASE_URL } from '../../services/apiConfig';
+import * as downloadService from '../../services/downloadService';
+import pdfIcon from '../../assets/documents_icons/pdf.png';
+import excelIcon from '../../assets/documents_icons/excel.png';
+import wordIcon from '../../assets/documents_icons/word.png';
+import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 
 const CargoDamageComponent = () => {
   const [data, setData] = useState([]);
@@ -34,6 +41,17 @@ const CargoDamageComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
+
+  // Modal states
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+
+  // Download confirmation modal state
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [fileToDownload, setFileToDownload] = useState(null);
+
+  // View mode state
+  const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' - default is cards
 
   // Search filters state
   const [searchFilters, setSearchFilters] = useState({
@@ -240,65 +258,81 @@ const CargoDamageComponent = () => {
     setItemToDelete(null);
   };
 
-  const handleViewDocument = async (documentId) => {
-    if (!documentId) {
+  // Helper function to show details modal
+  const handleShowDetails = (cargoDamage) => {
+    setSelectedDocument(cargoDamage);
+    setShowDetailsModal(true);
+  };
+
+  // Helper function to close details modal
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedDocument(null);
+  };
+
+  // Helper function for title click - shows download confirmation
+  const handleTitleClick = (cargoDamage) => {
+    if (cargoDamage?.document) {
+      setFileToDownload(cargoDamage.document);
+      setShowDownloadModal(true);
+    } else {
       alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-      return;
     }
+  };
 
-    try {
-      const token = localStorage.getItem('authToken');
-
-      // First, get the document metadata to extract file path
-      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!documentResponse.ok) {
-        throw new Error('Failed to fetch document metadata');
-      }
-
-      const documentData = await documentResponse.json();
-      const filePath = documentData.data?.filePath;
-
-      if (!filePath) {
-        throw new Error('File path not found in document data');
-      }
-
-      // Now fetch the actual file content using the file path
-      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await fileResponse.blob();
-      const url = URL.createObjectURL(blob);
-
-      // Open the file in a new tab
-      const win = window.open(url, '_blank');
-      if (!win) {
-        // If popup was blocked, create a download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = documentData.data?.originalFileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-    } catch (err) {
-      console.error('View document error:', err);
-      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
+  // Handle download confirmation
+  const handleConfirmDownload = () => {
+    if (fileToDownload) {
+      downloadService.downloadFile(fileToDownload);
+      setShowDownloadModal(false);
+      setFileToDownload(null);
     }
+  };
+
+  // Handle download cancellation
+  const handleCancelDownload = () => {
+    setShowDownloadModal(false);
+    setFileToDownload(null);
+  };
+
+  // Helper function to get document icon based on document object
+  const getDocumentIcon = (document) => {
+    if (!document) return null;
+    
+    const fileName = (document.originalFileName || document.fileName || '').toLowerCase();
+    const contentType = (document.contentType || '').toLowerCase();
+    
+    // Check for PDF
+    if (fileName.endsWith('.pdf') || contentType.includes('pdf')) {
+      return pdfIcon;
+    }
+    
+    // Check for Excel (.xls, .xlsx, .xlsm, .xlsb, .xltx, .xltm, .csv)
+    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx') || 
+        fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') ||
+        fileName.endsWith('.xltx') || fileName.endsWith('.xltm') ||
+        fileName.endsWith('.csv') ||
+        contentType.includes('spreadsheet') || contentType.includes('excel')) {
+      return excelIcon;
+    }
+    
+    // Check for Word (.doc, .docx, .docm, .dotx, .dotm)
+    if (fileName.endsWith('.doc') || fileName.endsWith('.docx') || 
+        fileName.endsWith('.docm') || fileName.endsWith('.dotx') ||
+        fileName.endsWith('.dotm') ||
+        contentType.includes('word') || contentType.includes('document')) {
+      return wordIcon;
+    }
+    
+    // Check for PowerPoint (.ppt, .pptx, .pptm, .potx, .potm)
+    if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx') || 
+        fileName.endsWith('.pptm') || fileName.endsWith('.potx') ||
+        fileName.endsWith('.potm') ||
+        contentType.includes('powerpoint') || contentType.includes('presentation')) {
+      return powerpointIcon;
+    }
+    
+    return null; // Return null if no match
   };
 
   const formatDate = (dateString) => {
@@ -368,6 +402,26 @@ const CargoDamageComponent = () => {
                   </Button>
                 </Col>
               </Row>
+              
+              {/* View Toggle Tabs */}
+              <Row className="mt-3">
+                <Col>
+                  <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
+                    <Nav.Item>
+                      <Nav.Link eventKey="cards">
+                        <i className="bi bi-grid-3x3-gap me-1"></i>
+                        {language === 'fr' ? 'Cartes' : 'Cards'}
+                      </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link eventKey="table">
+                        <i className="bi bi-table me-1"></i>
+                        {language === 'fr' ? 'Tableau' : 'Table'}
+                      </Nav.Link>
+                    </Nav.Item>
+                  </Nav>
+                </Col>
+              </Row>
             </Card.Header>
             <Card.Body>
               <SearchComponent
@@ -397,6 +451,8 @@ const CargoDamageComponent = () => {
 
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
+              {/* Table View */}
+              {activeView === 'table' && (
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -428,14 +484,14 @@ const CargoDamageComponent = () => {
                           <td>{formatDate(item.dateContract)}</td>
                           <td className="text-center">
                             <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Document Button */}
+                              {/* View Details Button */}
                               {item.document?.id && (
                                 <Button
                                   variant="outline-primary"
                                   size="sm"
-                                  onClick={() => handleViewDocument(item.document.id)}
+                                  onClick={() => handleShowDetails(item)}
                                   className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                  title={language === 'fr' ? 'Voir les détails' : 'View Details'}
                                 >
                                   <i className="bi bi-eye me-1"></i>
                                   <span className="d-none d-sm-inline">
@@ -479,6 +535,99 @@ const CargoDamageComponent = () => {
                   </tbody>
                 </Table>
               </div>
+              )}
+
+              {/* Cards View */}
+              {activeView === 'cards' && (
+                <Row className="g-4">
+                  {data.length === 0 ? (
+                    <Col xs={12}>
+                      <Alert variant="info" className="text-center">
+                        <i className="bi bi-info-circle me-2"></i>
+                        {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                      </Alert>
+                    </Col>
+                  ) : (
+                    data.map((item) => {
+                      const docIcon = getDocumentIcon(item.document);
+                      return (
+                        <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
+                          <Card className={`h-100 shadow-sm hover-shadow ${docIcon ? 'doc-card-with-icon' : ''}`}>
+                            {docIcon && (
+                              <div className="doc-icon-badge">
+                                <img src={docIcon} alt="Document Type" />
+                              </div>
+                            )}
+                            <Card.Body>
+                              <Card.Title 
+                                className="text-primary text-truncate-single" 
+                                title={item.document?.originalFileName || item.refeRequest}
+                                onClick={() => handleTitleClick(item)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <i className="bi bi-file-earmark-text me-2"></i>
+                                {downloadService.removeFileExtension(item.document?.originalFileName) || item.refeRequest}
+                              </Card.Title>
+                              <Card.Text className="text-muted small text-clamp-3" style={{ minHeight: '60px' }}>
+                                {item.description || (language === 'fr' ? 'Aucune description' : 'No description')}
+                              </Card.Text>
+                            </Card.Body>
+                          <ListGroup className="list-group-flush">
+                            <ListGroup.Item>
+                              <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
+                              {item.document?.version || '-'}
+                            </ListGroup.Item>
+                            <ListGroup.Item>
+                              <strong>{language === 'fr' ? 'Fichier:' : 'File:'}</strong>{' '}
+                              <small className="text-truncate d-block">
+                                {item.document?.originalFileName || '-'}
+                              </small>
+                            </ListGroup.Item>
+                            <ListGroup.Item>
+                              <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
+                              <Badge bg={item.document?.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                                {item.document?.status || '-'}
+                              </Badge>
+                            </ListGroup.Item>
+                          </ListGroup>
+                          <Card.Body>
+                              <div className="d-flex gap-2 flex-wrap">
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleShowDetails(item)}
+                                  className="p-0 text-decoration-none"
+                                >
+                                  <i className="bi bi-eye me-1"></i>
+                                  {language === 'fr' ? 'Détails' : 'Details'}
+                                </Button>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleShowModal(item)}
+                                  className="p-0 text-decoration-none"
+                                >
+                                  <i className="bi bi-pencil me-1"></i>
+                                  {language === 'fr' ? 'Modifier' : 'Edit'}
+                                </Button>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(item)}
+                                  className="p-0 text-decoration-none text-danger"
+                                >
+                                  <i className="bi bi-trash me-1"></i>
+                                  {language === 'fr' ? 'Supprimer' : 'Delete'}
+                                </Button>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      );
+                    })
+                  )}
+                </Row>
+              )}
 
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
@@ -638,6 +787,180 @@ const CargoDamageComponent = () => {
           </div>
         </Modal.Footer>
       </Modal>
+
+      {/* Document Details Modal */}
+      <DocumentDetailsView
+        show={showDetailsModal}
+        onHide={handleCloseDetails}
+        title={selectedDocument?.document?.originalFileName || 'Document Details'}
+        closeButtonText={language === 'fr' ? 'Fermer' : 'Close'}      >
+        {selectedDocument && (
+          <div>
+            <Row className="mb-3">
+              <Col md={6}>
+                <h6 className="text-muted">{language === 'fr' ? 'Informations Générales' : 'General Information'}</h6>
+                <ListGroup variant="flush">
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.refeRequest', language)}:</strong> {selectedDocument.refeRequest}
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.description', language)}:</strong>{' '}
+                    {selectedDocument.description || '-'}
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.quotationContractNum', language)}:</strong>{' '}
+                    {selectedDocument.quotationContractNum || '-'}
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.dateRequest', language)}:</strong>{' '}
+                    {selectedDocument.dateRequest ? new Date(selectedDocument.dateRequest).toLocaleDateString(language) : '-'}
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.dateContract', language)}:</strong>{' '}
+                    {selectedDocument.dateContract ? new Date(selectedDocument.dateContract).toLocaleDateString(language) : '-'}
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <strong>{getText('document.fields.status', language)}:</strong>{' '}
+                    <Badge bg="info">{selectedDocument.status?.name || '-'}</Badge>
+                  </ListGroup.Item>
+                </ListGroup>
+              </Col>
+              <Col md={6}>
+                <h6 className="text-muted">{language === 'fr' ? 'Informations du Document' : 'Document Information'}</h6>
+                {selectedDocument.document ? (
+                  <ListGroup variant="flush">
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom du fichier:' : 'File name:'}</strong>{' '}
+                      <small>{selectedDocument.document.fileName}</small>
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom original:' : 'Original name:'}</strong>{' '}
+                      {selectedDocument.document.originalFileName}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Type:' : 'Type:'}</strong>{' '}
+                      {selectedDocument.document.contentType}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Taille:' : 'Size:'}</strong>{' '}
+                      {(selectedDocument.document.fileSize / 1024).toFixed(2)} KB
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
+                      {selectedDocument.document.version || '-'}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
+                      <Badge bg={selectedDocument.document.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                        {selectedDocument.document.status}
+                      </Badge>
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Créé le:' : 'Created:'}</strong>{' '}
+                      {new Date(selectedDocument.document.createdAt).toLocaleString(language)}
+                    </ListGroup.Item>
+                    {selectedDocument.document.updatedAt && (
+                      <ListGroup.Item>
+                        <strong>{language === 'fr' ? 'Modifié le:' : 'Updated:'}</strong>{' '}
+                        {new Date(selectedDocument.document.updatedAt).toLocaleString(language)}
+                      </ListGroup.Item>
+                    )}
+                    {selectedDocument.document.owner?.fullName && (
+                      <ListGroup.Item>
+                        <strong>{language === 'fr' ? 'Propriétaire:' : 'Owner:'}</strong>{' '}
+                        {selectedDocument.document.owner.fullName}
+                      </ListGroup.Item>
+                    )}
+                  </ListGroup>
+                ) : (
+                  <Alert variant="warning">
+                    {language === 'fr' ? 'Aucune information de document disponible' : 'No document information available'}
+                  </Alert>
+                )}
+              </Col>
+            </Row>
+
+            {selectedDocument.document?.owner && (
+              <Row className="mb-3">
+                <Col>
+                  <h6 className="text-muted">{language === 'fr' ? 'Propriétaire du Document' : 'Document Owner'}</h6>
+                  <ListGroup variant="flush">
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
+                      {selectedDocument.document.owner.fullName}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
+                      {selectedDocument.document.owner.username}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Email:' : 'Email:'}</strong>{' '}
+                      {selectedDocument.document.owner.email}
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Col>
+              </Row>
+            )}
+
+            {selectedDocument.doneBy && (
+              <Row>
+                <Col>
+                  <h6 className="text-muted">{getText('document.fields.doneBy', language)}</h6>
+                  <ListGroup variant="flush">
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
+                      {selectedDocument.doneBy.fullName}
+                    </ListGroup.Item>
+                    <ListGroup.Item>
+                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
+                      {selectedDocument.doneBy.username}
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Col>
+              </Row>
+            )}
+
+            <div className="mt-4 d-flex gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  if (selectedDocument?.document) {
+                    downloadService.openFileInNewTab(selectedDocument.document);
+                  }
+                }}
+                disabled={!selectedDocument?.document?.filePath}
+              >
+                <i className="bi bi-eye me-2"></i>
+                {language === 'fr' ? 'Ouvrir le document' : 'Open Document'}
+              </Button>
+              <Button
+                variant="success"
+                size="sm"
+                onClick={() => {
+                  if (selectedDocument?.document) {
+                    downloadService.downloadFile(selectedDocument.document);
+                  }
+                }}
+                disabled={!selectedDocument?.document?.filePath}
+              >
+                <i className="bi bi-download me-2"></i>
+                {language === 'fr' ? 'Télécharger' : 'Download'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DocumentDetailsView>
+
+      {/* Download Confirmation Modal */}
+      <DownloadConfirmationModal
+        show={showDownloadModal}
+        onHide={handleCancelDownload}
+        onConfirm={handleConfirmDownload}
+        fileName={fileToDownload?.fileName}
+        fileSize={fileToDownload?.fileSize}
+        language={language}
+      />
     </div>
   );
 };

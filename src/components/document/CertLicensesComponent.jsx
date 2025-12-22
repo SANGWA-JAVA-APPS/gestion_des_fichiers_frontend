@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCertLicenses } from '../../services/GetRequests';
 import { createCertLicenses, createCertLicensesWithFile } from '../../services/Inserts';
 import { updateCertLicenses, updateCertLicensesWithFile, deleteCertLicenses } from '../../services/UpdRequests';
@@ -7,7 +7,14 @@ import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
+import DocumentDetailsView from './DocumentDetailsView';
+import DownloadConfirmationModal from './DownloadConfirmationModal';
 import { API_BASE_URL } from '../../services/apiConfig';
+import * as downloadService from '../../services/downloadService';
+import pdfIcon from '../../assets/documents_icons/pdf.png';
+import excelIcon from '../../assets/documents_icons/excel.png';
+import wordIcon from '../../assets/documents_icons/word.png';
+import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 
 const CertLicensesComponent = () => {
   const [data, setData] = useState([]);
@@ -34,6 +41,13 @@ const CertLicensesComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
+
+  // New state for details and download modals
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [fileToDownload, setFileToDownload] = useState(null);
+  const [activeView, setActiveView] = useState('table'); // 'table' or 'cards'
 
   // Search state
   const [searchFilters, setSearchFilters] = useState({
@@ -239,65 +253,54 @@ const CertLicensesComponent = () => {
     setItemToDelete(null);
   };
 
-  const handleViewDocument = async (documentId) => {
-    if (!documentId) {
+  // Helper function to show details modal
+  const handleShowDetails = (certLicense) => {
+    setSelectedDocument(certLicense);
+    setShowDetailsModal(true);
+  };
+
+  // Helper function to close details modal
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedDocument(null);
+  };
+
+  // Helper function for title click - shows download confirmation
+  const handleTitleClick = (certLicense) => {
+    if (certLicense?.document) {
+      setFileToDownload(certLicense.document);
+      setShowDownloadModal(true);
+    } else {
       alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-      return;
     }
+  };
 
-    try {
-      const token = localStorage.getItem('authToken');
-
-      // First, get the document metadata to extract file path
-      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!documentResponse.ok) {
-        throw new Error('Failed to fetch document metadata');
-      }
-
-      const documentData = await documentResponse.json();
-      const filePath = documentData.data?.filePath;
-
-      if (!filePath) {
-        throw new Error('File path not found in document data');
-      }
-
-      // Now fetch the actual file content using the file path
-      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await fileResponse.blob();
-      const url = URL.createObjectURL(blob);
-
-      // Open the file in a new tab
-      const win = window.open(url, '_blank');
-      if (!win) {
-        // If popup was blocked, create a download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = documentData.data?.originalFileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-    } catch (err) {
-      console.error('View document error:', err);
-      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
+  // Handle download confirmation
+  const handleConfirmDownload = () => {
+    if (fileToDownload) {
+      downloadService.downloadFile(fileToDownload);
+      setShowDownloadModal(false);
+      setFileToDownload(null);
     }
+  };
+
+  // Handle download cancellation
+  const handleCancelDownload = () => {
+    setShowDownloadModal(false);
+    setFileToDownload(null);
+  };
+
+  // Helper function to get document icon based on content type
+  const getDocumentIcon = (contentType) => {
+    if (!contentType) return pdfIcon;
+    
+    const type = contentType.toLowerCase();
+    if (type.includes('pdf')) return pdfIcon;
+    if (type.includes('excel') || type.includes('spreadsheet')) return excelIcon;
+    if (type.includes('word') || type.includes('document')) return wordIcon;
+    if (type.includes('powerpoint') || type.includes('presentation')) return powerpointIcon;
+    
+    return pdfIcon; // default
   };
 
   const formatDate = (dateString) => {
@@ -367,6 +370,26 @@ const CertLicensesComponent = () => {
                   </Button>
                 </Col>
               </Row>
+              
+              {/* View Toggle Tabs */}
+              <Row className="mt-3">
+                <Col>
+                  <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
+                    <Nav.Item>
+                      <Nav.Link eventKey="cards">
+                        <i className="bi bi-grid-3x3-gap me-1"></i>
+                        {language === 'fr' ? 'Cartes' : 'Cards'}
+                      </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link eventKey="table">
+                        <i className="bi bi-table me-1"></i>
+                        {language === 'fr' ? 'Tableau' : 'Table'}
+                      </Nav.Link>
+                    </Nav.Item>
+                  </Nav>
+                </Col>
+              </Row>
             </Card.Header>
             <Card.Body>
               <SearchComponent
@@ -396,6 +419,8 @@ const CertLicensesComponent = () => {
 
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
+              {/* Table View */}
+              {activeView === 'table' && (
               <div className="table-responsive">
                 <Table striped bordered hover>
                   <thead>
@@ -427,14 +452,14 @@ const CertLicensesComponent = () => {
                           <td>{item.dureeCertificat}</td>
                           <td className="text-center">
                             <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Document Button */}
+                              {/* View Details Button */}
                               {item.document?.id && (
                                 <Button
                                   variant="outline-primary"
                                   size="sm"
-                                  onClick={() => handleViewDocument(item.document.id)}
+                                  onClick={() => handleShowDetails(item)}
                                   className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                  title={language === 'fr' ? 'Voir les détails' : 'View Details'}
                                 >
                                   <i className="bi bi-eye me-1"></i>
                                   <span className="d-none d-sm-inline">
@@ -478,6 +503,101 @@ const CertLicensesComponent = () => {
                   </tbody>
                 </Table>
               </div>
+              )}
+
+              {/* Cards View */}
+              {activeView === 'cards' && (
+                <Row className="g-3 mt-2">
+                  {data.length === 0 ? (
+                    <Col xs={12}>
+                      <div className="text-center py-5">
+                        <i className="bi bi-inbox" style={{ fontSize: '3rem', color: '#ccc' }}></i>
+                        <p className="mt-3 text-muted">
+                          {language === 'fr' ? 'Aucun document trouvé' : 'No documents found'}
+                        </p>
+                      </div>
+                    </Col>
+                  ) : (
+                    data.map((item) => (
+                      <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
+                        <Card className="h-100 doc-card-with-icon">
+                          <Card.Body className="d-flex flex-column">
+                            {/* Document Icon Badge */}
+                            {item.document && (
+                              <div className="doc-icon-badge">
+                                <img 
+                                  src={getDocumentIcon(item.document.contentType)} 
+                                  alt="Document Type"
+                                  style={{ width: '32px', height: '32px' }}
+                                />
+                              </div>
+                            )}
+                            
+                            {/* Document Title - Clickable */}
+                            <Card.Title 
+                              className="text-truncate-single mb-2" 
+                              style={{ cursor: 'pointer', color: '#0d6efd' }}
+                              onClick={() => handleTitleClick(item)}
+                              title={item.document?.fileName || language === 'fr' ? 'Document sans nom' : 'Unnamed document'}
+                            >
+                              {downloadService.removeFileExtension(item.document?.fileName || language === 'fr' ? 'Document sans nom' : 'Unnamed document')}
+                            </Card.Title>
+                            
+                            {/* Description */}
+                            <Card.Text className="text-clamp-3 flex-grow-1 small text-muted">
+                              {item.description || (language === 'fr' ? 'Aucune description' : 'No description')}
+                            </Card.Text>
+                            
+                            {/* Document Details in ListGroup */}
+                            <ListGroup variant="flush" className="mb-3">
+                              <ListGroup.Item className="px-0 py-1 small">
+                                <strong>{getText('document.fields.agentCertifica', language)}:</strong> {item.agentCertifica || '-'}
+                              </ListGroup.Item>
+                              <ListGroup.Item className="px-0 py-1 small">
+                                <strong>{getText('document.fields.numeroAgent', language)}:</strong> {item.numeroAgent || '-'}
+                              </ListGroup.Item>
+                              <ListGroup.Item className="px-0 py-1 small">
+                                <strong>{getText('document.fields.dateCertificate', language)}:</strong> {formatDate(item.dateCertificate)}
+                              </ListGroup.Item>
+                              <ListGroup.Item className="px-0 py-1 small">
+                                <strong>{language === 'fr' ? 'Fait par' : 'Done by'}:</strong> {item.doneBy?.fullName || '-'}
+                              </ListGroup.Item>
+                              <ListGroup.Item className="px-0 py-1 small">
+                                <strong>Status:</strong>{' '}
+                                <Badge bg={item.status?.name === 'Actif' || item.status?.name === 'Active' ? 'success' : 'secondary'}>
+                                  {item.status?.name || '-'}
+                                </Badge>
+                              </ListGroup.Item>
+                            </ListGroup>
+                            
+                            {/* Action Buttons */}
+                            <div className="d-flex gap-2 mt-auto">
+                              <Button 
+                                variant="outline-primary" 
+                                size="sm" 
+                                className="flex-fill"
+                                onClick={() => handleShowDetails(item)}
+                              >
+                                <i className="bi bi-eye me-1"></i>
+                                {language === 'fr' ? 'Détails' : 'Details'}
+                              </Button>
+                              <Button 
+                                variant="outline-secondary" 
+                                size="sm" 
+                                className="flex-fill"
+                                onClick={() => handleShowModal(item)}
+                              >
+                                <i className="bi bi-pencil me-1"></i>
+                                {language === 'fr' ? 'Modifier' : 'Edit'}
+                              </Button>
+                            </div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))
+                  )}
+                </Row>
+              )}
 
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
@@ -637,6 +757,67 @@ const CertLicensesComponent = () => {
           </div>
         </Modal.Footer>
       </Modal>
+
+      {/* Document Details Modal */}
+      <Modal show={showDetailsModal} onHide={handleCloseDetails} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="bi bi-file-earmark-text me-2"></i>
+            {language === 'fr' ? 'Détails du Document' : 'Document Details'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedDocument && (
+            <DocumentDetailsView
+              document={selectedDocument}
+              language={language}
+              fields={[
+                { 
+                  label: getText('document.fields.description', language), 
+                  value: selectedDocument.description 
+                },
+                { 
+                  label: getText('document.fields.agentCertifica', language), 
+                  value: selectedDocument.agentCertifica 
+                },
+                { 
+                  label: getText('document.fields.numeroAgent', language), 
+                  value: selectedDocument.numeroAgent 
+                },
+                { 
+                  label: getText('document.fields.dateCertificate', language), 
+                  value: formatDate(selectedDocument.dateCertificate) 
+                },
+                { 
+                  label: getText('document.fields.dureeCertificat', language), 
+                  value: selectedDocument.dureeCertificat 
+                }
+              ]}
+              onOpenDocument={() => {
+                if (selectedDocument.document) {
+                  downloadService.openFileInNewTab(selectedDocument.document);
+                }
+              }}
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDetails}>
+            <i className="bi bi-x-circle me-2"></i>
+            {language === 'fr' ? 'Fermer' : 'Close'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Download Confirmation Modal */}
+      <DownloadConfirmationModal
+        show={showDownloadModal}
+        onHide={handleCancelDownload}
+        onConfirm={handleConfirmDownload}
+        fileName={fileToDownload?.fileName}
+        fileSize={fileToDownload?.fileSize}
+        language={language}
+      />
     </div>
   );
 };

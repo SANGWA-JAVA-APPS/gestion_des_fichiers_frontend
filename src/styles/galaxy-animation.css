@@ -1,0 +1,487 @@
+/* Galaxy Background Animation */
+
+.galaxy-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #2d1b4e 0%, #1a1f3a 35%, #0f1428 65%, #0a0e27 100%);
+}
+
+/* Multiple Moving Gradient Layers */
+.nebula-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* First gradient layer - Purple to Deep Blue */
+.nebula-layer::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: 
+    radial-gradient(ellipse at 30% 40%, rgba(97, 67, 133, 0.25) 0%, transparent 35%),
+    radial-gradient(ellipse at 70% 20%, rgba(75, 50, 110, 0.2) 0%, transparent 40%),
+    radial-gradient(ellipse at 20% 80%, rgba(60, 40, 95, 0.18) 0%, transparent 38%),
+    radial-gradient(ellipse at 85% 65%, rgba(80, 55, 120, 0.22) 0%, transparent 42%);
+  animation: gradientDrift1 140s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+/* Second gradient layer - Deep Indigo to Navy */
+.nebula-layer::after {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: 
+    radial-gradient(ellipse at 60% 30%, rgba(45, 27, 78, 0.28) 0%, transparent 38%),
+    radial-gradient(ellipse at 25% 60%, rgba(38, 22, 68, 0.24) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 75%, rgba(50, 30, 85, 0.2) 0%, transparent 36%),
+    radial-gradient(ellipse at 15% 25%, rgba(42, 25, 72, 0.26) 0%, transparent 44%);
+  animation: gradientDrift2 160s ease-in-out infinite;
+  opacity: 0.75;
+  animation-delay: -40s;
+}
+
+/* Gradient Movement Animations - Slow, continuous drift */
+@keyframes gradientDrift1 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(-8%, 5%) rotate(3deg) scale(1.05);
+  }
+  50% {
+    transform: translate(-5%, -8%) rotate(-2deg) scale(1.02);
+  }
+  75% {
+    transform: translate(6%, -4%) rotate(4deg) scale(1.06);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes gradientDrift2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  30% {
+    transform: translate(6%, -7%) rotate(-4deg) scale(1.04);
+  }
+  60% {
+    transform: translate(-7%, 4%) rotate(3deg) scale(1.07);
+  }
+  85% {
+    transform: translate(4%, 6%) rotate(-3deg) scale(1.03);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* Third gradient overlay - Darker purple tones with slower movement */
+.gradient-overlay {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: 
+    radial-gradient(ellipse at 50% 50%, rgba(55, 35, 90, 0.2) 0%, transparent 45%),
+    radial-gradient(ellipse at 10% 45%, rgba(48, 28, 78, 0.18) 0%, transparent 38%),
+    radial-gradient(ellipse at 90% 55%, rgba(62, 40, 98, 0.22) 0%, transparent 42%),
+    radial-gradient(ellipse at 45% 15%, rgba(52, 32, 85, 0.16) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 85%, rgba(58, 38, 92, 0.19) 0%, transparent 36%);
+  animation: gradientDrift3 180s ease-in-out infinite;
+  opacity: 0.7;
+  animation-delay: -60s;
+}
+
+@keyframes gradientDrift3 {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  20% {
+    transform: translate(-5%, -6%) rotate(2deg) scale(1.03);
+  }
+  40% {
+    transform: translate(7%, 3%) rotate(-3deg) scale(1.06);
+  }
+  65% {
+    transform: translate(-4%, 7%) rotate(4deg) scale(1.04);
+  }
+  90% {
+    transform: translate(5%, -5%) rotate(-2deg) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+/* Stars Layers */
+.stars-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  animation: starFloat 80s linear infinite;
+}
+
+.stars-layer-1 {
+  animation-duration: 80s;
+}
+
+.stars-layer-2 {
+  animation-duration: 120s;
+  animation-delay: -20s;
+}
+
+.stars-layer-3 {
+  animation-duration: 160s;
+  animation-delay: -40s;
+}
+
+/* Star Float Animation - Slow horizontal drift */
+@keyframes starFloat {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(30px) translateY(-15px);
+  }
+  50% {
+    transform: translateX(0) translateY(-25px);
+  }
+  75% {
+    transform: translateX(-30px) translateY(-15px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Creating stars using box-shadow */
+.stars-layer-1::before {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 
+    100px 200px 0 0 rgba(255, 255, 255, 0.9),
+    250px 100px 0 0 rgba(255, 255, 255, 0.8),
+    400px 350px 0 0 rgba(255, 255, 255, 0.7),
+    600px 150px 0 0 rgba(255, 255, 255, 0.9),
+    800px 400px 0 0 rgba(255, 255, 255, 0.8),
+    150px 450px 0 0 rgba(255, 255, 255, 0.7),
+    350px 550px 0 0 rgba(255, 255, 255, 0.9),
+    550px 250px 0 0 rgba(255, 255, 255, 0.8),
+    750px 50px 0 0 rgba(255, 255, 255, 0.7),
+    950px 300px 0 0 rgba(255, 255, 255, 0.9),
+    200px 600px 0 0 rgba(255, 255, 255, 0.8),
+    450px 700px 0 0 rgba(255, 255, 255, 0.7),
+    700px 500px 0 0 rgba(255, 255, 255, 0.9),
+    900px 650px 0 0 rgba(255, 255, 255, 0.8),
+    1100px 200px 0 0 rgba(255, 255, 255, 0.7),
+    300px 50px 0 0 rgba(255, 255, 255, 0.9),
+    500px 150px 0 0 rgba(255, 255, 255, 0.8),
+    850px 550px 0 0 rgba(255, 255, 255, 0.7),
+    1050px 450px 0 0 rgba(255, 255, 255, 0.9),
+    1200px 100px 0 0 rgba(255, 255, 255, 0.8),
+    50px 350px 0 0 rgba(255, 255, 255, 0.7),
+    650px 600px 0 0 rgba(255, 255, 255, 0.9),
+    1150px 550px 0 0 rgba(255, 255, 255, 0.8),
+    300px 300px 0 0 rgba(255, 255, 255, 0.7),
+    500px 450px 0 0 rgba(255, 255, 255, 0.9);
+  animation: sparkle1 3s ease-in-out infinite;
+}
+
+.stars-layer-2::before {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(200, 230, 255, 0.9);
+  box-shadow: 
+    180px 120px 0 0 rgba(200, 230, 255, 0.9),
+    320px 280px 0 0 rgba(200, 230, 255, 0.8),
+    520px 80px 0 0 rgba(200, 230, 255, 0.7),
+    720px 320px 0 0 rgba(200, 230, 255, 0.9),
+    920px 180px 0 0 rgba(200, 230, 255, 0.8),
+    280px 520px 0 0 rgba(200, 230, 255, 0.7),
+    480px 620px 0 0 rgba(200, 230, 255, 0.9),
+    680px 420px 0 0 rgba(200, 230, 255, 0.8),
+    880px 120px 0 0 rgba(200, 230, 255, 0.7),
+    1080px 380px 0 0 rgba(200, 230, 255, 0.9),
+    120px 680px 0 0 rgba(200, 230, 255, 0.8),
+    380px 780px 0 0 rgba(200, 230, 255, 0.7),
+    620px 580px 0 0 rgba(200, 230, 255, 0.9),
+    820px 720px 0 0 rgba(200, 230, 255, 0.8),
+    1020px 280px 0 0 rgba(200, 230, 255, 0.7),
+    220px 180px 0 0 rgba(200, 230, 255, 0.9),
+    580px 220px 0 0 rgba(200, 230, 255, 0.8),
+    780px 620px 0 0 rgba(200, 230, 255, 0.7),
+    980px 520px 0 0 rgba(200, 230, 255, 0.9),
+    1180px 180px 0 0 rgba(200, 230, 255, 0.8);
+  animation: sparkle2 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.stars-layer-3::before {
+  content: '';
+  position: absolute;
+  width: 1.5px;
+  height: 1.5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 200, 0.8);
+  box-shadow: 
+    140px 160px 0 0 rgba(255, 255, 200, 0.8),
+    280px 240px 0 0 rgba(255, 255, 200, 0.7),
+    460px 140px 0 0 rgba(255, 255, 200, 0.6),
+    660px 360px 0 0 rgba(255, 255, 200, 0.8),
+    860px 240px 0 0 rgba(255, 255, 200, 0.7),
+    220px 560px 0 0 rgba(255, 255, 200, 0.6),
+    420px 660px 0 0 rgba(255, 255, 200, 0.8),
+    620px 460px 0 0 rgba(255, 255, 200, 0.7),
+    820px 160px 0 0 rgba(255, 255, 200, 0.6),
+    1020px 420px 0 0 rgba(255, 255, 200, 0.8),
+    160px 720px 0 0 rgba(255, 255, 200, 0.7),
+    420px 820px 0 0 rgba(255, 255, 200, 0.6),
+    660px 620px 0 0 rgba(255, 255, 200, 0.8),
+    860px 760px 0 0 rgba(255, 255, 200, 0.7),
+    1060px 320px 0 0 rgba(255, 255, 200, 0.6),
+    260px 220px 0 0 rgba(255, 255, 200, 0.8),
+    540px 260px 0 0 rgba(255, 255, 200, 0.7),
+    820px 660px 0 0 rgba(255, 255, 200, 0.6),
+    1020px 560px 0 0 rgba(255, 255, 200, 0.8),
+    1220px 220px 0 0 rgba(255, 255, 200, 0.7),
+    90px 390px 0 0 rgba(255, 255, 200, 0.6),
+    690px 640px 0 0 rgba(255, 255, 200, 0.8),
+    1190px 590px 0 0 rgba(255, 255, 200, 0.7),
+    340px 340px 0 0 rgba(255, 255, 200, 0.6),
+    540px 490px 0 0 rgba(255, 255, 200, 0.8),
+    740px 190px 0 0 rgba(255, 255, 200, 0.7),
+    940px 690px 0 0 rgba(255, 255, 200, 0.6),
+    1140px 390px 0 0 rgba(255, 255, 200, 0.8),
+    190px 140px 0 0 rgba(255, 255, 200, 0.7),
+    490px 340px 0 0 rgba(255, 255, 200, 0.6);
+  animation: sparkle3 5s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Sparkle Animations - Twinkling effect with opacity and scale */
+@keyframes sparkle1 {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+@keyframes sparkle2 {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  30% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+  70% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes sparkle3 {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+  80% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+/* Backdrop blur support for login card */
+.backdrop-blur {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Login Card Gradient Styling */
+.login-card-gradient {
+  background: linear-gradient(135deg, #2e7985 0%, #4a5f78 35%, #5e204b 100%);
+  border: 2px solid #2a6673;
+  border-radius: 8px;
+  box-shadow: 
+    0 10px 30px rgba(46, 121, 133, 0.3),
+    0 5px 15px rgba(94, 32, 75, 0.2),
+    0 0 40px rgba(46, 121, 133, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.login-card-gradient .card-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* Login Input Fields */
+.login-input {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(94, 179, 196, 0.3) !important;
+  color: #2e7985 !important;
+}
+
+.login-input:focus {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #5eb3c4 !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 121, 133, 0.25) !important;
+}
+
+.login-input::placeholder {
+  color: rgba(46, 121, 133, 0.6);
+}
+
+/* Login Submit Button */
+.login-submit-btn {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #5eb3c4 !important;
+  color: #2e7985 !important;
+  transition: all 0.3s ease;
+}
+
+.login-submit-btn:hover:not(:disabled) {
+  background-color: #5eb3c4 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(46, 121, 133, 0.4);
+}
+
+.login-submit-btn:disabled {
+  opacity: 0.6;
+}
+
+/* CodeGuru Link Styling */
+.codeguru-link {
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(94, 179, 196, 0.5);
+}
+
+.codeguru-link:hover {
+  color: #5eb3c4 !important;
+  text-shadow: 0 0 15px rgba(94, 179, 196, 0.8);
+  transform: translateY(-1px);
+  display: inline-block;
+}
+
+/* Bouncing Cloud Files Image */
+.bouncing-cloud-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 40%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.bouncing-cloud-image {
+  width: 128px;
+  height: 128px;
+  animation: bounce 4s ease-in-out infinite;
+  filter: drop-shadow(0 10px 20px rgba(97, 67, 133, 0.4));
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-30px) scale(1.05);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stars-layer::before {
+    animation-duration: 60s;
+  }
+  
+  .nebula-layer::before {
+    animation-duration: 100s;
+  }
+  
+  .nebula-layer::after {
+    animation-duration: 120s;
+  }
+  
+  .gradient-overlay {
+    animation-duration: 140s;
+  }
+  
+  /* Hide bouncing cloud on mobile for better login card visibility */
+  .bouncing-cloud-container {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+  /* Reduce cloud container width on medium screens */
+  .bouncing-cloud-container {
+    width: 30%;
+  }
+  
+  .bouncing-cloud-image {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Performance optimization */
+.stars-layer,
+.stars-layer::before,
+.nebula-layer,
+.nebula-layer::before,
+.nebula-layer::after,
+.gradient-overlay {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

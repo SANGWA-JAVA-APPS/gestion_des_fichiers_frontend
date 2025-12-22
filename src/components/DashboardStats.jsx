@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Spinner, Badge, ProgressBar } from 'react-bootstrap';
 import { apiClient } from '../services/apiConfig';
+import AdminCArdmenu from './AdminCArdmenu';
 
 const DashboardStats = ({ userRole }) => {
   const [stats, setStats] = useState(null);
@@ -67,6 +68,15 @@ const DashboardStats = ({ userRole }) => {
           <p className="text-muted">Real-time system statistics and insights</p>
         </Col>
       </Row>
+
+       {/* start custom card */}
+      {/* User Statistics Section */}
+     
+
+
+
+      {/* end of custom cards */}
+
 
       {/* User Statistics Section */}
       <Row className="g-4 mb-4">
