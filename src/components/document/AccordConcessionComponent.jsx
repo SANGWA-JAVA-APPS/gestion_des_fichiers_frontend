@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
-import { getAllAccordConcession } from '../../services/GetRequests';
+import { getAllAccordConcession, getAllSectionCategories } from '../../services/GetRequests';
 import { createAccordConcession, createAccordConcessionWithFile } from '../../services/Inserts';
 import { updateAccordConcession, updateAccordConcessionWithFile, deleteAccordConcession } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
@@ -10,6 +10,7 @@ import HeaderTitle from '../HeaderTitle';
 import DocumentDetailsView from './DocumentDetailsView';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
 import { API_BASE_URL } from '../../services/apiConfig';
+
 import { downloadFile, formatFileSize, removeFileExtension as removeExtension, openFileInNewTab } from '../../services/downloadService';
 import pdfIcon from '../../assets/documents_icons/pdf.png';
 import excelIcon from '../../assets/documents_icons/excel.png';

@@ -1,0 +1,22 @@
+/* dashboard.css */
+
+.sidebar {
+    transition: width 0.3s ease;
+    min-height: 100%;
+}
+
+.sidebar-full {
+    width: 250px;
+}
+
+.sidebar-icon {
+    width: 80px;
+}
+
+@media (max-width: 768px) {
+    .sidebar-full {
+        position: absolute;
+        z-index: 1050;
+        height: 100%;
+    }
+}

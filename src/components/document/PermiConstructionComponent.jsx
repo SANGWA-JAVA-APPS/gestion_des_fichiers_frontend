@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
-import { getAllPermiConstruction } from '../../services/GetRequests';
+import { getAllAccounts, getAllPermiConstruction } from '../../services/GetRequests';
 import { createPermiConstruction, createPermiConstructionWithFile } from '../../services/Inserts';
 import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';

@@ -4,16 +4,16 @@ import { loginUser } from '../services/Inserts';
 import { setUserInfo } from '../services/authUtils';
 import '../styles/galaxy-animation.css';
 import cloudFilesImage from '../assets/cloud-files.png';
+import { useNavigate } from 'react-router-dom';
 
-
-const Login = ({ onLoginSuccess }) => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -38,9 +38,9 @@ const Login = ({ onLoginSuccess }) => {
           role: response.role,
           fullName: response.fullName
         });
- 
+           navigate('/dashboard/docstatus', { replace: true });
         // Call success callback to redirect to dashboard
-        onLoginSuccess();
+
       } else {
         setError(response.message || 'Login failed');
       }
@@ -212,4 +212,4 @@ const Login = ({ onLoginSuccess }) => {
   );
 };
 
-export default Login;
+export default LoginPage;

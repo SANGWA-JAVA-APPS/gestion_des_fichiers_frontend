@@ -37,7 +37,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userInfo');
-      window.location.href = '/';
+      // window.location.href = '/';
     }
     return Promise.reject(error);
   }
