@@ -1,27 +1,37 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from 'react'
 import {
-  Row, Col, Card, Button,
-  Table, Modal, Form, Alert, Spinner,
-} from "react-bootstrap";
-import { getAllDocStatuses } from "../../services/GetRequests";
-import { createDocStatus } from "../../services/Inserts";
-import { updateDocStatus, deleteDocStatus } from "../../services/UpdRequests";
-import { getText } from "../../data/texts";
-import SearchComponent from "../SearchComponent";
-import HeaderTitle from "../HeaderTitle";
+  Row,
+  Col,
+  Card,
+  Button,
+  Table,
+  Modal,
+  Form,
+  Alert,
+  Spinner
+} from 'react-bootstrap'
+import { getAllDocStatuses } from '../../services/GetRequests'
+import { createDocStatus } from '../../services/Inserts'
+import { updateDocStatus, deleteDocStatus } from '../../services/UpdRequests'
+import { getText } from '../../data/texts'
+import SearchComponent from '../SearchComponent'
+import HeaderTitle from '../HeaderTitle'
 
 const DocStatusComponent = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [itemToDelete, setItemToDelete] = useState(null);
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [editingItem, setEditingItem] = useState(null)
+  const [itemToDelete, setItemToDelete] = useState(null)
   const [formData, setFormData] = useState({
-    name: "",
-  });
-  const [language] = useState("fr"); // Can be made dynamic with context
+    name: '',
+    description: ''
+  })
+
+  const [language] = useState('fr') // Can be made dynamic with context
 
   // Search state
   const [searchFilters, setSearchFilters] = useState({
@@ -29,41 +39,41 @@ const DocStatusComponent = () => {
     searchText: '',
     dateStart: '',
     dateEnd: ''
-  });
+  })
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      setError("");
-      const response = await getAllDocStatuses();
-      setData(Array.isArray(response) ? response : []);
+      setLoading(true)
+      setError('')
+      const response = await getAllDocStatuses()
+      setData(Array.isArray(response) ? response : [])
     } catch (err) {
       setError(
-        getText("document.messages.loadError", language) +
-        ": " +
-        (err.message || "Unknown error")
-      );
-      console.error("Load error:", err);
+        getText('document.messages.loadError', language) +
+          ': ' +
+          (err.message || 'Unknown error')
+      )
+      console.error('Load error:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
+  const handleSearch = searchData => {
+    console.log('=== SEARCH COMPONENT VALUES ===')
+    console.log('All Search Data:', searchData)
+    console.log('Dropdown (Status Filter):', searchData.dropdown)
+    console.log('Textbox 1 (Search Text):', searchData.textbox1)
+    console.log('Textbox 2:', searchData.textbox2)
+    console.log('Textbox 3:', searchData.textbox3)
+    console.log('Date Start:', searchData.dateStart)
+    console.log('Date End:', searchData.dateEnd)
+    console.log('===============================')
 
     // Implement your search logic here
     // You can filter the data based on searchData
@@ -72,102 +82,106 @@ const DocStatusComponent = () => {
       searchText: searchData.textbox1,
       dateStart: searchData.dateStart,
       dateEnd: searchData.dateEnd
-    });
-  };
+    })
+  }
 
   const handleShowModal = (item = null) => {
     if (item) {
-      setEditingItem(item);
+      setEditingItem(item)
       setFormData({
-        name: item.name || "",
-      });
+        name: item.name || '',
+        description: item.description || ''
+      })
     } else {
-      setEditingItem(null);
+      setEditingItem(null)
       setFormData({
-        name: "",
-      });
+        name: '',
+        description: ''
+      })
     }
-    setShowModal(true);
-  };
-
+    setShowModal(true)
+  }
   const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingItem(null);
-    setFormData({ name: "" });
-    setError("");
-  };
+    setShowModal(false)
+    setEditingItem(null)
+    setFormData({
+      name: '',
+      description: ''
+    })
+    setError('')
+  }
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+      [e.target.name]: e.target.value
+    })
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault()
     try {
-      setError("");
+      setError('')
       if (editingItem) {
-        await updateDocStatus(editingItem.id, formData);
+        await updateDocStatus(editingItem.id, formData)
       } else {
-        await createDocStatus(formData);
+        await createDocStatus(formData)
       }
-      handleCloseModal();
-      loadData();
+      handleCloseModal()
+      loadData()
     } catch (err) {
       setError(
-        getText("document.messages.saveError", language) +
-        ": " +
-        (err.message || "Unknown error")
-      );
-      console.error("Save error:", err);
+        getText('document.messages.saveError', language) +
+          ': ' +
+          (err.message || 'Unknown error')
+      )
+      console.error('Save error:', err)
     }
-  };
+  }
 
-  const handleDeleteClick = (item) => {
-    setItemToDelete(item);
-    setShowDeleteModal(true);
-  };
+  const handleDeleteClick = item => {
+    setItemToDelete(item)
+    setShowDeleteModal(true)
+  }
 
   const handleDeleteConfirm = async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete) return
 
     try {
-      setError("");
-      await deleteDocStatus(itemToDelete.id);
-      loadData();
-      setShowDeleteModal(false);
-      setItemToDelete(null);
+      setError('')
+      await deleteDocStatus(itemToDelete.id)
+      loadData()
+      setShowDeleteModal(false)
+      setItemToDelete(null)
     } catch (err) {
       setError(
-        getText("document.messages.deleteError", language) +
-        ": " +
-        (err.message || "Unknown error")
-      );
-      console.error("Delete error:", err);
+        getText('document.messages.deleteError', language) +
+          ': ' +
+          (err.message || 'Unknown error')
+      )
+      console.error('Delete error:', err)
     }
-  };
+  }
 
   const handleDeleteCancel = () => {
-    setShowDeleteModal(false);
-    setItemToDelete(null);
-  };
+    setShowDeleteModal(false)
+    setItemToDelete(null)
+  }
 
   if (loading) {
     return (
-      <div className="text-center my-5">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">
-            {getText("common.loading", language)}
+      <div className='text-center my-5'>
+        <Spinner animation='border' role='status'>
+          <span className='visually-hidden'>
+            {getText('common.loading', language)}
           </span>
         </Spinner>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="doc-status-component">
+    <div className='doc-status-component'>
       <style jsx>{`
         .action-buttons .btn {
           font-size: 0.8rem;
@@ -177,7 +191,7 @@ const DocStatusComponent = () => {
         }
         .action-buttons .btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .action-buttons .btn-outline-warning:hover {
           background-color: #ffc107;
@@ -196,29 +210,33 @@ const DocStatusComponent = () => {
           }
         }
       `}</style>
-      <Row className="mb-4">
+      <Row className='mb-4'>
         <Col>
           <Card>
             <Card.Header>
-              <Row className="align-items-center">
+              <Row className='align-items-center'>
                 <Col xs={12} md={6} lg={3}>
-                  <HeaderTitle>{getText("document.docStatus", language)}</HeaderTitle>
+                  <HeaderTitle>
+                    {getText('document.docStatus', language)}
+                  </HeaderTitle>
                 </Col>
-                <Col xs={12} md={6} lg={9} className="text-end">
+                <Col xs={12} md={6} lg={9} className='text-end'>
                   <Button
-                    variant="primary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleShowModal()}>
-                    <i className="bi bi-plus-circle me-1"></i>
-                    {getText("common.add", language)}
+                    variant='primary'
+                    size='sm'
+                    className='me-2'
+                    onClick={() => handleShowModal()}
+                  >
+                    <i className='bi bi-plus-circle me-1' />
+                    {getText('common.add', language)}
                   </Button>
                   <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={loadData}>
-                    <i className="bi bi-arrow-clockwise me-1"></i>
-                    {getText("document.actions.refresh", language)}
+                    variant='outline-secondary'
+                    size='sm'
+                    onClick={loadData}
+                  >
+                    <i className='bi bi-arrow-clockwise me-1' />
+                    {getText('document.actions.refresh', language)}
                   </Button>
                 </Col>
               </Row>
@@ -226,95 +244,114 @@ const DocStatusComponent = () => {
             <Card.Body>
               {/* Search Component */}
               <SearchComponent
-                dropdownLabel="Status"
-                dropdownItems={data.map(item => ({ value: item.name, label: item.name }))}
+                dropdownLabel='Status'
+                dropdownItems={data.map(item => ({
+                  value: item.name,
+                  label: item.name
+                }))}
                 dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label="Search Name"
-                textbox1Placeholder="Enter status name..."
+                onDropdownChange={value =>
+                  setSearchFilters({ ...searchFilters, statusFilter: value })}
+                textbox1Label='Search Name'
+                textbox1Placeholder='Enter status name...'
                 textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel="From Date"
+                onTextbox1Change={value =>
+                  setSearchFilters({ ...searchFilters, searchText: value })}
+                dateStartLabel='From Date'
                 dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel="To Date"
+                onDateStartChange={value =>
+                  setSearchFilters({ ...searchFilters, dateStart: value })}
+                dateEndLabel='To Date'
                 dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch} searchButtonText="Search"
-
-                showTextbox2={false} showTextbox3={false}
+                onDateEndChange={value =>
+                  setSearchFilters({ ...searchFilters, dateEnd: value })}
+                onSearch={handleSearch}
+                searchButtonText='Search'
+                showTextbox2={false}
+                showTextbox3={false}
               />
 
-              {error && (
+              {error &&
                 <Alert
-                  variant="danger"
+                  variant='danger'
                   dismissible
-                  onClose={() => setError("")}>
+                  onClose={() => setError('')}
+                >
                   {error}
-                </Alert>
-              )}
+                </Alert>}
 
-              <div className="table-responsive">
+              <div className='table-responsive'>
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>{getText("document.fields.id", language)}</th>
-                      <th>{getText("document.fields.name", language)}</th>
-                      <th className="text-center" style={{ width: "200px" }}>Actions</th>
+                      <th>
+                        {getText('document.fields.id', language)}
+                      </th>
+                      <th>
+                        {getText('document.fields.name', language)}
+                      </th>
+                      <th>
+                        {getText('document.fields.description', language)}
+                      </th>
+                      <th className='text-center' style={{ width: '200px' }}>
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.length === 0 ? (
-                      <tr>
-                        <td colSpan="3" className="text-center text-muted">
-                          {language === "fr"
-                            ? "Aucune donnée disponible"
-                            : "No data available"}
+                    {data.length === 0
+                      ? <tr>
+                        <td colSpan='3' className='text-center text-muted'>
+                          {language === 'fr'
+                              ? 'Aucune donnée disponible'
+                              : 'No data available'}
                         </td>
                       </tr>
-                    ) : (
-                      data.map((item) => (
+                      : data.map(item =>
                         <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.name}</td>
-                          <td className="text-center">
-                            <div className="d-flex gap-1 justify-content-center action-buttons">
+                          <td>
+                            {item.id}
+                          </td>
+                          <td>
+                            {item.name}
+                          </td>
+                          <td>
+                            {item.description || '-'}
+                          </td>
+
+                          <td className='text-center'>
+                            <div className='d-flex gap-1 justify-content-center action-buttons'>
                               {/* Edit Button */}
                               <Button
-                                variant="outline-warning"
-                                size="sm"
+                                variant='outline-warning'
+                                size='sm'
                                 onClick={() => handleShowModal(item)}
-                                className="d-flex align-items-center"
+                                className='d-flex align-items-center'
                                 title={getText('common.edit', language)}
-                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                <span className="d-none d-sm-inline">
+                                >
+                                <i className='bi bi-pencil me-1' />
+                                <span className='d-none d-sm-inline'>
                                   {getText('common.edit', language)}
                                 </span>
                               </Button>
 
                               {/* Delete Button */}
                               <Button
-                                variant="outline-danger"
-                                size="sm"
+                                variant='outline-danger'
+                                size='sm'
                                 onClick={() => handleDeleteClick(item)}
-                                className="d-flex align-items-center"
+                                className='d-flex align-items-center'
                                 title={getText('common.delete', language)}
-                              >
-                                <i className="bi bi-trash me-1"></i>
-                                <span className="d-none d-sm-inline">
+                                >
+                                <i className='bi bi-trash me-1' />
+                                <span className='d-none d-sm-inline'>
                                   {getText('common.delete', language)}
                                 </span>
                               </Button>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
+                        )}
                   </tbody>
                 </Table>
               </div>
@@ -328,53 +365,70 @@ const DocStatusComponent = () => {
         <Modal.Header closeButton>
           <Modal.Title>
             {editingItem
-              ? `${getText("common.edit", language)} ${getText(
-                "document.docStatus",
-                language
-              )}`
-              : `${getText("common.add", language)} ${getText(
-                "document.docStatus",
-                language
-              )}`}
+              ? `${getText('common.edit', language)} ${getText(
+                  'document.docStatus',
+                  language
+                )}`
+              : `${getText('common.add', language)} ${getText(
+                  'document.docStatus',
+                  language
+                )}`}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
-            {error && (
-              <Alert variant="danger" dismissible onClose={() => setError("")}>
+            {error &&
+              <Alert variant='danger' dismissible onClose={() => setError('')}>
                 {error}
-              </Alert>
-            )}
+              </Alert>}
 
-            <Form.Group className="mb-3">
+            <Form.Group className='mb-3'>
               <Form.Label>
-                {getText("document.fields.name", language)} *
+                {getText('document.fields.name', language)} *
               </Form.Label>
               <Form.Control
-                type="text"
-                name="name"
+                type='text'
+                name='name'
                 value={formData.name}
                 onChange={handleChange}
                 required
                 placeholder={
-                  language === "fr"
-                    ? "Entrer le nom du statut"
-                    : "Enter status name"
+                  language === 'fr'
+                    ? 'Entrer le nom du statut'
+                    : 'Enter status name'
                 }
               />
-              <Form.Text className="text-muted">
-                {language === "fr"
-                  ? "Ex: applicable, suspendu, remplacé, annulé, en_cours, acquis, vendu, transféré, litigieux, validé"
-                  : "Ex: applicable, suspended, replaced, cancelled, in_progress, acquired, sold, transferred, litigious, validated"}
+              <Form.Text className='text-muted'>
+                {language === 'fr'
+                  ? 'Ex: applicable, suspendu, remplacé, annulé, en_cours, acquis, vendu, transféré, litigieux, validé'
+                  : 'Ex: applicable, suspended, replaced, cancelled, in_progress, acquired, sold, transferred, litigious, validated'}
               </Form.Text>
+            </Form.Group>
+
+            <Form.Group className='mb-3'>
+              <Form.Label>
+                {getText('document.fields.description', language)}
+              </Form.Label>
+              <Form.Control
+                as='textarea'
+                rows={3}
+                name='description'
+                value={formData.description}
+                onChange={handleChange}
+                placeholder={
+                  language === 'fr'
+                    ? 'Entrer la description du statut'
+                    : 'Enter status description'
+                }
+              />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              {getText("common.cancel", language)}
+            <Button variant='secondary' onClick={handleCloseModal}>
+              {getText('common.cancel', language)}
             </Button>
-            <Button variant="primary" type="submit">
-              {getText("common.save", language)}
+            <Button variant='primary' type='submit'>
+              {getText('common.save', language)}
             </Button>
           </Modal.Footer>
         </Form>
@@ -382,44 +436,53 @@ const DocStatusComponent = () => {
 
       {/* Delete Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={handleDeleteCancel} centered>
-        <Modal.Header closeButton className="bg-danger text-white">
-          <Modal.Title className="d-flex align-items-center">
-            <i className="bi bi-exclamation-triangle me-2"></i>
+        <Modal.Header closeButton className='bg-danger text-white'>
+          <Modal.Title className='d-flex align-items-center'>
+            <i className='bi bi-exclamation-triangle me-2' />
             {getText('common.confirmDelete', language)}
           </Modal.Title>
         </Modal.Header>
-        <Modal.Body className="p-4">
-          <div className="text-center">
-            <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
-            <h5 className="mt-3 mb-3">
-              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+        <Modal.Body className='p-4'>
+          <div className='text-center'>
+            <i
+              className='bi bi-trash text-danger'
+              style={{ fontSize: '3rem' }}
+            />
+            <h5 className='mt-3 mb-3'>
+              {language === 'fr'
+                ? 'Êtes-vous sûr de vouloir supprimer cet élément ?'
+                : 'Are you sure you want to delete this item?'}
             </h5>
-            {itemToDelete && (
-              <div className="bg-light p-3 rounded">
-                <strong>{getText('document.fields.name', language)}:</strong> {itemToDelete.name}
-              </div>
-            )}
-            <p className="text-muted mt-3 mb-0">
-              <i className="bi bi-info-circle me-1"></i>
-              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+            {itemToDelete &&
+              <div className='bg-light p-3 rounded'>
+                <strong>
+                  {getText('document.fields.name', language)}:
+                </strong>{' '}
+                {itemToDelete.name}
+              </div>}
+            <p className='text-muted mt-3 mb-0'>
+              <i className='bi bi-info-circle me-1' />
+              {language === 'fr'
+                ? 'Cette action est irréversible.'
+                : 'This action cannot be undone.'}
             </p>
           </div>
         </Modal.Body>
-        <Modal.Footer className="bg-light">
-          <div className="d-flex gap-2 w-100 justify-content-end">
-            <Button variant="outline-secondary" onClick={handleDeleteCancel}>
-              <i className="bi bi-x-circle me-2"></i>
+        <Modal.Footer className='bg-light'>
+          <div className='d-flex gap-2 w-100 justify-content-end'>
+            <Button variant='outline-secondary' onClick={handleDeleteCancel}>
+              <i className='bi bi-x-circle me-2' />
               {getText('common.cancel', language)}
             </Button>
-            <Button variant="danger" onClick={handleDeleteConfirm}>
-              <i className="bi bi-trash me-2"></i>
+            <Button variant='danger' onClick={handleDeleteConfirm}>
+              <i className='bi bi-trash me-2' />
               {getText('common.delete', language)}
             </Button>
           </div>
         </Modal.Footer>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default DocStatusComponent;
+export default DocStatusComponent

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllAccordConcession, getAllSectionCategories } from '../../services/GetRequests';
-import { createAccordConcession, createAccordConcessionWithFile } from '../../services/Inserts';
+import {  createAccordConcessionWithFile } from '../../services/Inserts';
 import { updateAccordConcession, updateAccordConcessionWithFile, deleteAccordConcession } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';

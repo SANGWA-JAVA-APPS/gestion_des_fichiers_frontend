@@ -4,6 +4,12 @@ import { getAllModules, getAllLocationEntities } from '../../services/GetRequest
 import { createModule } from '../../services/Inserts';
 import { updateModule, deleteModule } from '../../services/UpdRequests';
 
+const moduleTypes = [
+  'ADMINISTRATIVE', 'COMMERCIAL', 'RESIDENTIAL', 'INDUSTRIAL',
+  'AGRICULTURAL', 'RECREATIONAL', 'EDUCATIONAL', 'HEALTHCARE',
+  'TRANSPORT', 'OTHER'
+];
+
 const ModulesComponent = () => {
   const [modules, setModules] = useState([]);
   const [locationEntities, setLocationEntities] = useState([]);
@@ -13,7 +19,12 @@ const ModulesComponent = () => {
   const [editingModule, setEditingModule] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
-    entityId: ''
+    locationEntityId: '',
+    moduleCode: '',
+    moduleType: '',
+    coordinates: '',
+    areaSize: '',
+    areaUnit: ''
   });
 
   useEffect(() => {
@@ -24,25 +35,17 @@ const ModulesComponent = () => {
     try {
       setLoading(true);
       setError('');
-      // Load modules and location entities
       const [modulesData, entitiesData] = await Promise.all([
         getAllModules(),
         getAllLocationEntities()
       ]);
-      
-      console.log('Modules data received:', modulesData);
-      console.log('Entities data received:', entitiesData);
-      
-      // Ensure data is an array
-      const modulesArray = Array.isArray(modulesData) ? modulesData : 
-                          (modulesData?.content || modulesData?.data || []);
-      const entitiesArray = Array.isArray(entitiesData) ? entitiesData : 
-                           (entitiesData?.content || entitiesData?.data || []);
-      
+
+      const modulesArray = Array.isArray(modulesData) ? modulesData : (modulesData?.content || modulesData?.data || []);
+      const entitiesArray = Array.isArray(entitiesData) ? entitiesData : (entitiesData?.content || entitiesData?.data || []);
+
       setModules(modulesArray);
       setLocationEntities(entitiesArray);
     } catch (err) {
-      console.error('Error loading data:', err);
       setError('Failed to load modules: ' + (err.message || 'Unknown error'));
       setModules([]);
       setLocationEntities([]);
@@ -56,13 +59,23 @@ const ModulesComponent = () => {
       setEditingModule(module);
       setFormData({
         name: module.name || '',
-        entityId: module.entityId || ''  // Simple foreign key field
+        locationEntityId: module.locationEntityId || '',
+        moduleCode: module.moduleCode || '',
+        moduleType: module.moduleType || '',
+        coordinates: module.coordinates || '',
+        areaSize: module.areaSize || '',
+        areaUnit: module.areaUnit || ''
       });
     } else {
       setEditingModule(null);
       setFormData({
         name: '',
-        entityId: ''
+        locationEntityId: '',
+        moduleCode: '',
+        moduleType: '',
+        coordinates: '',
+        areaSize: '',
+        areaUnit: ''
       });
     }
     setShowModal(true);
@@ -73,29 +86,27 @@ const ModulesComponent = () => {
     setEditingModule(null);
     setFormData({
       name: '',
-      entityId: ''
+      locationEntityId: '',
+      moduleCode: '',
+      moduleType: '',
+      coordinates: '',
+      areaSize: '',
+      areaUnit: ''
     });
   };
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({
-      ...formData,
-      [e.target.name]: value
-    });
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const submitData = {
-        ...formData
-      };
-      
       if (editingModule) {
-        await updateModule(editingModule.id, submitData);
+        await updateModule(editingModule.id, formData);
       } else {
-        await createModule(submitData);
+        await createModule(formData);
       }
       handleCloseModal();
       loadData();
@@ -128,202 +139,128 @@ const ModulesComponent = () => {
       TRANSPORT: 'secondary',
       OTHER: 'secondary'
     };
-    return (
-      <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
-        {type?.replace(/_/g, ' ')}
-      </span>
-    );
+    return <span className={`badge bg-${typeColors[type] || 'secondary'}`}>{type?.replace(/_/g, ' ')}</span>;
   };
 
-  if (loading) {
-    return (
-      <Container>
-        <Row>
-          <Col xs={12} className="text-center">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </Spinner>
-          </Col>
-        </Row>
-      </Container>
-    );
-  }
+  if (loading) return <Spinner animation="border" />;
 
   return (
     <Container fluid>
       <Row className="mb-4">
-        <Col>
-          <h4>Module Management</h4>
-          <p className="text-muted">Manage modules within location entities with area and type information</p>
-        </Col>
+        <Col><h4>Module Management</h4></Col>
         <Col xs="auto">
-          <Button variant="primary" onClick={() => handleShowModal()}>
-            <i className="fas fa-plus me-2"></i>
-            Add New Module
-          </Button>
+          <Button variant="primary" onClick={() => handleShowModal()}>Add New Module</Button>
         </Col>
       </Row>
 
-      {error && (
-        <Row className="mb-3">
-          <Col xs={12}>
-            <Alert variant="danger" dismissible onClose={() => setError('')}>
-              {error}
-            </Alert>
-          </Col>
-        </Row>
-      )}
+      {error && <Alert variant="danger">{error}</Alert>}
 
-      <Row>
-        <Col xs={12}>
-          <Card>
-            <Card.Body>
+      <Card>
+        <Card.Body>
+          <Table responsive striped hover>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Location Entity</th>
+                <th>Area</th>
+                <th>Coordinates</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {modules.length === 0 ? (
-                <Row>
-                  <Col xs={12} className="text-center py-4">
-                    <p className="text-muted">No modules found. Add your first module!</p>
-                  </Col>
-                </Row>
+                <tr><td colSpan="8" className="text-center">No modules found</td></tr>
               ) : (
-                <Table responsive striped hover>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Code</th>
-                      <th>Type</th>
-                      <th>Location Entity</th>
-                      <th>Area</th>
-                      <th>Coordinates</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {modules.map((module) => (
-                      <tr key={module.id}>
-                        <td><strong>{module.name}</strong></td>
-                        <td>
-                          {module.moduleCode ? (
-                            <code className="text-primary">{module.moduleCode}</code>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
-                        </td>
-                        <td>
-                          {module.moduleType ? getModuleTypeBadge(module.moduleType) : 'N/A'}
-                        </td>
-                        <td>
-                          {module.entityId ? (
-                            <span className="badge bg-info">Entity ID: {module.entityId}</span>
-                          ) : (
-                            'N/A'
-                          )}
-                        </td>
-                        <td>
-                          {module.areaSize && module.areaUnit ? (
-                            <span className="badge bg-light text-dark">
-                              {module.areaSize} {module.areaUnit}
-                            </span>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
-                        </td>
-                        <td>
-                          {module.coordinates ? (
-                            <small className="text-muted" title={module.coordinates}>
-                              {module.coordinates.length > 20 ? 
-                                `${module.coordinates.substring(0, 20)}...` : 
-                                module.coordinates
-                              }
-                            </small>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
-                        </td>
-                        <td>
-                          <span className={`badge ${module.active ? 'bg-success' : 'bg-secondary'}`}>
-                            {module.active ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td>
-                          <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="me-2"
-                            onClick={() => handleShowModal(module)}
-                          >
-                            <i className="fas fa-edit"></i> Edit
-                          </Button>
-                          <Button
-                            variant="outline-danger"
-                            size="sm"
-                            onClick={() => handleDelete(module.id)}
-                          >
-                            <i className="fas fa-trash"></i> Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                modules.map(module => (
+                  <tr key={module.id}>
+                    <td>{module.name}</td>
+                    <td>{module.moduleCode || 'N/A'}</td>
+                    <td>{module.moduleType ? getModuleTypeBadge(module.moduleType) : 'N/A'}</td>
+                    <td>{module.locationEntityName || 'N/A'}</td>
+                    <td>{module.areaSize && module.areaUnit ? `${module.areaSize} ${module.areaUnit}` : 'N/A'}</td>
+                    <td>{module.coordinates || 'N/A'}</td>
+                    <td><span className={`badge ${module.active ? 'bg-success' : 'bg-secondary'}`}>{module.active ? 'Active' : 'Inactive'}</span></td>
+                    <td>
+                      <Button size="sm" variant="outline-primary" onClick={() => handleShowModal(module)}>Edit</Button>
+                      <Button size="sm" variant="outline-danger" onClick={() => handleDelete(module.id)}>Delete</Button>
+                    </td>
+                  </tr>
+                ))
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
 
-      {/* Modal for Add/Edit Module */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>
-            {editingModule ? 'Edit Module' : 'Add New Module'}
-          </Modal.Title>
+          <Modal.Title>{editingModule ? 'Edit Module' : 'Add Module'}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
-            <Container>
-              <Row>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Module Name *</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="Enter module name"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Entity *</Form.Label>
-                    <Form.Select
-                      name="entityId"
-                      value={formData.entityId}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Select entity</option>
-                      {locationEntities.map((entity) => (
-                        <option key={entity.id} value={entity.id}>
-                          {entity.name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Container>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Module Name *</Form.Label>
+                  <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} required />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Entity *</Form.Label>
+                  <Form.Select name="locationEntityId" value={formData.locationEntityId} onChange={handleChange} required>
+                    <option value="">Select entity</option>
+                    {locationEntities.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Module Code</Form.Label>
+                  <Form.Control type="text" name="moduleCode" value={formData.moduleCode} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Module Type</Form.Label>
+                  <Form.Select name="moduleType" value={formData.moduleType} onChange={handleChange}>
+                    <option value="">Select type</option>
+                    {moduleTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Coordinates</Form.Label>
+                  <Form.Control type="text" name="coordinates" value={formData.coordinates} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Area Size</Form.Label>
+                  <Form.Control type="number" name="areaSize" value={formData.areaSize} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Area Unit</Form.Label>
+                  <Form.Control type="text" name="areaUnit" value={formData.areaUnit} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit">
-              {editingModule ? 'Update' : 'Create'} Module
-            </Button>
+            <Button variant="secondary" onClick={handleCloseModal}>Cancel</Button>
+            <Button variant="primary" type="submit">{editingModule ? 'Update' : 'Create'}</Button>
           </Modal.Footer>
         </Form>
       </Modal>

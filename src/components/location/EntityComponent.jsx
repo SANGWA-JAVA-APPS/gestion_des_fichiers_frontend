@@ -1,106 +1,156 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
-import { getAllLocationEntities, getAllCountries } from '../../services/GetRequests';
-import { createLocationEntity } from '../../services/Inserts';
-import { updateLocationEntity, deleteLocationEntity } from '../../services/UpdRequests';
+import React, { useState, useEffect } from 'react'
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Table,
+  Modal,
+  Form,
+  Alert,
+  Spinner
+} from 'react-bootstrap'
+import {
+  getAllLocationEntities,
+  getAllCountries
+} from '../../services/GetRequests'
+import { createLocationEntity } from '../../services/Inserts'
+import {
+  updateLocationEntity,
+  deleteLocationEntity
+} from '../../services/UpdRequests'
+import { getFlagUrl } from '../../services/commonUtils'
 
 const EntityComponent = () => {
-  const [entities, setEntities] = useState([]);
-  const [countries, setCountries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingEntity, setEditingEntity] = useState(null);
+  const entityTypes = [
+    'PROVINCE',
+    'STATE',
+    'REGION',
+    'DISTRICT',
+    'CITY',
+    'TOWN',
+    'VILLAGE'
+  ]
+  const [entities, setEntities] = useState([])
+  const [countries, setCountries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [editingEntity, setEditingEntity] = useState(null)
+  const [editingLocation, setEditingLocation] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
+    address: '',
+    description: '',
+    code: '',
+    postalCode: '',
+    entityType: 'CITY',
     countryId: ''
-  });
-
+  })
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       // Load entities and countries
-      const entitiesData = await getAllLocationEntities();
-      const countriesData = await getAllCountries();
-      setEntities(entitiesData);
-      setCountries(countriesData);
+      const entitiesData = await getAllLocationEntities()
+      const countriesData = await getAllCountries()
+      setEntities(entitiesData)
+      setCountries(countriesData)
     } catch (err) {
-      setError('Failed to load entities: ' + err.message);
+      setError('Failed to load entities: ' + err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleShowModal = (entity = null) => {
-    if (entity) {
-      setEditingEntity(entity);
+  const handleShowModal = (location = null) => {
+    setEditingEntity(location)
+    if (location) {
+      setEditingLocation(location)
       setFormData({
-        name: entity.name || '',
-        countryId: entity.countryId || ''  // Simple foreign key field
-      });
+        name: location.name || '',
+        address: location.address || '',
+        description: location.description || '',
+        code: location.code || '',
+        postalCode: location.postalCode || '',
+        entityType: location.entityType || 'CITY',
+        countryId: location.countryId || ''
+      })
     } else {
-      setEditingEntity(null);
+      setEditingLocation(null)
       setFormData({
         name: '',
+        address: '',
+        description: '',
+        code: '',
+        postalCode: '',
+        entityType: 'CITY',
         countryId: ''
-      });
+      })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingEntity(null);
+    setShowModal(false)
+    setEditingEntity(null)
+
+    setEditingLocation(null)
     setFormData({
       name: '',
+      address: '',
+      description: '',
+      code: '',
+      postalCode: '',
+      entityType: 'CITY',
       countryId: ''
-    });
-  };
-
-  const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    })
+  }
+  const handleChange = e => {
+    const value =
+      e.target.type === 'checkbox' ? e.target.checked : e.target.value
     setFormData({
       ...formData,
       [e.target.name]: value
-    });
-  };
+    })
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault()
     try {
       const submitData = {
         ...formData,
-        countryId: formData.countryId  // Simple foreign key instead of nested object
-      };
-      
-      if (editingEntity) {
-        await updateLocationEntity(editingEntity.id, submitData);
-      } else {
-        await createLocationEntity(submitData);
+        countryId: formData.countryId
       }
-      handleCloseModal();
-      loadData();
-    } catch (err) {
-      setError('Failed to save entity: ' + err.message);
-    }
-  };
 
-  const handleDelete = async (entityId) => {
+      if (editingEntity) {
+        await updateLocationEntity(editingEntity.id, submitData)
+      } else {
+        await createLocationEntity(submitData)
+      }
+      handleCloseModal()
+      loadData()
+    } catch (err) {
+      setError('Failed to save entity: ' + err.message)
+    }
+  }
+
+  const handleDelete = async entityId => {
     if (window.confirm('Are you sure you want to delete this entity?')) {
       try {
-        await deleteLocationEntity(entityId);
-        loadData();
+        await deleteLocationEntity(entityId)
+        loadData()
       } catch (err) {
-        setError('Failed to delete entity: ' + err.message);
+        setError('Failed to delete entity: ' + err.message)
       }
     }
-  };
+  }
 
-  const getEntityTypeBadge = (type) => {
+  const getEntityTypeBadge = type => {
     const typeColors = {
       PROVINCE: 'primary',
       STATE: 'info',
@@ -109,65 +159,68 @@ const EntityComponent = () => {
       CITY: 'warning',
       TOWN: 'dark',
       VILLAGE: 'light'
-    };
+    }
     return (
       <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
         {type}
       </span>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
       <Container>
         <Row>
-          <Col xs={12} className="text-center">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
+          <Col xs={12} className='text-center'>
+            <Spinner animation='border' role='status'>
+              <span className='visually-hidden'>Loading...</span>
             </Spinner>
           </Col>
         </Row>
       </Container>
-    );
+    )
   }
 
   return (
     <Container fluid>
-      <Row className="mb-4">
+      <Row className='mb-4'>
         <Col>
-          <h4>Location Entity Management</h4>
-          <p className="text-muted">Manage provinces, states, regions, districts, cities, towns, and villages</p>
+          <h4>Location Entity Management yeah</h4>
+          <p className='text-muted'>
+            Manage provinces, states, regions, districts, cities, towns, and
+            villages
+          </p>
         </Col>
-        <Col xs="auto">
-          <Button variant="primary" onClick={() => handleShowModal()}>
-            <i className="fas fa-plus me-2"></i>
+        <Col xs='auto'>
+          <Button variant='primary' onClick={() => handleShowModal()}>
+            <i className='fas fa-plus me-2' />
             Add New Entity
           </Button>
         </Col>
       </Row>
 
-      {error && (
-        <Row className="mb-3">
+      {error &&
+        <Row className='mb-3'>
           <Col xs={12}>
-            <Alert variant="danger" dismissible onClose={() => setError('')}>
+            <Alert variant='danger' dismissible onClose={() => setError('')}>
               {error}
             </Alert>
           </Col>
-        </Row>
-      )}
+        </Row>}
 
       <Row>
         <Col xs={12}>
           <Card>
             <Card.Body>
-              {entities.length === 0 ? (
-                <Row>
-                  <Col xs={12} className="text-center py-4">
-                    <p className="text-muted">No entities found. Add your first entity!</p>
+              {entities.length === 0
+                ? <Row>
+                  <Col xs={12} className='text-center py-4'>
+                    <p className='text-muted'>
+                        No entities found. Add your first entity!
+                      </p>
                   </Col>
                 </Row>
-              ) : (
-                <Table responsive striped hover>
+                : <Table responsive striped hover>
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -180,59 +233,80 @@ const EntityComponent = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {entities.map((entity) => (
+                    {entities.map(entity =>
                       <tr key={entity.id}>
-                        <td><strong>{entity.name}</strong></td>
-                        <td>{entity.entityType ? getEntityTypeBadge(entity.entityType) : 'N/A'}</td>
                         <td>
-                          {entity.code ? (
-                            <code className="text-primary">{entity.code}</code>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
+                          <strong>
+                            {entity.name}
+                          </strong>
                         </td>
                         <td>
-                          {entity.countryId ? (
-                            <span className="badge bg-info">Country ID: {entity.countryId}</span>
-                          ) : (
-                            'N/A'
-                          )}
+                          {entity.entityType
+                              ? getEntityTypeBadge(entity.entityType)
+                              : 'N/A'}
                         </td>
-                        <td>{entity.postalCode || 'N/A'}</td>
                         <td>
-                          <span className={`badge ${entity.active ? 'bg-success' : 'bg-secondary'}`}>
+                          {entity.code
+                              ? <code className='text-primary'>
+                                {entity.code}
+                              </code>
+                              : <span className='text-muted'>N/A</span>}
+                        </td>
+                        <td>
+                          {entity.countryId
+                              ? <span className=' d-flex items-center gap-1'>
+                                {entity.countryFlag &&
+                                <img
+                                  src={getFlagUrl(entity.countryFlag)}
+                                  alt={entity.countryName}
+                                  width={40}
+                                  height='auto'
+                                    />}
+                                {entity.countryName}
+                              </span>
+                              : 'N/A'}
+                        </td>
+
+                        <td>
+                          {entity.postalCode || 'N/A'}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${entity.active
+                                ? 'bg-success'
+                                : 'bg-secondary'}`}
+                            >
                             {entity.active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td>
                           <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="me-2"
+                            variant='outline-primary'
+                            size='sm'
+                            className='me-2'
                             onClick={() => handleShowModal(entity)}
-                          >
-                            <i className="fas fa-edit"></i> Edit
-                          </Button>
+                            >
+                            <i className='fas fa-edit' /> Edit
+                            </Button>
                           <Button
-                            variant="outline-danger"
-                            size="sm"
+                            variant='outline-danger'
+                            size='sm'
                             onClick={() => handleDelete(entity.id)}
-                          >
-                            <i className="fas fa-trash"></i> Delete
-                          </Button>
+                            >
+                            <i className='fas fa-trash' /> Delete
+                            </Button>
                         </td>
                       </tr>
-                    ))}
+                      )}
                   </tbody>
-                </Table>
-              )}
+                </Table>}
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
       {/* Modal for Add/Edit Entity */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg">
+      <Modal show={showModal} onHide={handleCloseModal} size='lg'>
         <Modal.Header closeButton>
           <Modal.Title>
             {editingEntity ? 'Edit Location Entity' : 'Add New Location Entity'}
@@ -243,51 +317,112 @@ const EntityComponent = () => {
             <Container>
               <Row>
                 <Col md={6}>
-                  <Form.Group className="mb-3">
+                  <Form.Group className='mb-3'>
                     <Form.Label>Entity Name *</Form.Label>
                     <Form.Control
-                      type="text"
-                      name="name"
+                      type='text'
+                      name='name'
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      placeholder="Enter entity name"
+                      placeholder='Enter entity name'
                     />
                   </Form.Group>
                 </Col>
                 <Col md={6}>
-                  <Form.Group className="mb-3">
+                  <Form.Group className='mb-3'>
                     <Form.Label>Country *</Form.Label>
                     <Form.Select
-                      name="countryId"
+                      name='countryId'
                       value={formData.countryId}
                       onChange={handleChange}
                       required
                     >
-                      <option value="">Select country</option>
-                      {countries.map((country) => (
-                        <option key={country.id} value={country.id}>
-                          {country.name}
+                      <option value=''>Select country</option>
+                      {countries.map(c =>
+                        <option key={c.id} value={c.id}>
+                          {c.name}
                         </option>
-                      ))}
+                      )}
                     </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={4}>
+                  <Form.Group className='mb-3'>
+                    <Form.Label>Entity Type *</Form.Label>
+                    <Form.Select
+                      name='entityType'
+                      value={formData.entityType}
+                      onChange={handleChange}
+                      required
+                    >
+                      {entityTypes.map(type =>
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      )}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className='mb-3'>
+                    <Form.Label>Code</Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='code'
+                      value={formData.code}
+                      onChange={handleChange}
+                      placeholder='Enter code'
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className='mb-3'>
+                    <Form.Label>Postal Code</Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='postalCode'
+                      value={formData.postalCode}
+                      onChange={handleChange}
+                      placeholder='Enter postal code'
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col>
+                  <Form.Group className='mb-3'>
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      as='textarea'
+                      rows={3}
+                      name='description'
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder='Enter description'
+                    />
                   </Form.Group>
                 </Col>
               </Row>
             </Container>
           </Modal.Body>
+
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+            <Button variant='secondary' onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant='primary' type='submit'>
               {editingEntity ? 'Update' : 'Create'} Entity
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
     </Container>
-  );
-};
+  )
+}
 
-export default EntityComponent;
+export default EntityComponent

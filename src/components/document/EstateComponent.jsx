@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllEstate } from '../../services/GetRequests';
-import { createEstate, createEstateWithFile } from '../../services/Inserts';
+import {  createEstateWithFile } from '../../services/Inserts';
 import { updateEstate, updateEstateWithFile, deleteEstate } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';

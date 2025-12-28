@@ -1,145 +1,182 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
-import { getAllCountries } from '../../services/GetRequests';
-import { createCountry } from '../../services/Inserts';
-import { updateCountry, deleteCountry } from '../../services/UpdRequests';
+import React, { useState, useEffect } from 'react'
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Table,
+  Modal,
+  Form,
+  Alert,
+  Spinner
+} from 'react-bootstrap'
+import { getAllCountries } from '../../services/GetRequests'
+import { createCountry } from '../../services/Inserts'
+import { updateCountry, deleteCountry } from '../../services/UpdRequests'
+import CountryInput from '../CountryInput'
+import { getFlagUrl } from '../../services/commonUtils'
 
 const CountryComponent = () => {
-  const [countries, setCountries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingCountry, setEditingCountry] = useState(null);
+  const [countries, setCountries] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [editingCountry, setEditingCountry] = useState(null)
   const [formData, setFormData] = useState({
-    name: ''
-  });
+    countryName: '',
+    countryIso2: '',
+    description: '',
+    phoneCode: '',
+    flagUrl: ''
+  })
 
+  // Load countries on mount
   useEffect(() => {
-    loadCountries();
-  }, []);
+    loadCountries()
+  }, [])
 
   const loadCountries = async () => {
     try {
-      setLoading(true);
-      const data = await getAllCountries();
-      // Ensure data is always an array
-      setCountries(Array.isArray(data) ? data : []);
+      setLoading(true)
+      const data = await getAllCountries()
+      setCountries(Array.isArray(data) ? data : [])
     } catch (err) {
-      setError('Failed to load countries: ' + err.message);
-      setCountries([]); // Set empty array on error
+      setError('Failed to load countries: ' + err.message)
+      setCountries([])
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleShowModal = (country = null) => {
     if (country) {
-      setEditingCountry(country);
+      setEditingCountry(country)
       setFormData({
-        name: country.name || ''
-      });
+        countryName: country.name || '',
+        countryIso2: country.isoCode || '',
+        description: country.description || '',
+        phoneCode: country.phoneCode || '',
+        flagUrl: country.flagUrl || ''
+      })
     } else {
-      setEditingCountry(null);
+      setEditingCountry(null)
       setFormData({
-        name: ''
-      });
+        countryName: '',
+        countryIso2: '',
+        description: '',
+        phoneCode: '',
+        flagUrl: ''
+      })
     }
-    setShowModal(true);
-  };
+    setShowModal(true)
+  }
 
   const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingCountry(null);
+    setShowModal(false)
+    setEditingCountry(null)
     setFormData({
-      name: ''
-    });
-  };
+      countryName: '',
+      countryIso2: '',
+      description: '',
+      phoneCode: '',
+      flagUrl: ''
+    })
+  }
 
-  const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({
-      ...formData,
-      [e.target.name]: value
-    });
-  };
+  const handleChange = e => {
+    const value =
+      e.target.type === 'checkbox' ? e.target.checked : e.target.value
+    setFormData({ ...formData, [e.target.name]: value })
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async e => {
+    e.preventDefault()
     try {
-      if (editingCountry) {
-        await updateCountry(editingCountry.id, formData);
-      } else {
-        await createCountry(formData);
+      const payload = {
+        name: formData.countryName,
+        isoCode: formData.countryIso2,
+        description: formData.description,
+        phoneCode: formData.phoneCode,
+        flagUrl: formData.flagUrl
       }
-      handleCloseModal();
-      loadCountries();
-    } catch (err) {
-      setError('Failed to save country: ' + err.message);
-    }
-  };
 
-  const handleDelete = async (countryId) => {
+      if (editingCountry) {
+        await updateCountry(editingCountry.id, payload)
+      } else {
+        await createCountry(payload)
+      }
+
+      handleCloseModal()
+      loadCountries()
+    } catch (err) {
+      setError('Failed to save country: ' + err.message)
+    }
+  }
+
+  const handleDelete = async countryId => {
     if (window.confirm('Are you sure you want to delete this country?')) {
       try {
-        await deleteCountry(countryId);
-        loadCountries();
+        await deleteCountry(countryId)
+        loadCountries()
       } catch (err) {
-        setError('Failed to delete country: ' + err.message);
+        setError('Failed to delete country: ' + err.message)
       }
     }
-  };
+  }
 
   if (loading) {
     return (
       <Container>
         <Row>
-          <Col xs={12} className="text-center">
-            <Spinner animation="border" role="status">
-              <span className="visually-hidden">Loading...</span>
+          <Col xs={12} className='text-center'>
+            <Spinner animation='border' role='status'>
+              <span className='visually-hidden'>Loading...</span>
             </Spinner>
           </Col>
         </Row>
       </Container>
-    );
+    )
   }
 
   return (
     <Container fluid>
-      <Row className="mb-4">
+      <Row className='mb-4'>
         <Col>
           <h5>Country Management</h5>
-          <p className="text-muted">Manage countries with ISO codes, phone codes, and flags</p>
+          <p className='text-muted'>
+            Manage countries with ISO codes, phone codes, and flags
+          </p>
         </Col>
-        <Col xs="auto">
-          <Button variant="primary" onClick={() => handleShowModal()}>
-            <i className="fas fa-plus me-2"></i>
-            Add New Country
+        <Col xs='auto'>
+          <Button variant='primary' onClick={() => handleShowModal()}>
+            <i className='fas fa-plus me-2' /> Add New Country
           </Button>
         </Col>
       </Row>
 
-      {error && (
-        <Row className="mb-3">
+      {error &&
+        <Row className='mb-3'>
           <Col xs={12}>
-            <Alert variant="danger" dismissible onClose={() => setError('')}>
+            <Alert variant='danger' dismissible onClose={() => setError('')}>
               {error}
             </Alert>
           </Col>
-        </Row>
-      )}
+        </Row>}
 
       <Row>
         <Col xs={12}>
           <Card>
             <Card.Body>
-              {countries.length === 0 ? (
-                <Row>
-                  <Col xs={12} className="text-center py-4">
-                    <p className="text-muted">No countries found. Add your first country!</p>
+              {countries.length === 0
+                ? <Row>
+                  <Col xs={12} className='text-center py-4'>
+                    <p className='text-muted'>
+                        No countries found. Add your first country!
+                      </p>
                   </Col>
                 </Row>
-              ) : (
-                <Table responsive striped hover>
+                : <Table responsive striped hover>
                   <thead>
                     <tr>
                       <th>Flag</th>
@@ -152,79 +189,73 @@ const CountryComponent = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Array.isArray(countries) && countries.length > 0 ? (
-                      countries.map((country) => (
-                        <tr key={country.id}>
-                          <td>
-                            {country.flagUrl ? (
-                              <img 
-                                src={country.flagUrl} 
-                                alt={`${country.name} flag`} 
-                                style={{ width: '30px', height: 'auto' }}
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                            ) : (
-                            <i className="fas fa-flag text-muted"></i>
-                          )}
+                    {countries.map(country =>
+                      <tr key={country.id}>
+                        <td className='text-center'>
+                          {country.isoCode
+                              ? <img
+                                src={getFlagUrl(country.isoCode)}
+                                alt={`${country.name} flag`}
+                                width={30}
+                                height='auto'
+                                onError={e =>
+                                    (e.target.style.display = 'none')}
+                                />
+                              : <i className='fas fa-flag text-muted' />}
                         </td>
-                        <td><strong>{country.name}</strong></td>
+
                         <td>
-                          {country.isoCode ? (
-                            <code className="text-primary">{country.isoCode}</code>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
+                          <strong>
+                            {country.name}
+                          </strong>
                         </td>
                         <td>
-                          {country.phoneCode ? (
-                            <span className="badge bg-secondary">+{country.phoneCode}</span>
-                          ) : (
-                            <span className="text-muted">N/A</span>
-                          )}
+                          {country.isoCode ||
+                          <span className='text-muted'>N/A</span>}
                         </td>
                         <td>
-                          {country.description ? (
-                            <span className="text-truncate" style={{maxWidth: '200px', display: 'inline-block'}} title={country.description}>
-                              {country.description}
-                            </span>
-                          ) : (
-                            <span className="text-muted">No description</span>
-                          )}
+                          {country.phoneCode
+                              ? <span className='badge bg-secondary'>
+                                {country.phoneCode}
+                              </span>
+                              : <span className='text-muted'>N/A</span>}
                         </td>
                         <td>
-                          <span className={`badge ${country.active ? 'bg-success' : 'bg-secondary'}`}>
+                          {country.description ||
+                          <span className='text-muted'>
+                                No description
+                              </span>}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${country.active
+                                ? 'bg-success'
+                                : 'bg-secondary'}`}
+                            >
                             {country.active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td>
                           <Button
-                            variant="outline-primary"
-                            size="sm"
-                            className="me-2"
+                            variant='outline-primary'
+                            size='sm'
+                            className='me-2'
                             onClick={() => handleShowModal(country)}
-                          >
-                            <i className="fas fa-edit"></i> Edit
-                          </Button>
+                            >
+                            <i className='fas fa-edit' /> Edit
+                            </Button>
                           <Button
-                            variant="outline-danger"
-                            size="sm"
+                            variant='outline-danger'
+                            size='sm'
                             onClick={() => handleDelete(country.id)}
-                          >
-                            <i className="fas fa-trash"></i> Delete
-                          </Button>
+                            >
+                            <i className='fas fa-trash' /> Delete
+                            </Button>
                         </td>
                       </tr>
-                    ))
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="text-center">
-                          {loading ? 'Loading countries...' : 'No countries found'}
-                        </td>
-                      </tr>
-                    )}
+                      )}
                   </tbody>
-                </Table>
-              )}
+                </Table>}
             </Card.Body>
           </Card>
         </Col>
@@ -239,36 +270,48 @@ const CountryComponent = () => {
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
-            <Container>
-              <Row>
-                <Col xs={12}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Country Name *</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="Enter country name"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Container>
+            <Row>
+              <Col xs={12}>
+                <Form.Group className='mb-3'>
+                  <Form.Label>Country *</Form.Label>
+                  <CountryInput
+                    value={formData.countryName || ''}
+                    onChange={country =>
+                      setFormData({
+                        ...formData,
+                        countryName: country.name,
+                        countryIso2: country.iso2,
+                        phoneCode: country.dialCode,
+                        flagUrl: country.emoji
+                      })}
+                  />
+                </Form.Group>
+
+                <Form.Group className='mb-3'>
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                    type='text'
+                    name='description'
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder='Enter description'
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
+            <Button variant='secondary' onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant='primary' type='submit'>
               {editingCountry ? 'Update' : 'Create'} Country
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
     </Container>
-  );
-};
+  )
+}
 
-export default CountryComponent;
+export default CountryComponent
