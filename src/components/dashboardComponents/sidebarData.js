@@ -112,11 +112,11 @@ export const sidebarData = {
               url: '/dashboard/docstatus',
               icon: FileTextIcon
             },
-            {
-              title: 'Docs Categories',
-              url: '/dashboard/docsCategories',
-              icon: LayersIcon
-            },
+            // {
+            //   title: 'Docs Categories',
+            //   url: '/dashboard/docsCategories',
+            //   icon: LayersIcon
+            // },
             {
               title: 'Section Category',
               url: '/dashboard/sectionCategory',

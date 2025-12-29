@@ -59,7 +59,7 @@ export default function App () {
           <Route path='users' element={<Users />} />
 
           {/* Documents */}
-          <Route path='docsCategories' element={<DocStatusComponent />} />
+          <Route path='docsCategories' element={<SectionCategoryComponent />} />
           <Route path='NormeLoi' element={<NormeLoiComponent />} />
           <Route
             path='sectionCategory'
