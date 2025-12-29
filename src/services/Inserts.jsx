@@ -10,6 +10,7 @@ export const loginUser = async (credentials) => {
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('userInfo', JSON.stringify({
+        userId:response.data.userId,
         username: response.data.username,
         fullName: response.data.fullName,
         role: response.data.role

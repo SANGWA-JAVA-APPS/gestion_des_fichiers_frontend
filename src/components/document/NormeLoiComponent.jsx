@@ -3,7 +3,7 @@ import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Drop
 import { getAllNormeLoi } from '../../services/GetRequests';
 import { createNormeLoiWithFile } from '../../services/Inserts';
 import { updateNormeLoi, deleteNormeLoi } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
+import { getAllDocStatuses } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
@@ -15,6 +15,7 @@ import pdfIcon from '../../assets/documents_icons/pdf.png';
 import excelIcon from '../../assets/documents_icons/excel.png';
 import wordIcon from '../../assets/documents_icons/word.png';
 import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
+import { getUserInfo } from '../../services/authUtils';
 
 const NormeLoiComponent = () => {
   const [data, setData] = useState([]);
@@ -25,7 +26,8 @@ const NormeLoiComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+
+    const CurrentUserId = getUserInfo().userId
   const [formData, setFormData] = useState({
     reference: '',
     description: '',
@@ -83,12 +85,12 @@ const NormeLoiComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData] = await Promise.all([
+      const [statusesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllAccounts()
+   
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
+     
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
@@ -114,6 +116,7 @@ const NormeLoiComponent = () => {
     });
   };
 
+  console.log("the  current    user CurrentUserId",CurrentUserId)
   const handleShowModal = (item = null) => {
     if (item) {
       setEditingItem(item);
@@ -122,7 +125,7 @@ const NormeLoiComponent = () => {
         description: item.description || '',
         dateVigueur: item.dateVigueur ? item.dateVigueur.split('T')[0] : '',
         domaineApplication: item.domaineApplication || '',
-        doneBy: { id: item.doneBy?.id || '' },
+     
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' }
       });
@@ -134,7 +137,7 @@ const NormeLoiComponent = () => {
         description: '',
         dateVigueur: '',
         domaineApplication: '',
-        doneBy: { id: '' },
+ 
         document: { id: '' },
         status: { id: '' }
       });
@@ -151,7 +154,7 @@ const NormeLoiComponent = () => {
       description: '',
       dateVigueur: '',
       domaineApplication: '',
-      doneBy: { id: '' },
+   
       document: { id: '' },
       status: { id: '' }
     });
@@ -207,7 +210,7 @@ const NormeLoiComponent = () => {
           description: formData.description || null,
           dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
           domaineApplication: formData.domaineApplication || null,
-          doneBy: { id: parseInt(formData.doneBy.id) },
+          doneBy: { id: CurrentUserId},
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
@@ -222,7 +225,7 @@ const NormeLoiComponent = () => {
         const dataToSubmit = {
           ...formData,
           dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
-          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          doneBy: { id: CurrentUserId},
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
@@ -765,24 +768,7 @@ const NormeLoiComponent = () => {
             </Form.Group>
 
             <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.doneBy', language)} *</Form.Label>
-                  <Form.Select
-                    name="doneBy.id"
-                    value={formData.doneBy.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {accounts.map(account => (
-                      <option key={account.id} value={account.id}>
-                        {account.username || account.fullName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+   
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>

@@ -185,7 +185,7 @@ const EntityComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h4>Location Entity Management yeah</h4>
+          <h4>Location Entity Management</h4>
           <p className='text-muted'>
             Manage provinces, states, regions, districts, cities, towns, and
             villages

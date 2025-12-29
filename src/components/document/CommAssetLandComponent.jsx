@@ -1,20 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCommAssetLand } from '../../services/GetRequests';
-import { createCommAssetLand, createCommAssetLandWithFile } from '../../services/Inserts';
+import {  createCommAssetLandWithFile } from '../../services/Inserts';
 import { updateCommAssetLand, deleteCommAssetLand } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllAccounts, getAllSections } from '../../services/GetRequests';
+import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
-import DocumentDetailsView from './DocumentDetailsView';
-import DownloadConfirmationModal from './DownloadConfirmationModal';
-import { API_BASE_URL } from '../../services/apiConfig';
-import * as downloadService from '../../services/downloadService';
-import pdfIcon from '../../assets/documents_icons/pdf.png';
-import excelIcon from '../../assets/documents_icons/excel.png';
-import wordIcon from '../../assets/documents_icons/word.png';
-import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
+
+import { getUserInfo } from '../../services/authUtils';
+import { BASE_URL } from '../../services/apiConfig';
 
 const CommAssetLandComponent = () => {
   const [data, setData] = useState([]);
@@ -25,7 +21,9 @@ const CommAssetLandComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+const [viewModal, setViewModal] = useState(false);
+const [viewItem, setViewItem] = useState(null);
+
   const [sections, setSections] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -43,13 +41,6 @@ const CommAssetLandComponent = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
-
-  // New state for details and download modals
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const [showDownloadModal, setShowDownloadModal] = useState(false);
-  const [fileToDownload, setFileToDownload] = useState(null);
-  const [activeView, setActiveView] = useState('table'); // 'table' or 'cards'
 
   // Search state
   const [searchFilters, setSearchFilters] = useState({
@@ -81,13 +72,13 @@ const CommAssetLandComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData, sectionsData] = await Promise.all([
+      const [statusesData,  sectionsData] = await Promise.all([
         getAllDocStatuses(),
-        getAllAccounts(),
-        getAllSections()
+  
+        getAllSectionCategories()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
+
       setSections(Array.isArray(sectionsData) ? sectionsData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -113,6 +104,19 @@ const CommAssetLandComponent = () => {
       dateEnd: searchData.dateEnd
     });
   };
+  const handleViewDocument = (documentId) => {
+  const item = data.find(d => d.documentId === documentId);
+  if (item) {
+    setViewItem(item);
+    setViewModal(true);
+  }
+};
+
+const handleCloseViewModal = () => {
+  setViewModal(false);
+  setViewItem(null);
+};
+
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -123,10 +127,10 @@ const CommAssetLandComponent = () => {
         dateObtention: item.dateObtention ? item.dateObtention.split('T')[0] : '',
         coordonneesGps: item.coordonneesGps || '',
         emplacement: item.emplacement || '',
-        doneBy: { id: item.doneBy?.id || '' },
-        document: { id: item.document?.id || '' },
-        status: { id: item.status?.id || '' },
-        section: { id: item.section?.id || '' }
+
+  
+        status: { id: item.statusId || '' },
+        section: { id: item.sectionId || '' }
       });
       setSelectedFile(null);
     } else {
@@ -137,7 +141,7 @@ const CommAssetLandComponent = () => {
         dateObtention: '',
         coordonneesGps: '',
         emplacement: '',
-        doneBy: { id: '' },
+     
         document: { id: '' },
         status: { id: '' },
         section: { id: '' }
@@ -156,7 +160,7 @@ const CommAssetLandComponent = () => {
       dateObtention: '',
       coordonneesGps: '',
       emplacement: '',
-      doneBy: { id: '' },
+
       document: { id: '' },
       status: { id: '' },
       section: { id: '' }
@@ -187,7 +191,7 @@ const CommAssetLandComponent = () => {
       setSelectedFile(file);
     }
   };
-
+    const CurrentUserId = getUserInfo().userId
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -214,7 +218,7 @@ const CommAssetLandComponent = () => {
           dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
           coordonneesGps: formData.coordonneesGps || null,
           emplacement: formData.emplacement || null,
-          doneBy: { id: parseInt(formData.doneBy.id) },
+          doneBy: { id: CurrentUserId },
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null,
           section: formData.section.id ? { id: parseInt(formData.section.id) } : null
         };
@@ -230,8 +234,8 @@ const CommAssetLandComponent = () => {
         const dataToSubmit = {
           ...formData,
           dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
-          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
-          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
+          doneBy: { id:CurrentUserId },
+          document: {id: editingItem.documentId } ,
           section: formData.section.id ? { id: parseInt(formData.section.id) } : null,
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
@@ -277,47 +281,7 @@ const CommAssetLandComponent = () => {
     setItemToDelete(null);
   };
 
-  const handleShowDetails = (item) => {
-    setSelectedDocument(item);
-    setShowDetailsModal(true);
-  };
 
-  const handleCloseDetails = () => {
-    setShowDetailsModal(false);
-    setSelectedDocument(null);
-  };
-
-  const handleTitleClick = (item) => {
-    if (item?.document) {
-      setFileToDownload(item.document);
-      setShowDownloadModal(true);
-    } else {
-      alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-    }
-  };
-
-  const handleConfirmDownload = () => {
-    if (fileToDownload) {
-      downloadService.downloadFile(fileToDownload);
-      setShowDownloadModal(false);
-      setFileToDownload(null);
-    }
-  };
-
-  const handleCancelDownload = () => {
-    setShowDownloadModal(false);
-    setFileToDownload(null);
-  };
-
-  const getDocumentIcon = (contentType) => {
-    if (!contentType) return pdfIcon;
-    const type = contentType.toLowerCase();
-    if (type.includes('pdf')) return pdfIcon;
-    if (type.includes('excel') || type.includes('spreadsheet')) return excelIcon;
-    if (type.includes('word') || type.includes('document')) return wordIcon;
-    if (type.includes('powerpoint') || type.includes('presentation')) return powerpointIcon;
-    return pdfIcon;
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -432,16 +396,16 @@ const CommAssetLandComponent = () => {
                             {item.coordonneesGps}
                           </td>
                           <td>
-                            <Badge bg="secondary">{item.section?.name || '-'}</Badge>
+                            <Badge bg="secondary">{item.sectionName || '-'}</Badge>
                           </td>
                           <td className="text-center">
                             <div className="d-flex gap-1 justify-content-center action-buttons">
                               {/* View Document Button */}
-                              {item.document?.id && (
+                              {item.documentId && (
                                 <Button
                                   variant="outline-primary"
                                   size="sm"
-                                  onClick={() => handleViewDocument(item.document.id)}
+                                  onClick={() => handleViewDocument(item.documentId)}
                                   className="d-flex align-items-center"
                                   title={language === 'fr' ? 'Voir le document' : 'View Document'}
                                 >
@@ -609,24 +573,7 @@ const CommAssetLandComponent = () => {
             </Row>
 
             <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.doneBy', language)} *</Form.Label>
-                  <Form.Select
-                    name="doneBy.id"
-                    value={formData.doneBy.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {accounts.map(account => (
-                      <option key={account.id} value={account.id}>
-                        {account.username || account.fullName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+       
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
@@ -743,6 +690,96 @@ const CommAssetLandComponent = () => {
           </div>
         </Modal.Footer>
       </Modal>
+      
+      
+      <Modal show={viewModal} onHide={handleCloseViewModal} centered size="xl">
+  <Modal.Header closeButton>
+    <Modal.Title>
+      {language === 'fr' ? 'Voir le document' : 'View Document'}
+    </Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body style={{ maxHeight: '75vh', overflowY: 'auto' }}>
+    {viewItem ? (
+      <>
+        {/* General Information */}
+        <h6 className="text-muted mb-2">{language === 'fr' ? 'Informations Générales' : 'General Information'}</h6>
+        <Row className="mb-3">
+          <Col md={6}>
+            <ListGroup variant="flush">
+              <ListGroup.Item><strong>{getText('document.fields.reference', language)}:</strong> {viewItem.reference}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('document.fields.description', language)}:</strong> {viewItem.description || '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('document.fields.dateObtention', language)}:</strong> {formatDate(viewItem.dateObtention)}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('document.fields.emplacement', language)}:</strong> {viewItem.emplacement || '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('document.fields.coordonneesGps', language)}:</strong> {viewItem.coordonneesGps || '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('location.section', language)}:</strong> {viewItem.sectionName || '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{getText('document.fields.status', language)}:</strong> <Badge bg="info">{viewItem.statusName}</Badge></ListGroup.Item>
+            </ListGroup>
+          </Col>
+
+          {/* Document Info */}
+          <Col md={6}>
+            <h6 className="text-muted mb-2">{language === 'fr' ? 'Informations du Document' : 'Document Information'}</h6>
+            <ListGroup variant="flush">
+              <ListGroup.Item><strong>{language === 'fr' ? 'Nom du fichier:' : 'File name:'}</strong> {viewItem.documentFileName}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Nom original:' : 'Original name:'}</strong> {viewItem.documentOriginalFileName}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Type:' : 'Type:'}</strong> {viewItem.documentContentType}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Taille:' : 'Size:'}</strong> {(viewItem.documentFileSize / 1024).toFixed(2)} KB</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong> {viewItem.documentVersion || '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Créé le:' : 'Created:'}</strong> {new Date(viewItem.documentCreatedAt).toLocaleString(language)}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Modifié le:' : 'Updated:'}</strong> {viewItem.documentUpdatedAt ? new Date(viewItem.documentUpdatedAt).toLocaleString(language) : '-'}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Propriétaire:' : 'Owner:'}</strong> {viewItem.documentOwnerFullName} ({viewItem.documentOwnerUsername})</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Email:' : 'Email:'}</strong> {viewItem.documentOwnerEmail}</ListGroup.Item>
+              <ListGroup.Item><strong>{language === 'fr' ? 'Expiration:' : 'Expiration:'}</strong> {viewItem.documentExpirationDate || '-'}</ListGroup.Item>
+            </ListGroup>
+          </Col>
+        </Row>
+
+        {/* File Preview */}
+        <h6 className="text-muted mb-2">{language === 'fr' ? 'Aperçu du document' : 'Document Preview'}</h6>
+        <div className="text-center mb-3">
+          {viewItem.documentContentType.startsWith('image/') && (
+            <img
+              src={`/${viewItem.documentFilePath.replace(/\\/g, '/')}`}
+              alt={viewItem.documentOriginalFileName}
+              style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '0.25rem' }}
+            />
+          )}
+          {viewItem.documentContentType === 'application/pdf' && (
+            <iframe
+              src={`/${viewItem.documentFilePath.replace(/\\/g, '/')}`}
+              title={viewItem.documentOriginalFileName}
+              style={{ width: '100%', height: '400px', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+            />
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="d-flex justify-content-center gap-2">
+          <Button
+            variant="primary"
+            onClick={() => window.open(`${BASE_URL}/${viewItem.documentFilePath.replace(/\\/g, '/')}`, '_blank')}
+            disabled={!viewItem.documentFilePath}
+          >
+            <i className="bi bi-eye me-2"></i>
+            {language === 'fr' ? 'Ouvrir le document' : 'Open Document'}
+          </Button>
+
+        </div>
+      </>
+    ) : (
+      <p className="text-center">{language === 'fr' ? 'Aucun document à afficher' : 'No document to display'}</p>
+    )}
+  </Modal.Body>
+
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleCloseViewModal}>
+ {language === 'fr' ? 'ferme' : 'close'}
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
 
       <style jsx>{`
         .action-buttons .btn {
