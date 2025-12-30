@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllAccordConcession, getAllSectionCategories } from '../../services/GetRequests';
@@ -16,6 +17,7 @@ import pdfIcon from '../../assets/documents_icons/pdf.png';
 import excelIcon from '../../assets/documents_icons/excel.png';
 import wordIcon from '../../assets/documents_icons/word.png';
 import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
+import { CurrentUserId } from '../../services/authUtils';
 
 const AccordConcessionComponent = () => {
   const [data, setData] = useState([]);
@@ -26,7 +28,7 @@ const AccordConcessionComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+  const [ setAccounts] = useState([]);
   const [sectionCategories, setSectionCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -130,7 +132,7 @@ const AccordConcessionComponent = () => {
         rapportTransfertGestion: item.rapportTransfertGestion || '',
         dateSignature: item.dateSignature ? item.dateSignature.split('T')[0] : '',
         dateExpiration: item.dateExpiration ? item.dateExpiration.split('T')[0] : '',
-        doneBy: { id: item.doneBy?.id || '' },
+     
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' },
         sectionCategory: { id: item.sectionCategory?.id || '' }
@@ -145,7 +147,7 @@ const AccordConcessionComponent = () => {
         rapportTransfertGestion: '',
         dateSignature: '',
         dateExpiration: '',
-        doneBy: { id: '' },
+   
         document: { id: '' },
         status: { id: '' },
         sectionCategory: { id: '' }
@@ -208,7 +210,7 @@ const AccordConcessionComponent = () => {
           rapportTransfertGestion: formData.rapportTransfertGestion || null,
           dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
           dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
-          doneBy: { id: parseInt(formData.doneBy.id) },
+          doneBy: { id:CurrentUserId },
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
@@ -228,7 +230,7 @@ const AccordConcessionComponent = () => {
           ...formData,
           dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
           dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
-          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          doneBy:  { id:CurrentUserId } ,
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
         };
@@ -727,15 +729,7 @@ const AccordConcessionComponent = () => {
             </Row>
 
             <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.doneBy', language)} *</Form.Label>
-                  <Form.Select name="doneBy.id" value={formData.doneBy.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {accounts.map(account => <option key={account.id} value={account.id}>{account.username || account.fullName}</option>)}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+       
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>

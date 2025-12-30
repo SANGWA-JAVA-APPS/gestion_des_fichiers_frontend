@@ -1,13 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
-import { getAllAccounts, getAllPermiConstruction } from '../../services/GetRequests';
-import { createPermiConstruction, createPermiConstructionWithFile } from '../../services/Inserts';
+import { getAllPermiConstruction } from '../../services/GetRequests';
+import {  createPermiConstructionWithFile } from '../../services/Inserts';
 import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
 import { API_BASE_URL } from '../../services/apiConfig';
+import { CurrentUserId } from '../../services/authUtils';
 
 const PermiConstructionComponent = () => {
   const [data, setData] = useState([]);
@@ -18,7 +20,7 @@ const PermiConstructionComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+
   const [sectionCategories, setSectionCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -66,13 +68,13 @@ const PermiConstructionComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData, categoriesData] = await Promise.all([
+      const [statusesData,  categoriesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllAccounts(),
+  
         getAllSectionCategories()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
+
       setSectionCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -107,7 +109,7 @@ const PermiConstructionComponent = () => {
         refPermisConstuire: item.refPermisConstuire || '',
         dateValidation: item.dateValidation ? item.dateValidation.split('T')[0] : '',
         dateEstimeeTravaux: item.dateEstimeeTravaux ? item.dateEstimeeTravaux.split('T')[0] : '',
-        doneBy: { id: item.doneBy?.id || '' },
+  
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' },
         sectionCategory: { id: item.sectionCategory?.id || '' }
@@ -120,7 +122,7 @@ const PermiConstructionComponent = () => {
         refPermisConstuire: '',
         dateValidation: '',
         dateEstimeeTravaux: '',
-        doneBy: { id: '' },
+
         document: { id: '' },
         status: { id: '' },
         sectionCategory: { id: '' }
@@ -138,7 +140,7 @@ const PermiConstructionComponent = () => {
       refPermisConstuire: '',
       dateValidation: '',
       dateEstimeeTravaux: '',
-      doneBy: { id: '' },
+
       document: { id: '' },
       status: { id: '' },
       sectionCategory: { id: '' }
@@ -190,7 +192,7 @@ const PermiConstructionComponent = () => {
           referenceTitreFoncier: formData.referenceTitreFoncier,
           dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
           dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
-          doneBy: { id: parseInt(formData.doneBy.id) },
+          doneBy: { id: CurrentUserId },
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
@@ -210,7 +212,7 @@ const PermiConstructionComponent = () => {
           ...formData,
           dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
           dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
-          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          doneBy:  { id: CurrentUserId } ,
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
         };
@@ -583,24 +585,7 @@ const PermiConstructionComponent = () => {
             </Row>
 
             <Row>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.doneBy', language)} *</Form.Label>
-                  <Form.Select
-                    name="doneBy.id"
-                    value={formData.doneBy.id}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {accounts.map(account => (
-                      <option key={account.id} value={account.id}>
-                        {account.username || account.fullName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+         
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>

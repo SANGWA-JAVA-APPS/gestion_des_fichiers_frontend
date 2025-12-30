@@ -611,7 +611,20 @@ const NormeLoiComponent = () => {
                               <small className="text-truncate d-block">
                                 {item.document?.originalFileName || '-'}
                               </small>
-                            </ListGroup.Item>
+                              </ListGroup.Item>
+                              <ListGroup.Item>
+                                <small className="text-muted d-block mb-2">
+  <i className="bi bi-person-check me-1"></i>
+  {item.doneBy?.fullName || '—'}
+</small>
+
+<small className="text-muted d-block mb-2">
+  <i className="bi bi-tag me-1"></i>
+  {item.status?.name || '—'}
+</small>
+                                
+                                </ListGroup.Item >
+                                    
                             <ListGroup.Item>
                               <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
                               <Badge bg={item.document?.status === 'ACTIVE' ? 'success' : 'secondary'}>
@@ -644,7 +657,9 @@ const NormeLoiComponent = () => {
                                 <i className="bi bi-trash me-1"></i>
                                 {language === 'fr' ? 'Supprimer' : 'Delete'}
                               </Button>
-                            </div>
+                              </div>
+                        
+
                           </Card.Body>
                         </Card>
                       </Col>

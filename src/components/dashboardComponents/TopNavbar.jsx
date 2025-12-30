@@ -9,6 +9,7 @@ import {
   Menu
 } from 'lucide-react'
 import { clearAuthData, getUserInfo } from '../../services/authUtils'
+import LanguageSwitcher from '../../i18n/LanguageSwitcher'
 
 export function TopNavbar({ onSidebarToggle }) {
   const navigate = useNavigate()
@@ -40,6 +41,10 @@ export function TopNavbar({ onSidebarToggle }) {
         <button className="btn btn-outline-light d-flex align-items-center">
           <Bell size={18} />
         </button>
+             <button className="btn btn-outline-light d-flex align-items-center">
+          <LanguageSwitcher />
+        </button>
+        
         
 
 

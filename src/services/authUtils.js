@@ -12,6 +12,7 @@ export const getUserInfo = () => {
   return userInfo ? JSON.parse(userInfo) : null;
 };
 
+export const CurrentUserId = getUserInfo()?.userId ? getUserInfo().userId : null;
 // Get stored auth token
 export const getAuthToken = () => {
   return localStorage.getItem('authToken');

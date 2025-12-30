@@ -16,6 +16,7 @@ import { createCountry } from '../../services/Inserts'
 import { updateCountry, deleteCountry } from '../../services/UpdRequests'
 import CountryInput from '../CountryInput'
 import { getFlagUrl } from '../../services/commonUtils'
+import { useLanguage } from '../../i18n/LanguageContext'
 
 const CountryComponent = () => {
   const [countries, setCountries] = useState([])
@@ -30,6 +31,8 @@ const CountryComponent = () => {
     phoneCode: '',
     flagUrl: ''
   })
+
+  const { t } = useLanguage()
 
   // Load countries on mount
   useEffect(() => {
@@ -143,7 +146,9 @@ const CountryComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h5>Country Management</h5>
+          <h5>
+            {t('adminMenu.countries')}
+          </h5>
           <p className='text-muted'>
             Manage countries with ISO codes, phone codes, and flags
           </p>
@@ -179,15 +184,30 @@ const CountryComponent = () => {
                 : <Table responsive striped hover>
                   <thead>
                     <tr>
-                      <th>Flag</th>
-                      <th>Country</th>
-                      <th>ISO Code</th>
-                      <th>Phone Code</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>
+                        {t('document.fields.flag')}
+                      </th>
+                      <th>
+                        {t('document.fields.name')}
+                      </th>
+                      <th>
+                        {t('document.fields.isoCode')}
+                      </th>
+                      <th>
+                        {t('document.fields.phoneCode')}
+                      </th>
+                      <th>
+                        {t('document.fields.description')}
+                      </th>
+                      <th>
+                        {t('document.fields.status')}
+                      </th>
+                      <th>
+                        {t('document.actions')}
+                      </th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {countries.map(country =>
                       <tr key={country.id}>

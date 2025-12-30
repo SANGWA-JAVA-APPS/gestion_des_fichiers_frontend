@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCargoDamage } from '../../services/GetRequests';
-import { createCargoDamage, createCargoDamageWithFile } from '../../services/Inserts';
+import { createCargoDamageWithFile } from '../../services/Inserts';
 import { updateCargoDamage, updateCargoDamageWithFile, deleteCargoDamage } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
@@ -15,6 +16,7 @@ import pdfIcon from '../../assets/documents_icons/pdf.png';
 import excelIcon from '../../assets/documents_icons/excel.png';
 import wordIcon from '../../assets/documents_icons/word.png';
 import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
+import { CurrentUserId } from '../../services/authUtils';
 
 const CargoDamageComponent = () => {
   const [data, setData] = useState([]);
@@ -25,7 +27,7 @@ const CargoDamageComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [accounts, setAccounts] = useState([]);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     refeRequest: '',
@@ -83,12 +85,12 @@ const CargoDamageComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData] = await Promise.all([
+      const [statusesData] = await Promise.all([
         getAllDocStatuses(),
         getAllAccounts()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
+   
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
@@ -123,7 +125,7 @@ const CargoDamageComponent = () => {
         quotationContractNum: item.quotationContractNum || '',
         dateRequest: item.dateRequest ? item.dateRequest.split('T')[0] : '',
         dateContract: item.dateContract ? item.dateContract.split('T')[0] : '',
-        doneBy: { id: item.doneBy?.id || '' },
+
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' }
       });
@@ -136,7 +138,7 @@ const CargoDamageComponent = () => {
         quotationContractNum: '',
         dateRequest: '',
         dateContract: '',
-        doneBy: { id: '' },
+
         document: { id: '' },
         status: { id: '' }
       });
@@ -196,7 +198,7 @@ const CargoDamageComponent = () => {
           quotationContractNum: formData.quotationContractNum || null,
           dateRequest: formData.dateRequest ? new Date(formData.dateRequest).toISOString() : null,
           dateContract: formData.dateContract ? new Date(formData.dateContract).toISOString() : null,
-          doneBy: { id: parseInt(formData.doneBy.id) },
+          doneBy: { id: CurrentUserId },
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
@@ -215,7 +217,7 @@ const CargoDamageComponent = () => {
           ...formData,
           dateRequest: formData.dateRequest ? new Date(formData.dateRequest).toISOString() : null,
           dateContract: formData.dateContract ? new Date(formData.dateContract).toISOString() : null,
-          doneBy: formData.doneBy.id ? { id: parseInt(formData.doneBy.id) } : null,
+          doneBy:  { id:CurrentUserId } ,
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null
         };
 
@@ -693,15 +695,7 @@ const CargoDamageComponent = () => {
             </Row>
 
             <Row>
-              <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.doneBy', language)} *</Form.Label>
-                  <Form.Select name="doneBy.id" value={formData.doneBy.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {accounts.map(account => <option key={account.id} value={account.id}>{account.username || account.fullName}</option>)}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
+        
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>

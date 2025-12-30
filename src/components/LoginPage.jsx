@@ -5,15 +5,20 @@ import { setUserInfo } from '../services/authUtils';
 import '../styles/galaxy-animation.css';
 import cloudFilesImage from '../assets/cloud-files.png';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../i18n/LanguageContext';
+import LanguageSwitcher from '../i18n/LanguageSwitcher';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
+
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -28,25 +33,16 @@ const LoginPage = () => {
 
     try {
       const response = await loginUser(formData);
-      
-      if (response.success) {
-        // Store user information in localStorage
-        setUserInfo(response);
-        
-        console.log('Login successful:', {
-          username: response.username,
-          role: response.role,
-          fullName: response.fullName
-        });
-           navigate('/dashboard/docstatus', { replace: true });
-        // Call success callback to redirect to dashboard
 
+      if (response.success) {
+        setUserInfo(response);
+
+        navigate('/dashboard/docstatus', { replace: true });
       } else {
-        setError(response.message || 'Login failed');
+        setError(response.message || t("auth.loginFailed"));
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'An error occurred during login');
+      setError(err.message || t("auth.loginError"));
     } finally {
       setLoading(false);
     }
@@ -54,7 +50,7 @@ const LoginPage = () => {
 
   return (
     <Container fluid className="vh-100 p-0 position-relative overflow-hidden d-flex flex-column">
-      {/* Galaxy Background Animation */}
+      {/* Background */}
       <div className="galaxy-background">
         <div className="stars-layer stars-layer-1"></div>
         <div className="stars-layer stars-layer-2"></div>
@@ -63,24 +59,31 @@ const LoginPage = () => {
         <div className="gradient-overlay"></div>
       </div>
 
-      {/* Bouncing Cloud Files Image - Left Side */}
+      {/* Image */}
       <div className="bouncing-cloud-container">
-        <img 
-          src={cloudFilesImage} 
-          alt="Cloud Files" 
-          className="bouncing-cloud-image"
-        />
+        <img src={cloudFilesImage} alt="Cloud Files" className="bouncing-cloud-image" />
       </div>
 
-      {/* Application Header */}
-      <Row className="g-0 position-relative" style={{ zIndex: 10 }}>
-        <Col xs={12} className="py-2 text-white text-center shadow-sm backdrop-blur" style={{ backgroundColor: '#236873' }}>
-          <h3 className="mb-0 fw-bold">INGENZI</h3>
-          <small className="text-light opacity-75" style={{ fontSize: '0.75rem' }}>Secure File Management</small>
-        </Col>
-      </Row>
+      {/* Header */}
+    {/* Header */}
+<Row className="g-0 position-relative" style={{ zIndex: 10 }}>
+  <Col
+    xs={12}
+    className="py-2 text-white shadow-sm backdrop-blur d-flex justify-content-between align-items-center px-3"
+    style={{ backgroundColor: "#236873" }}
+  >
+    <div>
+      <h3 className="mb-0 fw-bold">{t("appName")}</h3>
+      <small className="text-light opacity-75" style={{ fontSize: "0.75rem" }}>
+        {t("common.welcome")}
+      </small>
+    </div>
 
-      {/* Main Content */}
+    <LanguageSwitcher />
+  </Col>
+</Row>
+
+      {/* Content */}
       <Row className="flex-grow-1 g-0 position-relative d-flex align-items-center" style={{ zIndex: 10 }}>
         <Col xs={12}>
           <Container fluid>
@@ -89,90 +92,71 @@ const LoginPage = () => {
                 <Card className="login-card-gradient shadow-lg">
                   <Card.Body className="p-3 p-md-4">
                     <div className="text-center mb-3">
-                      <h4 className="fw-bold text-white mb-1">Welcome Back</h4>
-                      <p className="text-white-50 small mb-0">Sign in to your account</p>
+                      <h4 className="fw-bold text-white mb-1">
+                        {t("auth.welcomeBack")}
+                      </h4>
+                      <p className="text-white-50 small mb-0">
+                        {t("auth.signInSubtitle")}
+                      </p>
                     </div>
 
                     {error && (
                       <Alert variant="danger" className="mb-2 py-2">
-                        <i className="fas fa-exclamation-triangle me-2"></i>
                         <small>{error}</small>
                       </Alert>
                     )}
 
                     <Form onSubmit={handleSubmit}>
-                      <Row>
-                        <Col xs={12}>
-                          <Form.Group className="mb-2">
-                            <Form.Control
-                              type="text"
-                              name="username"
-                              value={formData.username}
-                              onChange={handleChange}
-                              required
-                              disabled={loading}
-                              placeholder="Username"
-                              className="py-2 login-input"
-                            />
-                          </Form.Group>
-                        </Col>
-                      </Row>
+                      <Form.Group className="mb-2">
+                        <Form.Control
+                          type="text"
+                          name="username"
+                          value={formData.username}
+                          onChange={handleChange}
+                          required
+                          disabled={loading}
+                          placeholder={t("auth.username")}
+                          className="py-2 login-input"
+                        />
+                      </Form.Group>
 
-                      <Row>
-                        <Col xs={12}>
-                          <Form.Group className="mb-3">
-                            <Form.Control
-                              type="password"
-                              name="password"
-                              value={formData.password}
-                              onChange={handleChange}
-                              required
-                              disabled={loading}
-                              placeholder="Password"
-                              className="py-2 login-input"
-                            />
-                          </Form.Group>
-                        </Col>
-                      </Row>
+                      <Form.Group className="mb-3">
+                        <Form.Control
+                          type="password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          disabled={loading}
+                          placeholder={t("auth.password")}
+                          className="py-2 login-input"
+                        />
+                      </Form.Group>
 
-                      <Row>
-                        <Col xs={12}>
-                          <Button
-                            variant="light"
-                            type="submit"
-                            className="w-100 py-2 fw-semibold login-submit-btn"
-                            disabled={loading}
-                          >
-                            {loading ? (
-                              <>
-                                <Spinner
-                                  as="span"
-                                  animation="border"
-                                  size="sm"
-                                  role="status"
-                                  className="me-2"
-                                />
-                                Signing in...
-                              </>
-                            ) : (
-                              <>
-                                <i className="fas fa-sign-in-alt me-2"></i>
-                                Sign In
-                              </>
-                            )}
-                          </Button>
-                        </Col>
-                      </Row>
+                      <Button
+                        variant="light"
+                        type="submit"
+                        className="w-100 py-2 fw-semibold login-submit-btn"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <Spinner as="span" animation="border" size="sm" className="me-2" />
+                            {t("auth.signingIn")}
+                          </>
+                        ) : (
+                          <>
+                            {t("auth.signIn")}
+                          </>
+                        )}
+                      </Button>
                     </Form>
 
-                    <Row className="mt-2">
-                      <Col xs={12} className="text-center">
-                        <small className="text-white-50" style={{ fontSize: '0.75rem' }}>
-                          <i className="fas fa-shield-alt me-1"></i>
-                          Secure & Encrypted
-                        </small>
-                      </Col>
-                    </Row>
+                    <div className="text-center mt-2">
+                      <small className="text-white-50" style={{ fontSize: '0.75rem' }}>
+                        {t("auth.secure")}
+                      </small>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
@@ -181,27 +165,14 @@ const LoginPage = () => {
         </Col>
       </Row>
 
-      {/* Compact Footer */}
+      {/* Footer */}
       <Row className="g-0 position-relative" style={{ zIndex: 10 }}>
         <Col xs={12} className="py-2 bg-dark bg-opacity-90 text-white backdrop-blur">
           <Container fluid>
-            <Row className="align-items-center">
-              <Col xs={12} md={6} className="text-center text-md-start mb-1 mb-md-0">
-                <small className="text-light opacity-75" style={{ fontSize: '0.7rem' }}>
-                  © 2025 Gestion des Fichiers
-                </small>
-              </Col>
-              <Col xs={12} md={6} className="text-center text-md-end">
+            <Row>
+              <Col xs={12} md={6} className="text-center text-md-start">
                 <small style={{ fontSize: '0.7rem' }}>
-                  <span className="text-light opacity-75 me-1">Powered by</span>
-                  <a 
-                    href="https://codeguru-pro.com/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-decoration-none text-white fw-semibold codeguru-link"
-                  >
-                    CodeGuru
-                  </a>
+                  © 2025 {t("appName")}
                 </small>
               </Col>
             </Row>
