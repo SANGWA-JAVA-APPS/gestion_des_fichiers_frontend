@@ -19,6 +19,7 @@ import {
 import { getText } from '../../data/texts'
 import SearchComponent from '../SearchComponent'
 import HeaderTitle from '../HeaderTitle'
+import { useLanguage } from '../../i18n/LanguageContext'
 
 const SectionCategoryComponent = () => {
   const [data, setData] = useState([])
@@ -32,7 +33,7 @@ const SectionCategoryComponent = () => {
     name: '',
     description: ''
   })
-  const [language] = useState('fr')
+  const { language } = useLanguage()
 
   // Search state
   const [searchFilters, setSearchFilters] = useState({

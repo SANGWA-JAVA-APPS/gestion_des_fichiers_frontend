@@ -10,7 +10,7 @@ import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
 import DocumentDetailsView from './DocumentDetailsView';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
-import { API_BASE_URL } from '../../services/apiConfig';
+
 
 import { downloadFile, formatFileSize, removeFileExtension as removeExtension, openFileInNewTab } from '../../services/downloadService';
 import pdfIcon from '../../assets/documents_icons/pdf.png';

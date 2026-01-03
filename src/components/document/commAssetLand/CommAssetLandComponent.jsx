@@ -1,16 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
-import { getAllCommAssetLand } from '../../services/GetRequests';
-import {  createCommAssetLandWithFile } from '../../services/Inserts';
-import { updateCommAssetLand, deleteCommAssetLand } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
-import { getText } from '../../data/texts';
-import SearchComponent from '../SearchComponent';
-import HeaderTitle from '../HeaderTitle';
+import { getAllCommAssetLand } from '../../../services/GetRequests';
+import {  createCommAssetLandWithFile } from '../../../services/Inserts';
+import { updateCommAssetLand, deleteCommAssetLand } from '../../../services/UpdRequests';
+import { getAllDocStatuses, getAllSectionCategories } from '../../../services/GetRequests';
+import { getText } from '../../../data/texts';
+import SearchComponent from '../../SearchComponent';
+import HeaderTitle from '../../HeaderTitle';
 
-import { getUserInfo } from '../../services/authUtils';
-import { BASE_URL } from '../../services/apiConfig';
+import { getUserInfo } from '../../../services/authUtils';
+import { BASE_URL } from '../../../services/apiConfig';
+import { useLanguage } from '../../../i18n/LanguageContext';
 
 const CommAssetLandComponent = () => {
   const [data, setData] = useState([]);
@@ -21,8 +22,8 @@ const CommAssetLandComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-const [viewModal, setViewModal] = useState(false);
-const [viewItem, setViewItem] = useState(null);
+  const [viewModal, setViewModal] = useState(false);
+  const [viewItem, setViewItem] = useState(null);
 
   const [sections, setSections] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -37,7 +38,7 @@ const [viewItem, setViewItem] = useState(null);
     status: { id: '' },
     section: { id: '' }
   });
-  const [language] = useState('fr');
+  const {language} =useLanguage();
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
@@ -573,8 +574,7 @@ const handleCloseViewModal = () => {
             </Row>
 
             <Row>
-       
-              <Col md={3}>
+       {!editingItem&&(     <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -596,7 +596,8 @@ const handleCloseViewModal = () => {
                     </Form.Text>
                   )}
                 </Form.Group>
-              </Col>
+              </Col>)}
+         
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.status', language)} *</Form.Label>

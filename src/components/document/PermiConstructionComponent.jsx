@@ -2,14 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
 import { getAllPermiConstruction } from '../../services/GetRequests';
-import {  createPermiConstructionWithFile } from '../../services/Inserts';
+import { createPermiConstructionWithFile } from '../../services/Inserts';
 import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
-import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
 import { API_BASE_URL } from '../../services/apiConfig';
 import { CurrentUserId } from '../../services/authUtils';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const PermiConstructionComponent = () => {
   const [data, setData] = useState([]);
@@ -20,20 +20,25 @@ const PermiConstructionComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-
   const [sectionCategories, setSectionCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
+    numeroPermis: '',
+    projet: '',
+    autoriteDelivrance: '',
+    dateDelivrance: '',
+    dateExpiration: '',
     referenceTitreFoncier: '',
     refPermisConstuire: '',
+    refePermisConstruire: '',
     dateValidation: '',
     dateEstimeeTravaux: '',
-    doneBy: { id: '' },
     document: { id: '' },
     status: { id: '' },
     sectionCategory: { id: '' }
   });
-  const [language] = useState('fr');
+
+  const { language, t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
@@ -45,7 +50,18 @@ const PermiConstructionComponent = () => {
     dateStart: '',
     dateEnd: ''
   });
-
+const formatDateForInput = (date) => {
+  if (!date) return '';
+  // Convert to a format compatible with <input type="datetime-local">
+  const d = new Date(date);
+  const pad = (n) => n.toString().padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+};
   useEffect(() => {
     loadData();
     loadDropdownData();
@@ -59,7 +75,7 @@ const PermiConstructionComponent = () => {
       setData(response.content || []);
       setTotalPages(response.totalPages || 0);
     } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.loadError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Load error:', err);
     } finally {
       setLoading(false);
@@ -68,13 +84,11 @@ const PermiConstructionComponent = () => {
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData,  categoriesData] = await Promise.all([
+      const [statusesData, categoriesData] = await Promise.all([
         getAllDocStatuses(),
-  
         getAllSectionCategories()
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-
       setSectionCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (err) {
       console.error('Load dropdown data error:', err);
@@ -105,11 +119,16 @@ const PermiConstructionComponent = () => {
     if (item) {
       setEditingItem(item);
       setFormData({
+        numeroPermis: item.numeroPermis || '',
+        projet: item.projet || '',
+        autoriteDelivrance: item.autoriteDelivrance || '',
+        dateDelivrance: item.dateDelivrance ? item.dateDelivrance.split('T')[0] : '',
+        dateExpiration: item.dateExpiration ? item.dateExpiration.split('T')[0] : '',
         referenceTitreFoncier: item.referenceTitreFoncier || '',
         refPermisConstuire: item.refPermisConstuire || '',
+        refePermisConstruire: item.refePermisConstruire || '',
         dateValidation: item.dateValidation ? item.dateValidation.split('T')[0] : '',
         dateEstimeeTravaux: item.dateEstimeeTravaux ? item.dateEstimeeTravaux.split('T')[0] : '',
-  
         document: { id: item.document?.id || '' },
         status: { id: item.status?.id || '' },
         sectionCategory: { id: item.sectionCategory?.id || '' }
@@ -118,11 +137,16 @@ const PermiConstructionComponent = () => {
     } else {
       setEditingItem(null);
       setFormData({
+        numeroPermis: '',
+        projet: '',
+        autoriteDelivrance: '',
+        dateDelivrance: '',
+        dateExpiration: '',
         referenceTitreFoncier: '',
         refPermisConstuire: '',
+        refePermisConstruire: '',
         dateValidation: '',
         dateEstimeeTravaux: '',
-
         document: { id: '' },
         status: { id: '' },
         sectionCategory: { id: '' }
@@ -136,11 +160,16 @@ const PermiConstructionComponent = () => {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
+      numeroPermis: '',
+      projet: '',
+      autoriteDelivrance: '',
+      dateDelivrance: '',
+      dateExpiration: '',
       referenceTitreFoncier: '',
       refPermisConstuire: '',
+      refePermisConstruire: '',
       dateValidation: '',
       dateEstimeeTravaux: '',
-
       document: { id: '' },
       status: { id: '' },
       sectionCategory: { id: '' }
@@ -178,7 +207,7 @@ const PermiConstructionComponent = () => {
       setError('');
 
       if (!editingItem && !selectedFile) {
-        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        setError(t('document.messages.fileRequired'));
         return;
       }
 
@@ -188,8 +217,14 @@ const PermiConstructionComponent = () => {
 
         // Build permiConstruction object as JSON
         const permiConstructionData = {
-          numeroPermis: formData.refPermisConstuire,  // Backend expects numeroPermis
+          numeroPermis: formData.numeroPermis,
+          refPermisConstuire: formData.refPermisConstuire,
+          refePermisConstruire: formData.refePermisConstruire,
           referenceTitreFoncier: formData.referenceTitreFoncier,
+          projet: formData.projet,
+          autoriteDelivrance: formData.autoriteDelivrance,
+          dateDelivrance: formData.dateDelivrance ? new Date(formData.dateDelivrance).toISOString() : null,
+          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
           dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
           dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
           doneBy: { id: CurrentUserId },
@@ -211,8 +246,10 @@ const PermiConstructionComponent = () => {
         const dataToSubmit = {
           ...formData,
           dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
+           dateDelivrance: formData.dateDelivrance ? new Date(formData.dateDelivrance).toISOString() : null,
+          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
           dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
-          doneBy:  { id: CurrentUserId } ,
+          doneBy: { id: CurrentUserId },
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
         };
@@ -225,7 +262,7 @@ const PermiConstructionComponent = () => {
       handleCloseModal();
       loadData();
     } catch (err) {
-      setError(getText('document.messages.saveError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.saveError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Save error:', err);
     }
   };
@@ -245,7 +282,7 @@ const PermiConstructionComponent = () => {
       setShowDeleteModal(false);
       setItemToDelete(null);
     } catch (err) {
-      setError(getText('document.messages.deleteError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.deleteError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Delete error:', err);
     }
   };
@@ -257,7 +294,7 @@ const PermiConstructionComponent = () => {
 
   const handleViewDocument = async (documentId) => {
     if (!documentId) {
-      alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
+      alert(t('document.messages.noDocument'));
       return;
     }
 
@@ -273,14 +310,14 @@ const PermiConstructionComponent = () => {
       });
 
       if (!documentResponse.ok) {
-        throw new Error('Failed to fetch document metadata');
+        throw new Error(t('document.messages.fetchMetadataError'));
       }
 
       const documentData = await documentResponse.json();
       const filePath = documentData.data?.filePath;
 
       if (!filePath) {
-        throw new Error('File path not found in document data');
+        throw new Error(t('document.messages.filePathNotFound'));
       }
 
       // Now fetch the actual file content using the file path
@@ -292,7 +329,7 @@ const PermiConstructionComponent = () => {
       });
 
       if (!fileResponse.ok) {
-        throw new Error('Failed to download file');
+        throw new Error(t('document.messages.downloadError'));
       }
 
       const blob = await fileResponse.blob();
@@ -312,7 +349,7 @@ const PermiConstructionComponent = () => {
 
     } catch (err) {
       console.error('View document error:', err);
-      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
+      alert(t('document.messages.openError') + ': ' + err.message);
     }
   };
 
@@ -325,7 +362,7 @@ const PermiConstructionComponent = () => {
     return (
       <div className="text-center my-5">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">{getText('common.loading', language)}</span>
+          <span className="visually-hidden">{t('common.loading')}</span>
         </Spinner>
       </div>
     );
@@ -339,7 +376,7 @@ const PermiConstructionComponent = () => {
             <Card.Header>
               <Row className="align-items-center">
                 <Col xs={12} md={6} lg={3}>
-                  <HeaderTitle>{getText('document.permiConstruction', language)}</HeaderTitle>
+                  <HeaderTitle>{t('document.permiConstruction')}</HeaderTitle>
                 </Col>
                 <Col xs={12} md={6} lg={9} className="text-end">
                   <Button
@@ -348,14 +385,14 @@ const PermiConstructionComponent = () => {
                     className="me-2"
                     onClick={() => handleShowModal()}>
                     <i className="bi bi-plus-circle me-1"></i>
-                    {getText('common.add', language)}
+                    {t('common.add')}
                   </Button>
                   <Button
                     variant="outline-secondary"
                     size="sm"
                     onClick={loadData}>
                     <i className="bi bi-arrow-clockwise me-1"></i>
-                    {getText('document.actions.refresh', language)}
+                    {t('document.actions.refresh')}
                   </Button>
                 </Col>
               </Row>
@@ -363,26 +400,26 @@ const PermiConstructionComponent = () => {
             <Card.Body>
               {/* Search Component */}
               <SearchComponent
-                dropdownLabel="Filter"
+                dropdownLabel={t('search.filter')}
                 dropdownItems={[]}
                 dropdownValue={searchFilters.statusFilter}
                 onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
 
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
+                textbox1Label={t('search.search')}
+                textbox1Placeholder={t('search.placeholder')}
                 textbox1Value={searchFilters.searchText}
                 onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
 
-                dateStartLabel="From Date"
+                dateStartLabel={t('search.dateStart')}
                 dateStartValue={searchFilters.dateStart}
                 onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
 
-                dateEndLabel="To Date"
+                dateEndLabel={t('search.dateEnd')}
                 dateEndValue={searchFilters.dateEnd}
                 onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
 
                 onSearch={handleSearch}
-                searchButtonText="Search"
+                searchButtonText={t('search.searchButton')}
 
                 showTextbox2={false}
                 showTextbox3={false}
@@ -398,20 +435,20 @@ const PermiConstructionComponent = () => {
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>{getText('document.fields.referenceTitreFoncier', language)}</th>
-                      <th>{getText('document.fields.refPermisConstuire', language)}</th>
-                      <th>{getText('document.fields.dateValidation', language)}</th>
-                      <th>{getText('document.fields.dateEstimeeTravaux', language)}</th>
-                      <th>{getText('document.sectionCategory', language)}</th>
-                      <th className="text-center" style={{ width: '200px' }}>Actions</th>
+                      <th>{t('common.id')}</th>
+                      <th>{t('document.fields.referenceTitreFoncier')}</th>
+                      <th>{t('document.fields.refPermisConstuire')}</th>
+                      <th>{t('document.fields.dateValidation')}</th>
+                      <th>{t('document.fields.dateEstimeeTravaux')}</th>
+                      <th>{t('document.sectionCategory')}</th>
+                      <th className="text-center" style={{ width: '200px' }}>{t('common.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.length === 0 ? (
                       <tr>
                         <td colSpan="7" className="text-center text-muted">
-                          {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                          {t('common.noData')}
                         </td>
                       </tr>
                     ) : (
@@ -434,11 +471,11 @@ const PermiConstructionComponent = () => {
                                   size="sm"
                                   onClick={() => handleViewDocument(item.document.id)}
                                   className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                  title={t('document.actions.viewDocument')}
                                 >
                                   <i className="bi bi-eye me-1"></i>
                                   <span className="d-none d-sm-inline">
-                                    {language === 'fr' ? 'Voir' : 'View'}
+                                    {t('common.view')}
                                   </span>
                                 </Button>
                               )}
@@ -449,11 +486,11 @@ const PermiConstructionComponent = () => {
                                 size="sm"
                                 onClick={() => handleShowModal(item)}
                                 className="d-flex align-items-center"
-                                title={getText('common.edit', language)}
+                                title={t('common.edit')}
                               >
                                 <i className="bi bi-pencil me-1"></i>
                                 <span className="d-none d-sm-inline">
-                                  {getText('common.edit', language)}
+                                  {t('common.edit')}
                                 </span>
                               </Button>
 
@@ -463,11 +500,11 @@ const PermiConstructionComponent = () => {
                                 size="sm"
                                 onClick={() => handleDeleteClick(item)}
                                 className="d-flex align-items-center"
-                                title={getText('common.delete', language)}
+                                title={t('common.delete')}
                               >
                                 <i className="bi bi-trash me-1"></i>
                                 <span className="d-none d-sm-inline">
-                                  {getText('common.delete', language)}
+                                  {t('common.delete')}
                                 </span>
                               </Button>
                             </div>
@@ -482,10 +519,7 @@ const PermiConstructionComponent = () => {
               {totalPages > 1 && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div>
-                    {language === 'fr'
-                      ? `Page ${currentPage + 1} sur ${totalPages}`
-                      : `Page ${currentPage + 1} of ${totalPages}`
-                    }
+                    {t('common.pageInfo', { current: currentPage + 1, total: totalPages })}
                   </div>
                   <div>
                     <Button
@@ -495,7 +529,7 @@ const PermiConstructionComponent = () => {
                       disabled={currentPage === 0}
                       onClick={() => setCurrentPage(prev => prev - 1)}
                     >
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
+                      {t('common.previous')}
                     </Button>
                     <Button
                       variant="outline-primary"
@@ -503,7 +537,7 @@ const PermiConstructionComponent = () => {
                       disabled={currentPage >= totalPages - 1}
                       onClick={() => setCurrentPage(prev => prev + 1)}
                     >
-                      {language === 'fr' ? 'Suivant' : 'Next'}
+                      {t('common.next')}
                     </Button>
                   </div>
                 </div>
@@ -517,8 +551,8 @@ const PermiConstructionComponent = () => {
         <Modal.Header closeButton>
           <Modal.Title>
             {editingItem
-              ? `${getText('common.edit', language)} ${getText('document.permiConstruction', language)}`
-              : `${getText('common.add', language)} ${getText('document.permiConstruction', language)}`
+              ? `${t('common.edit')} ${t('document.permiConstruction')}`
+              : `${t('common.add')} ${t('document.permiConstruction')}`
             }
           </Modal.Title>
         </Modal.Header>
@@ -529,31 +563,30 @@ const PermiConstructionComponent = () => {
                 {error}
               </Alert>
             )}
-
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.referenceTitreFoncier', language)} *</Form.Label>
+                  <Form.Label>{t('document.fields.projet')} *</Form.Label>
                   <Form.Control
                     type="text"
-                    name="referenceTitreFoncier"
-                    value={formData.referenceTitreFoncier}
+                    name="projet"
+                    value={formData.projet}
                     onChange={handleChange}
+                    placeholder={t('document.placeholders.projet')}
                     required
-                    placeholder={language === 'fr' ? 'Référence titre foncier' : 'Land title reference'}
                   />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.refPermisConstuire', language)} *</Form.Label>
+                  <Form.Label>{t('document.fields.autoriteDelivrance')} *</Form.Label>
                   <Form.Control
                     type="text"
-                    name="refPermisConstuire"
-                    value={formData.refPermisConstuire}
+                    name="autoriteDelivrance"
+                    value={formData.autoriteDelivrance}
                     onChange={handleChange}
+                    placeholder={t('document.placeholders.autoriteDelivrance')}
                     required
-                    placeholder={language === 'fr' ? 'Référence permis de construire' : 'Building permit reference'}
                   />
                 </Form.Group>
               </Col>
@@ -562,7 +595,63 @@ const PermiConstructionComponent = () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateValidation', language)}</Form.Label>
+                  <Form.Label>{t('document.fields.dateDelivrance')} *</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dateDelivrance"
+                    value={formData.dateDelivrance}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('document.fields.dateExpiration')} *</Form.Label>
+                  <Form.Control
+                    type="date"
+                    name="dateExpiration"
+                    value={formData.dateExpiration}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('document.fields.referenceTitreFoncier')} *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="referenceTitreFoncier"
+                    value={formData.referenceTitreFoncier}
+                    onChange={handleChange}
+                    required
+                    placeholder={t('document.placeholders.referenceTitreFoncier')}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('document.fields.refPermisConstuire')} *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="refPermisConstuire"
+                    value={formData.refPermisConstuire}
+                    onChange={handleChange}
+                    required
+                    placeholder={t('document.placeholders.refPermisConstuire')}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('document.fields.dateValidation')}</Form.Label>
                   <Form.Control
                     type="date"
                     name="dateValidation"
@@ -573,7 +662,7 @@ const PermiConstructionComponent = () => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateEstimeeTravaux', language)}</Form.Label>
+                  <Form.Label>{t('document.fields.dateEstimeeTravaux')}</Form.Label>
                   <Form.Control
                     type="date"
                     name="dateEstimeeTravaux"
@@ -585,40 +674,42 @@ const PermiConstructionComponent = () => {
             </Row>
 
             <Row>
-         
+              {!editingItem && (
+                <Col md={3}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>{t('document.fields.document')} *</Form.Label>
+                    <Form.Control
+                      type="file"
+                      onChange={handleFileChange}
+                      required={!editingItem}
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                    />
+                    {selectedFile && (
+                      <Form.Text className="text-success">
+                        <i className="bi bi-check-circle me-1"></i>
+                        {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                      </Form.Text>
+                    )}
+                    {editingItem && formData.document?.id && !selectedFile && (
+                      <Form.Text className="text-muted">
+                        <i className="bi bi-file-earmark me-1"></i>
+                        {t('document.messages.documentRetained')}
+                      </Form.Text>
+                    )}
+                  </Form.Group>
+                </Col>
+              )}
+
               <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Control
-                    type="file"
-                    onChange={handleFileChange}
-                    required={!editingItem}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
-                  />
-                  {selectedFile && (
-                    <Form.Text className="text-success">
-                      <i className="bi bi-check-circle me-1"></i>
-                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
-                    </Form.Text>
-                  )}
-                  {editingItem && formData.document?.id && !selectedFile && (
-                    <Form.Text className="text-muted">
-                      <i className="bi bi-file-earmark me-1"></i>
-                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-              </Col>
-              <Col md={3}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
+                  <Form.Label>{t('document.fields.status')} *</Form.Label>
                   <Form.Select
                     name="status.id"
                     value={formData.status.id}
                     onChange={handleChange}
                     required
                   >
-                    <option value="">{getText('common.select', language)}</option>
+                    <option value="">{t('common.select')}</option>
                     {docStatuses.map(status => (
                       <option key={status.id} value={status.id}>
                         {status.name}
@@ -627,16 +718,31 @@ const PermiConstructionComponent = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
+              
+              <Col md={3}>
+                <Form.Group className="mb-3" controlId="numeroPermis">
+                  <Form.Label>{t('document.fields.numeroPermis')}</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="numeroPermis"
+                    value={formData.numeroPermis}
+                    onChange={handleChange}
+                    placeholder={t('document.placeholders.numeroPermis')}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+
               <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.sectionCategory', language)} *</Form.Label>
+                  <Form.Label>{t('document.sectionCategory')} *</Form.Label>
                   <Form.Select
                     name="sectionCategory.id"
                     value={formData.sectionCategory.id}
                     onChange={handleChange}
                     required
                   >
-                    <option value="">{getText('common.select', language)}</option>
+                    <option value="">{t('common.select')}</option>
                     {sectionCategories.map(category => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -649,10 +755,10 @@ const PermiConstructionComponent = () => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
-              {getText('common.cancel', language)}
+              {t('common.cancel')}
             </Button>
             <Button variant="primary" type="submit">
-              {getText('common.save', language)}
+              {t('common.save')}
             </Button>
           </Modal.Footer>
         </Form>
@@ -663,29 +769,29 @@ const PermiConstructionComponent = () => {
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title className="d-flex align-items-center">
             <i className="bi bi-exclamation-triangle me-2"></i>
-            {getText('common.confirmDelete', language)}
+            {t('common.confirmDelete')}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="text-center">
             <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
             <h5 className="mt-3 mb-3">
-              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+              {t('common.deleteConfirmation')}
             </h5>
             {itemToDelete && (
               <div className="bg-light p-3 rounded">
-                <strong>{getText('document.fields.referenceTitreFoncier', language)}:</strong> {itemToDelete.referenceTitreFoncier}
+                <strong>{t('document.fields.referenceTitreFoncier')}:</strong> {itemToDelete.referenceTitreFoncier}
                 {itemToDelete.refPermisConstuire && (
                   <>
                     <br />
-                    <strong>{getText('document.fields.refPermisConstuire', language)}:</strong> {itemToDelete.refPermisConstuire}
+                    <strong>{t('document.fields.refPermisConstuire')}:</strong> {itemToDelete.refPermisConstuire}
                   </>
                 )}
               </div>
             )}
             <p className="text-muted mt-3 mb-0">
               <i className="bi bi-info-circle me-1"></i>
-              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+              {t('common.deleteWarning')}
             </p>
           </div>
         </Modal.Body>
@@ -693,11 +799,11 @@ const PermiConstructionComponent = () => {
           <div className="d-flex gap-2 w-100 justify-content-end">
             <Button variant="outline-secondary" onClick={handleDeleteCancel}>
               <i className="bi bi-x-circle me-2"></i>
-              {getText('common.cancel', language)}
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" onClick={handleDeleteConfirm}>
               <i className="bi bi-trash me-2"></i>
-              {getText('common.delete', language)}
+              {t('common.delete')}
             </Button>
           </div>
         </Modal.Footer>

@@ -16,6 +16,7 @@ import excelIcon from '../../assets/documents_icons/excel.png';
 import wordIcon from '../../assets/documents_icons/word.png';
 import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 import { getUserInfo } from '../../services/authUtils';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const NormeLoiComponent = () => {
   const [data, setData] = useState([]);
@@ -38,7 +39,7 @@ const NormeLoiComponent = () => {
     status: { id: '' }
   });
   const [selectedFile, setSelectedFile] = useState(null);
-  const [language] = useState('fr');
+  const { language } = useLanguage();
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const pageSize = 10;
@@ -116,7 +117,7 @@ const NormeLoiComponent = () => {
     });
   };
 
-  console.log("the  current    user CurrentUserId",CurrentUserId)
+
   const handleShowModal = (item = null) => {
     if (item) {
       setEditingItem(item);
@@ -783,7 +784,8 @@ const NormeLoiComponent = () => {
             </Form.Group>
 
             <Row>
-   
+              {!editingItem && (
+                
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
@@ -791,6 +793,8 @@ const NormeLoiComponent = () => {
                     type="file"
                     onChange={handleFileChange}
                     required={!editingItem}
+                
+                    
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
                   />
                   {selectedFile && (
@@ -807,6 +811,10 @@ const NormeLoiComponent = () => {
                   )}
                 </Form.Group>
               </Col>
+              )
+              
+              }
+   
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.status', language)} *</Form.Label>

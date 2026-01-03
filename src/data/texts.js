@@ -5,6 +5,12 @@ export const texts = {
     fr: 'GESTION DES FICHIERS',
     en: 'FILE MANAGEMENT'
   },
+  location: {
+    section: {
+      fr: 'Section',
+      en: 'Section'
+    }
+  },
 
   auth: {
     welcomeBack: {
@@ -130,6 +136,10 @@ export const texts = {
 
   // Common UI elements
   common: {
+    confirmDelete: {
+      fr: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+      en: 'Are you sure you want to delete this item?'
+    },
     welcome: {
       fr: 'Bienvenue dans le système de gestion des fichiers',
       en: 'Welcome to the file management system'
