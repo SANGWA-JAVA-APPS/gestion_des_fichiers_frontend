@@ -1,5 +1,4 @@
 import {
-  LayersIcon,
   HandshakeIcon,
   LandmarkIcon,
   HomeIcon,
@@ -22,6 +21,8 @@ import {
   FileTextIcon
 } from 'lucide-react'
 
+import { ROLES } from '../../services/permissions'
+
 export const sidebarData = {
   user: {
     name: 'satnaing',
@@ -34,71 +35,84 @@ export const sidebarData = {
     { name: 'Acme Inc', logo: GalleryVerticalEnd, plan: 'Enterprise' },
     { name: 'Acme Corp.', logo: AudioWaveform, plan: 'Startup' }
   ],
+
   standaloneItems: [
-    { title: 'Help Center', url: '/help-center', icon: HelpCircle },
-    { title: 'Sign In', url: '/clerk/sign-in' },
-    { title: 'Sign Up', url: '/clerk/sign-up' },
-    { title: 'User Management', url: '/clerk/user-management' }
+    {
+      title: 'Help Center',
+      url: '/help-center',
+      icon: HelpCircle,
+      roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.AGENT, ROLES.VIEWER]
+    },
+    {
+      title: 'Sign In',
+      url: '/clerk/sign-in',
+      roles: [ROLES.VIEWER]
+    },
+    {
+      title: 'Sign Up',
+      url: '/clerk/sign-up',
+      roles: [ROLES.VIEWER]
+    },
+    {
+      title: 'User Management',
+      url: '/clerk/user-management',
+      roles: [ROLES.ADMIN]
+    }
   ],
+
   navGroups: [
     {
       title: 'Main',
+      roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.AGENT],
       items: [
-        // {
-        //   title: 'Dashboard',
-        //   icon: LayoutDashboard,
-        //   items: [
-        //     {
-        //       title: 'Docstatus',
-        //       url: '/dashboard/docstatus',
-        //       icon: FileTextIcon
-        //     },
-        //     { title: 'Users', url: '#', icon: Users },
-        //     { title: 'Summary', url: '#', icon: SunMedium },
-        //     { title: 'Apps', url: '#', icon: Package },
-        //     { title: 'Chats', url: '#', badge: '3', icon: MessagesSquare }
-        //   ]
-        // },
-
         {
           title: 'Accounts',
           icon: UserCogIcon,
+          roles: [ROLES.ADMIN],
           items: [
             {
               title: 'Account Categories',
               url: '/dashboard/AccountCategories',
-              icon: TagsIcon
+              icon: TagsIcon,
+              roles: [ROLES.ADMIN]
             },
             {
               title: 'Accounts',
               url: '/dashboard/Account',
-              icon: UsersIcon
+              icon: UsersIcon,
+              roles: [ROLES.ADMIN]
             }
           ]
         },
+
         {
           title: 'Locations',
           icon: GlobeIcon,
+          roles: [ROLES.ADMIN, ROLES.MANAGER],
           items: [
             {
               title: 'Country Management',
               url: '/dashboard/locations/countries',
-              icon: GlobeIcon
+              icon: GlobeIcon,
+              roles: [ROLES.ADMIN]
             },
             {
               title: 'Location Entities',
               url: '/dashboard/locations/entities',
-              icon: Building2Icon
+              icon: Building2Icon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER]
             },
             {
               title: 'Module Management',
               url: '/dashboard/locations/modules',
-              icon: BoxesIcon
+              icon: BoxesIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER]
             },
             {
               title: 'Section Management',
               url: '/dashboard/locations/sections',
-              icon: ListTreeIcon
+              icon: ListTreeIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER]
             }
           ]
         },
@@ -106,56 +120,61 @@ export const sidebarData = {
         {
           title: 'Documents',
           icon: FileTextIcon,
+          roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
           items: [
             {
               title: 'Docstatus',
               url: '/dashboard/docstatus',
-              icon: FileTextIcon
+              icon: FileTextIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
-            // {
-            //   title: 'Docs Categories',
-            //   url: '/dashboard/docsCategories',
-            //   icon: LayersIcon
-            // },
             {
               title: 'Section Category',
               url: '/dashboard/sectionCategory',
-              icon: ListIcon
+              icon: ListIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'NormeLoi',
               url: '/dashboard/NormeLoi',
-              icon: ScaleIcon
+              icon: ScaleIcon,
+              roles: [ROLES.ADMIN, ROLES.USER, ROLES.MANAGER]
             },
             {
               title: 'Comm Asset Land',
               url: '/dashboard/commAssetLand',
-              icon: LandmarkIcon
+              icon: LandmarkIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'Permi Construction',
               url: '/dashboard/permiConstruction',
-              icon: BuildingIcon
+              icon: BuildingIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'Accord Concession',
               url: '/dashboard/accordConcession',
-              icon: HandshakeIcon
+              icon: HandshakeIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'Estate',
               url: '/dashboard/estate',
-              icon: HomeIcon
+              icon: HomeIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'Cert Licenses',
               url: '/dashboard/certLicenses',
-              icon: BadgeCheckIcon
+              icon: BadgeCheckIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             },
             {
               title: 'Cargo Damage',
               url: '/dashboard/cargoDamage',
-              icon: PackageXIcon
+              icon: PackageXIcon,
+              roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
             }
           ]
         }

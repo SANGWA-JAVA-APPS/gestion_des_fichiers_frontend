@@ -2,22 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllAccordConcession, getAllSectionCategories } from '../../services/GetRequests';
+import { useSearchParams } from 'react-router-dom';
+import PaginationControl from '../PaginationControl';
 import {  createAccordConcessionWithFile } from '../../services/Inserts';
 import { updateAccordConcession, updateAccordConcessionWithFile, deleteAccordConcession } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
+import { getAllDocStatuses} from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
-import DocumentDetailsView from './DocumentDetailsView';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
+import DocumentCard from '../DocumentCard';
+import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal';
 
-
-import { downloadFile, formatFileSize, removeFileExtension as removeExtension, openFileInNewTab } from '../../services/downloadService';
-import pdfIcon from '../../assets/documents_icons/pdf.png';
-import excelIcon from '../../assets/documents_icons/excel.png';
-import wordIcon from '../../assets/documents_icons/word.png';
-import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
+import { downloadFile, formatFileSize, openFileInNewTab } from '../../services/downloadService';
 import { CurrentUserId } from '../../services/authUtils';
+import { useLanguage } from '../../i18n/LanguageContext';
+import SimpleSearchComponent from '../SimpleSearchComponent';
 
 const AccordConcessionComponent = () => {
   const [data, setData] = useState([]);
@@ -28,7 +28,7 @@ const AccordConcessionComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [ setAccounts] = useState([]);
+
   const [sectionCategories, setSectionCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
@@ -43,10 +43,20 @@ const AccordConcessionComponent = () => {
     status: { id: '' },
     sectionCategory: { id: '' }
   });
-  const [language] = useState('fr');
-  const [currentPage, setCurrentPage] = useState(0);
+  const {language} = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+
+const page = parseInt(searchParams.get('page') ||  0);
+const size = parseInt(searchParams.get('size') ||  10);
+const statusFilter = searchParams.get('statusId') || '';
+const searchText = searchParams.get('search') || '';
+const dateStart = searchParams.get('dateStart') || '';
+const dateEnd = searchParams.get('dateEnd') || '';
+ 
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
+  const [totalElements, setTotalElements] = useState(0);
+
 
   // Modal states
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -59,68 +69,57 @@ const AccordConcessionComponent = () => {
   // View mode state
   const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' - default is cards
 
-  // Search state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+
 
   useEffect(() => {
     loadData();
     loadDropdownData();
-  }, [currentPage]);
+  }, [searchParams]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllAccordConcession(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
+const loadData = async () => {
+  try {
+    setLoading(true);
+    const response = await getAllAccordConcession(
+      {
+        page,
+        size,
+
+ 
+  
+        search:searchText 
     }
-  };
+    );
+
+    setData(response.content || []);
+    setTotalPages(response.totalPages || 0);
+    setTotalElements(response.totalElements || 0);
+  } catch (err) {
+    setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
+  } finally {
+    setLoading(false);
+  }
+};
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData, categoriesData] = await Promise.all([
+      const [statusesData, categoriesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllAccounts(),
+        // getAllAccounts(),
         getAllSectionCategories()
       ]);
+      
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
-      setSectionCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      console.log(" categories dta are ", categoriesData)
+ 
+      setSectionCategories(categoriesData) ;
+      console.log(" usestet iscategories dta are***** ", sectionCategories)
+      
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
 
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
-  };
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -285,16 +284,6 @@ const AccordConcessionComponent = () => {
     setSelectedDocument(null);
   };
 
-  // Handle title click to show download confirmation
-  const handleTitleClick = (item) => {
-    if (item.document && item.document.filePath) {
-      setFileToDownload(item);
-      setShowDownloadModal(true);
-    } else {
-      alert(language === 'fr' ? 'Aucun fichier disponible' : 'No file available');
-    }
-  };
-
   // Handle download confirmation
   const handleConfirmDownload = async () => {
     if (!fileToDownload || !fileToDownload.document) return;
@@ -317,46 +306,7 @@ const AccordConcessionComponent = () => {
     setFileToDownload(null);
   };
 
-  // Helper function to get document icon based on file extension
-  const getDocumentIcon = (document) => {
-    if (!document) return null;
-    
-    const fileName = (document.originalFileName || document.fileName || '').toLowerCase();
-    const contentType = (document.contentType || '').toLowerCase();
-    
-    // Check for PDF
-    if (fileName.endsWith('.pdf') || contentType.includes('pdf')) {
-      return pdfIcon;
-    }
-    
-    // Check for Excel (.xls, .xlsx, .xlsm, .xlsb, .xltx, .xltm, .csv)
-    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx') || 
-        fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') ||
-        fileName.endsWith('.xltx') || fileName.endsWith('.xltm') ||
-        fileName.endsWith('.csv') ||
-        contentType.includes('spreadsheet') || contentType.includes('excel')) {
-      return excelIcon;
-    }
-    
-    // Check for Word (.doc, .docx, .docm, .dotx, .dotm)
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx') ||
-        fileName.endsWith('.docm') || fileName.endsWith('.dotx') ||
-        fileName.endsWith('.dotm') ||
-        contentType.includes('word') || contentType.includes('document')) {
-      return wordIcon;
-    }
-    
-    // Check for PowerPoint (.ppt, .pptx, .pptm, .potx, .potm, .ppsx, .ppsm)
-    if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx') ||
-        fileName.endsWith('.pptm') || fileName.endsWith('.potx') ||
-        fileName.endsWith('.potm') || fileName.endsWith('.ppsx') ||
-        fileName.endsWith('.ppsm') ||
-        contentType.includes('presentation') || contentType.includes('powerpoint')) {
-      return powerpointIcon;
-    }
-    
-    return null;
-  };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -445,33 +395,7 @@ const AccordConcessionComponent = () => {
               </Nav>
             </Card.Header>
             <Card.Body>
-              {/* Search Component */}
-              <SearchComponent
-                dropdownLabel="Filter"
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel="From Date"
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel="To Date"
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch}
-                searchButtonText="Search"
-
-                showTextbox2={false}
-                showTextbox3={false}
-              />
-
+       <SimpleSearchComponent/>
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
               {/* Table View */}
@@ -569,83 +493,18 @@ const AccordConcessionComponent = () => {
                       </Alert>
                     </Col>
                   ) : (
-                    data.map((item) => {
-                      const docIcon = getDocumentIcon(item.document);
-                      return (
-                        <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
-                          <Card className={`h-100 shadow-sm hover-shadow ${docIcon ? 'doc-card-with-icon' : ''}`}>
-                            {docIcon && (
-                              <div className="doc-icon-badge">
-                                <img src={docIcon} alt="Document Type" />
-                              </div>
-                            )}
-                            <Card.Body>
-                              <Card.Title 
-                                className="text-primary text-truncate-single" 
-                                title={item.document?.originalFileName || item.contratConcession}
-                                onClick={() => handleTitleClick(item)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <i className="bi bi-file-earmark-text me-2"></i>
-                                {removeExtension(item.document?.originalFileName) || item.contratConcession}
-                              </Card.Title>
-                              <Card.Text className="text-muted small text-clamp-3" style={{ minHeight: '60px' }}>
-                                {item.emplacement || (language === 'fr' ? 'Aucune description' : 'No description')}
-                              </Card.Text>
-                            </Card.Body>
-                          <ListGroup className="list-group-flush">
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
-                              {item.document?.version || '-'}
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Fichier:' : 'File:'}</strong>{' '}
-                              <small className="text-truncate d-block">
-                                {item.document?.originalFileName || '-'}
-                              </small>
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
-                              <Badge bg={item.document?.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                                {item.document?.status || '-'}
-                              </Badge>
-                            </ListGroup.Item>
-                          </ListGroup>
-                          <Card.Body>
-                            <div className="d-flex gap-2 flex-wrap">
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleShowDetails(item)}
-                                className="p-0 text-decoration-none"
-                              >
-                                <i className="bi bi-eye me-1"></i>
-                                {language === 'fr' ? 'Détails' : 'Details'}
-                              </Button>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleShowModal(item)}
-                                className="p-0 text-decoration-none"
-                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                {language === 'fr' ? 'Modifier' : 'Edit'}
-                              </Button>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleDeleteClick(item)}
-                                className="p-0 text-decoration-none text-danger"
-                              >
-                                <i className="bi bi-trash me-1"></i>
-                                {language === 'fr' ? 'Supprimer' : 'Delete'}
-                              </Button>
-                            </div>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                      );
-                    })
+                    data.map((item) => (
+                      <DocumentCard
+                        key={item.id}
+                        item={item}
+                        language={language}
+                        onViewDetails={handleShowDetails}
+                        onEdit={handleShowModal}
+                        onDelete={handleDeleteClick}
+                        getDisplayName={(it) => it.document?.originalFileName || it.contratConcession}
+                        getDescription={(it) => it.emplacement}
+                      />
+                    ))
                   )}
                 </Row>
               )}
@@ -660,19 +519,10 @@ const AccordConcessionComponent = () => {
                 }
               `}</style>
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>{language === 'fr' ? `Page ${currentPage + 1} sur ${totalPages}` : `Page ${currentPage + 1} of ${totalPages}`}</div>
-                  <div>
-                    <Button variant="outline-primary" size="sm" className="me-2" disabled={currentPage === 0} onClick={() => setCurrentPage(prev => prev - 1)}>
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
-                    </Button>
-                    <Button variant="outline-primary" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(prev => prev + 1)}>
-                      {language === 'fr' ? 'Suivant' : 'Next'}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <PaginationControl
+                totalPages={totalPages}
+                totalElements={totalElements}
+              />
             </Card.Body>
           </Card>
         </Col>
@@ -729,8 +579,8 @@ const AccordConcessionComponent = () => {
             </Row>
 
             <Row>
-       
-              <Col md={3}>
+              {!editingItem && (
+                  <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -753,6 +603,8 @@ const AccordConcessionComponent = () => {
                   )}
                 </Form.Group>
               </Col>
+       )}
+            
               <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
@@ -764,8 +616,11 @@ const AccordConcessionComponent = () => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3">
+               
                   <Form.Label>{getText('document.sectionCategory', language)} *</Form.Label>
                   <Form.Select name="sectionCategory.id" value={formData.sectionCategory.id} onChange={handleChange} required>
+              
+                    
                     <option value="">{getText('common.select', language)}</option>
                     {sectionCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </Form.Select>
@@ -826,12 +681,15 @@ const AccordConcessionComponent = () => {
       </Modal>
 
       {/* Document Details Modal */}
-      <DocumentDetailsView
+      <GenericDocumentDetailsModal
         show={showDetailsModal}
         onHide={handleCloseDetails}
         title={selectedDocument?.document?.originalFileName || 'Document Details'}
-        closeButtonText={language === 'fr' ? 'Fermer' : 'Close'}
-      >
+        document={selectedDocument}
+        language={language}
+        onEdit={(doc) => handleShowModal(doc)}
+        showEditButton={true}
+      />
         {selectedDocument && (
           <div>
             <Row className="mb-3">
@@ -993,7 +851,7 @@ const AccordConcessionComponent = () => {
             </div>
           </div>
         )}
-      </DocumentDetailsView>
+  
 
       {/* Download Confirmation Modal */}
       <DownloadConfirmationModal

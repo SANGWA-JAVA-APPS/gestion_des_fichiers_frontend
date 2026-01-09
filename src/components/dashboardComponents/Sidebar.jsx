@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { sidebarData } from './sidebarData'
 import { SidebarItem } from './SidebarItem'
+import { getUserRole, hasAnyRole } from '../../services/authUtils'
 
 
 export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
@@ -9,6 +10,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
   const isIconOnly = sidebarState === 'icon-only'
   const isHidden = sidebarState === 'hidden'
 
+  const userRole = getUserRole() 
 
   useEffect(() => {
     const groupsToExpand = []
@@ -35,6 +37,20 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
   const sidebarWidth = isHidden ? '0' : isIconOnly ? '70px' : '280px'
 
+  const visibleNavGroups = sidebarData.navGroups.map(group => ({
+    ...group,
+    items: group.items
+      .filter(item => !item.roles || hasAnyRole(item.roles))
+      .map(item => ({
+        ...item,
+        items: item.items
+          ? item.items.filter(child => !child.roles || hasAnyRole(child.roles))
+          : undefined
+      }))
+  }))
+    const visibleStandaloneItems = sidebarData.standaloneItems.filter(
+    item => !item.roles || hasAnyRole(item.roles)
+  )
 
 
   return (
@@ -53,7 +69,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
       {/* Sidebar Items */}
       <div className='flex-grow-1 py-2 overflow-auto'>
-        {sidebarData.navGroups.map((group, groupIdx) => (
+        {visibleNavGroups.map((group, groupIdx) => (
           <div key={groupIdx} className='mb-3'>
             {!isIconOnly && !isHidden && (
               <div
@@ -77,7 +93,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
           </div>
         ))}
 
-        {sidebarData.standaloneItems?.map((item, idx) => (
+        {visibleStandaloneItems?.map((item, idx) => (
           <SidebarItem
             key={idx}
             item={item}

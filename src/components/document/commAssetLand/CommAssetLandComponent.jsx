@@ -6,12 +6,17 @@ import {  createCommAssetLandWithFile } from '../../../services/Inserts';
 import { updateCommAssetLand, deleteCommAssetLand } from '../../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../../services/GetRequests';
 import { getText } from '../../../data/texts';
-import SearchComponent from '../../SearchComponent';
+
 import HeaderTitle from '../../HeaderTitle';
+import DocumentCard from '../../DocumentCard';
+import GenericDocumentDetailsModal from '../../GenericDocumentDetailsModal';
 
 import { getUserInfo } from '../../../services/authUtils';
 import { BASE_URL } from '../../../services/apiConfig';
 import { useLanguage } from '../../../i18n/LanguageContext';
+import { useSearchParams } from 'react-router-dom';
+import PaginationControl from '../../PaginationControl';
+import SimpleSearchComponent from '../../SimpleSearchComponent';
 
 const CommAssetLandComponent = () => {
   const [data, setData] = useState([]);
@@ -20,10 +25,12 @@ const CommAssetLandComponent = () => {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+   const [searchParams, setSearchParams] = useSearchParams();
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
   const [viewModal, setViewModal] = useState(false);
   const [viewItem, setViewItem] = useState(null);
+  const [activeView, setActiveView] = useState('cards');
 
   const [sections, setSections] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -38,38 +45,48 @@ const CommAssetLandComponent = () => {
     status: { id: '' },
     section: { id: '' }
   });
-  const {language} =useLanguage();
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
+  
 
-  // Search state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+const pageSize = parseInt(searchParams.get('size') || '10', 10);
+const currentPage = parseInt(searchParams.get('page') || '0', 10);
+  const {language} =useLanguage();
+  const [totalElemtns, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+const apiParams = {
+  page: currentPage,
+  size: pageSize,
+  statusId: searchParams.get('filter') || undefined,
+  search: searchParams.get('search') || undefined,
+  dateStart: searchParams.get('start') || undefined,
+  dateEnd: searchParams.get('end') || undefined,
+};
 
   useEffect(() => {
     loadData();
     loadDropdownData();
-  }, [currentPage]);
+  }, [searchParams]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllCommAssetLand(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const loadData = async () => {
+  try {
+    setLoading(true);
+    setError('');
+
+  
+
+    const response = await getAllCommAssetLand(apiParams);
+
+    setData(response.content?.map(item => buildUIItem(item)) || []);
+    setTotalPages(response.totalPages || 0);
+    setTotalElements(response.totalElements)
+  } catch (err) {
+    setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
+    console.error('Load error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const loadDropdownData = async () => {
     try {
@@ -86,32 +103,50 @@ const CommAssetLandComponent = () => {
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
 
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
+  // Build a UI-friendly item with nested `document`, `doneBy`, `sectionCategory` and `status` objects
+  const buildUIItem = (raw) => {
+    if (!raw) return null;
+
+    return {
+      ...raw,
+      document: raw.documentId ? {
+        id: raw.documentId,
+        fileName: raw.documentFileName,
+        originalFileName: raw.documentOriginalFileName,
+        fileSize: raw.documentFileSize,
+        contentType: raw.documentContentType,
+        createdAt: raw.documentCreatedAt,
+        updatedAt: raw.documentUpdatedAt,
+        status: raw.documentStatus,
+        owner: {
+          id: raw.documentOwnerId,
+          username: raw.documentOwnerUsername,
+          email: raw.documentOwnerEmail,
+          fullName: raw.documentOwnerFullName
+        },
+        filePath: raw.documentFilePath,
+        version: raw.documentVersion,
+        expirationDate: raw.documentExpirationDate
+      } : null,
+      doneBy: raw.doneById ? { id: raw.doneById, username: raw.doneByUsername, fullName: raw.doneByFullName } : raw.doneBy || null,
+      sectionCategory: raw.sectionId ? { id: raw.sectionId, name: raw.sectionName } : null,
+      status: raw.statusId ? { id: raw.statusId, name: raw.statusName } : null
+    };
   };
+
   const handleViewDocument = (documentId) => {
-  const item = data.find(d => d.documentId === documentId);
-  if (item) {
-    setViewItem(item);
+    const item = data.find(d => d.documentId === documentId);
+    if (item) {
+      setViewItem(buildUIItem(item));
+      setViewModal(true);
+    }
+  };
+
+  const handleShowDetails = (item) => {
+    setViewItem(buildUIItem(item));
     setViewModal(true);
-  }
-};
+  };
 
 const handleCloseViewModal = () => {
   setViewModal(false);
@@ -305,7 +340,7 @@ const handleCloseViewModal = () => {
         <Col>
           <Card>
             <Card.Header>
-              <Row className="align-items-center">
+              <Row className="align-items-center mb-3">
                 <Col xs={12} md={6} lg={3}>
                   <HeaderTitle>{getText('document.commAssetLand', language)}</HeaderTitle>
                 </Col>
@@ -327,34 +362,26 @@ const handleCloseViewModal = () => {
                   </Button>
                 </Col>
               </Row>
+
+              {/* View Toggle Tabs */}
+              <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
+                <Nav.Item>
+                  <Nav.Link eventKey="cards">
+                    <i className="bi bi-grid-3x3-gap me-2"></i>
+                    {language === 'fr' ? 'Cartes' : 'Cards'}
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="table">
+                    <i className="bi bi-table me-2"></i>
+                    {language === 'fr' ? 'Tableau' : 'Table'}
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-              <SearchComponent
-                dropdownLabel="Filter"
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel="From Date"
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel="To Date"
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch}
-                searchButtonText="Search"
-
-                showTextbox2={false}
-                showTextbox3={false}
-              />
+          <SimpleSearchComponent/>
 
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError('')}>
@@ -362,130 +389,144 @@ const handleCloseViewModal = () => {
                 </Alert>
               )}
 
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>{getText('document.fields.reference', language)}</th>
-                      <th>{getText('document.fields.description', language)}</th>
-                      <th>{getText('document.fields.dateObtention', language)}</th>
-                      <th>{getText('document.fields.emplacement', language)}</th>
-                      <th>{getText('document.fields.coordonneesGps', language)}</th>
-                      <th>{getText('location.section', language)}</th>
-                      <th className="text-center" style={{ width: '200px' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.length === 0 ? (
+              {activeView === 'table' && (
+                <div className="table-responsive">
+                  <Table striped bordered hover>
+                    <thead>
                       <tr>
-                        <td colSpan="8" className="text-center text-muted">
-                          {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
-                        </td>
+                        <th>ID</th>
+                        <th>{getText('document.fields.reference', language)}</th>
+                        <th>{getText('document.fields.description', language)}</th>
+                        <th>{getText('document.fields.dateObtention', language)}</th>
+                        <th>{getText('document.fields.emplacement', language)}</th>
+                        <th>{getText('document.fields.coordonneesGps', language)}</th>
+                        <th>{getText('location.section', language)}</th>
+                        <th className="text-center" style={{ width: '200px' }}>Actions</th>
                       </tr>
-                    ) : (
-                      data.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.reference}</td>
-                          <td className="text-truncate" style={{ maxWidth: '200px' }}>
-                            {item.description}
-                          </td>
-                          <td>{formatDate(item.dateObtention)}</td>
-                          <td>{item.emplacement}</td>
-                          <td className="text-truncate" style={{ maxWidth: '150px' }}>
-                            {item.coordonneesGps}
-                          </td>
-                          <td>
-                            <Badge bg="secondary">{item.sectionName || '-'}</Badge>
-                          </td>
-                          <td className="text-center">
-                            <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Document Button */}
-                              {item.documentId && (
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  onClick={() => handleViewDocument(item.documentId)}
-                                  className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
-                                >
-                                  <i className="bi bi-eye me-1"></i>
-                                  <span className="d-none d-sm-inline">
-                                    {language === 'fr' ? 'Voir' : 'View'}
-                                  </span>
-                                </Button>
-                              )}
-
-                              {/* Edit Button */}
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => handleShowModal(item)}
-                                className="d-flex align-items-center"
-                                title={getText('common.edit', language)}
-                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {getText('common.edit', language)}
-                                </span>
-                              </Button>
-
-                              {/* Delete Button */}
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleDeleteClick(item)}
-                                className="d-flex align-items-center"
-                                title={getText('common.delete', language)}
-                              >
-                                <i className="bi bi-trash me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {getText('common.delete', language)}
-                                </span>
-                              </Button>
-                            </div>
+                    </thead>
+                    <tbody>
+                      {data.length === 0 ? (
+                        <tr>
+                          <td colSpan="8" className="text-center text-muted">
+                            {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </Table>
-              </div>
+                      ) : (
+                        data.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.id}</td>
+                            <td>{item.reference}</td>
+                            <td className="text-truncate" style={{ maxWidth: '200px' }}>
+                              {item.description}
+                            </td>
+                            <td>{formatDate(item.dateObtention)}</td>
+                            <td>{item.emplacement}</td>
+                            <td className="text-truncate" style={{ maxWidth: '150px' }}>
+                              {item.coordonneesGps}
+                            </td>
+                            <td>
+                              <Badge bg="secondary">{item.sectionName || '-'}</Badge>
+                            </td>
+                            <td className="text-center">
+                              <div className="d-flex gap-1 justify-content-center action-buttons">
+                                {/* View Document Button */}
+                                {item.documentId && (
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleViewDocument(item.documentId)}
+                                    className="d-flex align-items-center"
+                                    title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                  >
+                                    <i className="bi bi-eye me-1"></i>
+                                    <span className="d-none d-sm-inline">
+                                      {language === 'fr' ? 'Voir' : 'View'}
+                                    </span>
+                                  </Button>
+                                )}
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>
-                    {language === 'fr'
-                      ? `Page ${currentPage + 1} sur ${totalPages}`
-                      : `Page ${currentPage + 1} of ${totalPages}`
-                    }
-                  </div>
-                  <div>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="me-2"
-                      disabled={currentPage === 0}
-                      onClick={() => setCurrentPage(prev => prev - 1)}
-                    >
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
-                    </Button>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      disabled={currentPage >= totalPages - 1}
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      {language === 'fr' ? 'Suivant' : 'Next'}
-                    </Button>
-                  </div>
+                                {/* Edit Button */}
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => handleShowModal(item)}
+                                  className="d-flex align-items-center"
+                                  title={getText('common.edit', language)}
+                                >
+                                  <i className="bi bi-pencil me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {getText('common.edit', language)}
+                                  </span>
+                                </Button>
+
+                                {/* Delete Button */}
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(item)}
+                                  className="d-flex align-items-center"
+                                  title={getText('common.delete', language)}
+                                >
+                                  <i className="bi bi-trash me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {getText('common.delete', language)}
+                                  </span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
                 </div>
               )}
+
+              {/* Cards View */}
+              {activeView === 'cards' && (
+                <Row className="g-4">
+                  {data.length === 0 ? (
+                    <Col xs={12}>
+                      <Alert variant="info" className="text-center">
+                        <i className="bi bi-info-circle me-2"></i>
+                        {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                      </Alert>
+                    </Col>
+                  ) : (
+                    data.map((item) => {
+                      const uiItem = buildUIItem(item);
+                      return (
+                        <DocumentCard
+                          key={item.id}
+                          item={uiItem}
+                          language={language}
+                          onViewDetails={() => handleShowDetails(item)}
+                          onEdit={handleShowModal}
+                          onDelete={handleDeleteClick}
+                          getDisplayName={(it) => it.document?.originalFileName || it.reference}
+                          getDescription={(it) => it.description}
+                        />
+                      );
+                    })
+                  )}
+                </Row>
+              )}
+
+      <PaginationControl totalElements={totalElemtns} totalPages={totalPages}/>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      <GenericDocumentDetailsModal
+        show={viewModal}
+        onHide={handleCloseViewModal}
+        title={viewItem?.document?.originalFileName || 'Document Details'}
+        document={viewItem}
+        language={language}
+        onEdit={(doc) => { handleCloseViewModal(); handleShowModal(doc); }}
+        showEditButton={true}
+      />
 
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
@@ -693,92 +734,7 @@ const handleCloseViewModal = () => {
       </Modal>
       
       
-      <Modal show={viewModal} onHide={handleCloseViewModal} centered size="xl">
-  <Modal.Header closeButton>
-    <Modal.Title>
-      {language === 'fr' ? 'Voir le document' : 'View Document'}
-    </Modal.Title>
-  </Modal.Header>
 
-  <Modal.Body style={{ maxHeight: '75vh', overflowY: 'auto' }}>
-    {viewItem ? (
-      <>
-        {/* General Information */}
-        <h6 className="text-muted mb-2">{language === 'fr' ? 'Informations Générales' : 'General Information'}</h6>
-        <Row className="mb-3">
-          <Col md={6}>
-            <ListGroup variant="flush">
-              <ListGroup.Item><strong>{getText('document.fields.reference', language)}:</strong> {viewItem.reference}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('document.fields.description', language)}:</strong> {viewItem.description || '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('document.fields.dateObtention', language)}:</strong> {formatDate(viewItem.dateObtention)}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('document.fields.emplacement', language)}:</strong> {viewItem.emplacement || '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('document.fields.coordonneesGps', language)}:</strong> {viewItem.coordonneesGps || '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('location.section', language)}:</strong> {viewItem.sectionName || '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{getText('document.fields.status', language)}:</strong> <Badge bg="info">{viewItem.statusName}</Badge></ListGroup.Item>
-            </ListGroup>
-          </Col>
-
-          {/* Document Info */}
-          <Col md={6}>
-            <h6 className="text-muted mb-2">{language === 'fr' ? 'Informations du Document' : 'Document Information'}</h6>
-            <ListGroup variant="flush">
-              <ListGroup.Item><strong>{language === 'fr' ? 'Nom du fichier:' : 'File name:'}</strong> {viewItem.documentFileName}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Nom original:' : 'Original name:'}</strong> {viewItem.documentOriginalFileName}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Type:' : 'Type:'}</strong> {viewItem.documentContentType}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Taille:' : 'Size:'}</strong> {(viewItem.documentFileSize / 1024).toFixed(2)} KB</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong> {viewItem.documentVersion || '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Créé le:' : 'Created:'}</strong> {new Date(viewItem.documentCreatedAt).toLocaleString(language)}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Modifié le:' : 'Updated:'}</strong> {viewItem.documentUpdatedAt ? new Date(viewItem.documentUpdatedAt).toLocaleString(language) : '-'}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Propriétaire:' : 'Owner:'}</strong> {viewItem.documentOwnerFullName} ({viewItem.documentOwnerUsername})</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Email:' : 'Email:'}</strong> {viewItem.documentOwnerEmail}</ListGroup.Item>
-              <ListGroup.Item><strong>{language === 'fr' ? 'Expiration:' : 'Expiration:'}</strong> {viewItem.documentExpirationDate || '-'}</ListGroup.Item>
-            </ListGroup>
-          </Col>
-        </Row>
-
-        {/* File Preview */}
-        <h6 className="text-muted mb-2">{language === 'fr' ? 'Aperçu du document' : 'Document Preview'}</h6>
-        <div className="text-center mb-3">
-          {viewItem.documentContentType.startsWith('image/') && (
-            <img
-              src={`/${viewItem.documentFilePath.replace(/\\/g, '/')}`}
-              alt={viewItem.documentOriginalFileName}
-              style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '0.25rem' }}
-            />
-          )}
-          {viewItem.documentContentType === 'application/pdf' && (
-            <iframe
-              src={`/${viewItem.documentFilePath.replace(/\\/g, '/')}`}
-              title={viewItem.documentOriginalFileName}
-              style={{ width: '100%', height: '400px', border: '1px solid #ddd', borderRadius: '0.25rem' }}
-            />
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="d-flex justify-content-center gap-2">
-          <Button
-            variant="primary"
-            onClick={() => window.open(`${BASE_URL}/${viewItem.documentFilePath.replace(/\\/g, '/')}`, '_blank')}
-            disabled={!viewItem.documentFilePath}
-          >
-            <i className="bi bi-eye me-2"></i>
-            {language === 'fr' ? 'Ouvrir le document' : 'Open Document'}
-          </Button>
-
-        </div>
-      </>
-    ) : (
-      <p className="text-center">{language === 'fr' ? 'Aucun document à afficher' : 'No document to display'}</p>
-    )}
-  </Modal.Body>
-
-  <Modal.Footer>
-    <Button variant="secondary" onClick={handleCloseViewModal}>
- {language === 'fr' ? 'ferme' : 'close'}
-    </Button>
-  </Modal.Footer>
-</Modal>
 
 
 

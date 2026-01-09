@@ -1,15 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Nav } from 'react-bootstrap';
 import { getAllEstate } from '../../services/GetRequests';
 import {  createEstateWithFile } from '../../services/Inserts';
 import { updateEstate, updateEstateWithFile, deleteEstate } from '../../services/UpdRequests';
-import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
+import { getAllDocStatuses} from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
-import { API_BASE_URL } from '../../services/apiConfig';
+import DocumentCard from '../DocumentCard';
+import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal';
 import { CurrentUserId } from '../../services/authUtils';
+import { useSearchParams } from 'react-router-dom';
+import PaginationControl from '../PaginationControl';
+import SimpleSearchComponent from '../SimpleSearchComponent';
 
 const EstateComponent = () => {
   const [data, setData] = useState([]);
@@ -20,7 +24,7 @@ const EstateComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-  const [ setAccounts] = useState([]);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     reference: '',
@@ -33,71 +37,74 @@ const EstateComponent = () => {
     document: { id: '' },
     status: { id: '' }
   });
+    const [searchParams, setSearchParams] = useSearchParams();
   const [language] = useState('fr');
-  const [currentPage, setCurrentPage] = useState(0);
+
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
+  const [totalElements, setTotalElements] = useState(0);
 
-  // Search state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+useEffect(() => {
+  loadData();
+  loadDropdownData();
+}, [searchParams]);
 
-  useEffect(() => {
-    loadData();
-    loadDropdownData();
-  }, [currentPage]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllEstate(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Details modal + view toggle state
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' 
+
+
+
+const loadData = async () => {
+  try {
+    setLoading(true);
+    setError('');
+
+    const page = parseInt(searchParams.get('page')) || 0;
+    const size = parseInt(searchParams.get('size')) || 20;
+    const sort = searchParams.get('sort') || 'reference';
+    const direction = searchParams.get('direction') || 'asc';
+    const statusId = searchParams.get('statusId') || undefined;
+    const documentId = searchParams.get('documentId') || undefined;
+    const search = searchParams.get('search') || undefined;
+
+    const response = await getAllEstate({
+      page,
+      size,
+      sort,
+      direction,
+      statusId,
+      documentId,
+      search
+    });
+
+    setData(response.content || []);
+    setTotalPages(response.totalPages || 0);
+    setTotalElements(response.totalElements||0)
+  } catch (err) {
+    setError(getText('document.messages.loadError', language));
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const loadDropdownData = async () => {
     try {
-      const [statusesData, accountsData] = await Promise.all([
+      const [statusesData] = await Promise.all([
         getAllDocStatuses(),
-        getAllAccounts()
+
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      setAccounts(Array.isArray(accountsData) ? accountsData : []);
+   
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
 
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
-  };
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -245,65 +252,15 @@ const EstateComponent = () => {
     setItemToDelete(null);
   };
 
-  const handleViewDocument = async (documentId) => {
-    if (!documentId) {
-      alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-      return;
-    }
+  // Show details modal for the item
+  const handleShowDetails = (item) => {
+    setSelectedDocument(item);
+    setShowDetailsModal(true);
+  };
 
-    try {
-      const token = localStorage.getItem('authToken');
-
-      // First, get the document metadata to extract file path
-      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!documentResponse.ok) {
-        throw new Error('Failed to fetch document metadata');
-      }
-
-      const documentData = await documentResponse.json();
-      const filePath = documentData.data?.filePath;
-
-      if (!filePath) {
-        throw new Error('File path not found in document data');
-      }
-
-      // Now fetch the actual file content using the file path
-      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const blob = await fileResponse.blob();
-      const url = URL.createObjectURL(blob);
-
-      // Open the file in a new tab
-      const win = window.open(url, '_blank');
-      if (!win) {
-        // If popup was blocked, create a download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = documentData.data?.originalFileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-    } catch (err) {
-      console.error('View document error:', err);
-      alert(language === 'fr' ? `Erreur lors de l'ouverture du document: ${err.message}` : `Error opening document: ${err.message}`);
-    }
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedDocument(null);
   };
 
   const formatDate = (dateString) => {
@@ -340,137 +297,154 @@ const EstateComponent = () => {
                   </Button>
                 </Col>
               </Row>
+
+              {/* View Toggle Tabs */}
+              <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
+                <Nav.Item>
+                  <Nav.Link eventKey="cards">
+                    <i className="bi bi-grid-3x3-gap me-2"></i>
+                    {language === 'fr' ? 'Cartes' : 'Cards'}
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="table">
+                    <i className="bi bi-table me-2"></i>
+                    {language === 'fr' ? 'Tableau' : 'Table'}
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-              <SearchComponent
-                dropdownLabel="Status"
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel="From Date"
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel="To Date"
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch}
-                searchButtonText="Search"
-
-                showTextbox2={false}
-                showTextbox3={false}
-              />
+      <SimpleSearchComponent/>
 
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>{getText('document.fields.reference', language)}</th>
-                      <th>{getText('document.fields.estateType', language)}</th>
-                      <th>{getText('document.fields.emplacement', language)}</th>
-                      <th>{getText('document.fields.dateOfBuilding', language)}</th>
-                      <th>{getText('document.fields.comments', language)}</th>
-                      <th className="text-center" style={{ width: '200px' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.length === 0 ? (
+              {activeView === 'table' && (
+                <div className="table-responsive">
+                  <Table striped bordered hover>
+                    <thead>
                       <tr>
-                        <td colSpan="7" className="text-center text-muted">
-                          {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
-                        </td>
+                        <th>ID</th>
+                        <th>{getText('document.fields.reference', language)}</th>
+                        <th>{getText('document.fields.estateType', language)}</th>
+                        <th>{getText('document.fields.emplacement', language)}</th>
+                        <th>{getText('document.fields.dateOfBuilding', language)}</th>
+                        <th>{getText('document.fields.comments', language)}</th>
+                        <th className="text-center" style={{ width: '200px' }}>Actions</th>
                       </tr>
-                    ) : (
-                      data.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.reference}</td>
-                          <td>{item.estateType}</td>
-                          <td>{item.emplacement}</td>
-                          <td>{formatDate(item.dateOfBuilding)}</td>
-                          <td className="text-truncate" style={{ maxWidth: '200px' }}>{item.comments}</td>
-                          <td className="text-center">
-                            <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Document Button */}
-                              {item.document?.id && (
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  onClick={() => handleViewDocument(item.document.id)}
-                                  className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir le document' : 'View Document'}
-                                >
-                                  <i className="bi bi-eye me-1"></i>
-                                  <span className="d-none d-sm-inline">
-                                    {language === 'fr' ? 'Voir' : 'View'}
-                                  </span>
-                                </Button>
-                              )}
-
-                              {/* Edit Button */}
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => handleShowModal(item)}
-                                className="d-flex align-items-center"
-                                title={getText('common.edit', language)}
-                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {getText('common.edit', language)}
-                                </span>
-                              </Button>
-
-                              {/* Delete Button */}
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleDeleteClick(item)}
-                                className="d-flex align-items-center"
-                                title={getText('common.delete', language)}
-                              >
-                                <i className="bi bi-trash me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {getText('common.delete', language)}
-                                </span>
-                              </Button>
-                            </div>
+                    </thead>
+                    <tbody>
+                      {data.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="text-center text-muted">
+                            {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </Table>
-              </div>
+                      ) : (
+                        data.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.id}</td>
+                            <td>{item.reference}</td>
+                            <td>{item.estateType}</td>
+                            <td>{item.emplacement}</td>
+                            <td>{formatDate(item.dateOfBuilding)}</td>
+                            <td className="text-truncate" style={{ maxWidth: '200px' }}>{item.comments}</td>
+                            <td className="text-center">
+                              <div className="d-flex gap-1 justify-content-center action-buttons">
+                                {/* View Details Button */}
+                                {item.document?.id && (
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleShowDetails(item)}
+                                    className="d-flex align-items-center"
+                                    title={language === 'fr' ? 'Voir le document' : 'View Document'}
+                                  >
+                                    <i className="bi bi-eye me-1"></i>
+                                    <span className="d-none d-sm-inline">
+                                      {language === 'fr' ? 'Voir' : 'View'}
+                                    </span>
+                                  </Button>
+                                )}
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>{language === 'fr' ? `Page ${currentPage + 1} sur ${totalPages}` : `Page ${currentPage + 1} of ${totalPages}`}</div>
-                  <div>
-                    <Button variant="outline-primary" size="sm" className="me-2" disabled={currentPage === 0} onClick={() => setCurrentPage(prev => prev - 1)}>
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
-                    </Button>
-                    <Button variant="outline-primary" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(prev => prev + 1)}>
-                      {language === 'fr' ? 'Suivant' : 'Next'}
-                    </Button>
-                  </div>
+                                {/* Edit Button */}
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => handleShowModal(item)}
+                                  className="d-flex align-items-center"
+                                  title={getText('common.edit', language)}
+                                >
+                                  <i className="bi bi-pencil me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {getText('common.edit', language)}
+                                  </span>
+                                </Button>
+
+                                {/* Delete Button */}
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(item)}
+                                  className="d-flex align-items-center"
+                                  title={getText('common.delete', language)}
+                                >
+                                  <i className="bi bi-trash me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {getText('common.delete', language)}
+                                  </span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
                 </div>
               )}
+
+              {activeView === 'cards' && (
+                <Row className="g-4">
+                  {data.length === 0 ? (
+                    <Col xs={12}>
+                      <Alert variant="info" className="text-center">
+                        <i className="bi bi-info-circle me-2"></i>
+                        {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                      </Alert>
+                    </Col>
+                  ) : (
+                    data.map((item) => (
+                      <DocumentCard
+                        key={item.id}
+                        item={item}
+                        language={language}
+                        onViewDetails={() => handleShowDetails(item)}
+                        onEdit={handleShowModal}
+                        onDelete={handleDeleteClick}
+                        getDisplayName={(it) => it.document?.originalFileName || it.reference}
+                        getDescription={(it) => it.emplacement}
+                      />
+                    ))
+                  )}
+                </Row>
+              )}
+<PaginationControl totalElements={totalElements} totalPages={totalPages}/>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      <GenericDocumentDetailsModal
+        show={showDetailsModal}
+        onHide={handleCloseDetails}
+        title={selectedDocument?.document?.originalFileName || 'Document Details'}
+        document={selectedDocument}
+        language={language}
+        onEdit={(doc) => { handleCloseDetails(); handleShowModal(doc); }}
+        showEditButton={true}
+      />
 
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
@@ -528,8 +502,7 @@ const EstateComponent = () => {
             </Row>
 
             <Row>
-           
-              <Col md={4}>
+           {!editingItem&&(       <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -551,7 +524,8 @@ const EstateComponent = () => {
                     </Form.Text>
                   )}
                 </Form.Group>
-              </Col>
+              </Col>)}
+       
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.status', language)} *</Form.Label>

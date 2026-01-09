@@ -9,7 +9,6 @@ import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
 import DocumentDetailsView from './DocumentDetailsView';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
-import { API_BASE_URL } from '../../services/apiConfig';
 import { downloadFile, formatFileSize, removeFileExtension as removeExtension, openFileInNewTab } from '../../services/downloadService';
 import pdfIcon from '../../assets/documents_icons/pdf.png';
 import excelIcon from '../../assets/documents_icons/excel.png';
@@ -17,6 +16,9 @@ import wordIcon from '../../assets/documents_icons/word.png';
 import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 import { getUserInfo } from '../../services/authUtils';
 import { useLanguage } from '../../i18n/LanguageContext';
+import PaginationControl from '../PaginationControl';
+import { replace, useSearchParams } from 'react-router-dom';
+import SimpleSearchComponent from '../SimpleSearchComponent';
 
 const NormeLoiComponent = () => {
   const [data, setData] = useState([]);
@@ -40,13 +42,13 @@ const NormeLoiComponent = () => {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const { language } = useLanguage();
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
+
 
   // Modal states
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [totalElements, setTotalElements] = useState(0);
 
   // Download confirmation modal state
   const [showDownloadModal, setShowDownloadModal] = useState(false);
@@ -55,34 +57,53 @@ const NormeLoiComponent = () => {
   // View mode state
   const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' - default is cards
 
-  // Search state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
 
-  useEffect(() => {
-    loadData();
-    loadDropdownData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  const page = parseInt(searchParams.get('page') || '0', 10)
+const size = parseInt(searchParams.get('size') || '20', 10)
+const search = searchParams.get('search') || null
+const statusId = searchParams.get('statusId')
+  ? Number(searchParams.get('statusId'))
+  : null
+useEffect(() => {
+  loadData()
+  loadDropdownData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [searchParams])
+const loadData = async () => {
+  try {
+    
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllNormeLoi(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLoading(true)
+    setError('')
+
+    const response = await getAllNormeLoi({
+      page,
+      size,
+      search,
+      statusId
+    })
+
+    setData(response.content || [])
+
+
+  
+    setTotalPages(response.totalPages)
+    setTotalElements(response.totalElements)
+
+    
+
+  } catch (err) {
+    setError(
+      getText('document.messages.loadError', language) +
+        ': ' +
+        (err.message || 'Unknown error')
+    )
+  } finally {
+    setLoading(false)
+  }
+}
 
   const loadDropdownData = async () => {
     try {
@@ -97,25 +118,6 @@ const NormeLoiComponent = () => {
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
-
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
-  };
 
 
   const handleShowModal = (item = null) => {
@@ -446,32 +448,8 @@ const NormeLoiComponent = () => {
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-              <SearchComponent
-                dropdownLabel="Filter"
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel="From Date"
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel="To Date"
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch}
-                searchButtonText="Search"
-
-                showTextbox2={false}
-                showTextbox3={false}
-              />
-
+       
+<SimpleSearchComponent/>
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError('')}>
                   {error}
@@ -563,6 +541,7 @@ const NormeLoiComponent = () => {
                           </tr>
                         ))
                       )}
+                      
                     </tbody>
                   </Table>
                 </div>
@@ -669,7 +648,7 @@ const NormeLoiComponent = () => {
                   )}
                 </Row>
               )}
-
+<PaginationControl totalElements={totalElements} totalPages={totalPages}/>
               <style jsx>{`
                 .hover-shadow {
                   transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
@@ -680,36 +659,7 @@ const NormeLoiComponent = () => {
                 }
               `}</style>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>
-                    {language === 'fr'
-                      ? `Page ${currentPage + 1} sur ${totalPages}`
-                      : `Page ${currentPage + 1} of ${totalPages}`
-                    }
-                  </div>
-                  <div>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="me-2"
-                      disabled={currentPage === 0}
-                      onClick={() => setCurrentPage(prev => prev - 1)}
-                    >
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
-                    </Button>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      disabled={currentPage >= totalPages - 1}
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      {language === 'fr' ? 'Suivant' : 'Next'}
-                    </Button>
-                  </div>
-                </div>
-              )}
+     
             </Card.Body>
           </Card>
         </Col>

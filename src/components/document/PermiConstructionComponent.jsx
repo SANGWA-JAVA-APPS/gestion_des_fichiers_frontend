@@ -1,15 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap';
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Nav } from 'react-bootstrap';
 import { getAllPermiConstruction } from '../../services/GetRequests';
 import { createPermiConstructionWithFile } from '../../services/Inserts';
 import { updatePermiConstruction, updatePermiConstructionWithFile, deletePermiConstruction } from '../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../services/GetRequests';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
-import { API_BASE_URL } from '../../services/apiConfig';
+import DocumentCard from '../DocumentCard';
+import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal';
 import { CurrentUserId } from '../../services/authUtils';
 import { useLanguage } from '../../i18n/LanguageContext';
+import SimpleSearchComponent from '../SimpleSearchComponent';
+import PaginationControl from '../PaginationControl';
+import { useSearchParams } from 'react-router-dom';
 
 const PermiConstructionComponent = () => {
   const [data, setData] = useState([]);
@@ -22,6 +26,7 @@ const PermiConstructionComponent = () => {
   const [docStatuses, setDocStatuses] = useState([]);
   const [sectionCategories, setSectionCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     numeroPermis: '',
     projet: '',
@@ -39,49 +44,53 @@ const PermiConstructionComponent = () => {
   });
 
   const { language, t } = useLanguage();
-  const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
 
-  // Search state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
-const formatDateForInput = (date) => {
-  if (!date) return '';
-  // Convert to a format compatible with <input type="datetime-local">
-  const d = new Date(date);
-  const pad = (n) => n.toString().padStart(2, '0');
-  const yyyy = d.getFullYear();
-  const mm = pad(d.getMonth() + 1);
-  const dd = pad(d.getDate());
-  const hh = pad(d.getHours());
-  const min = pad(d.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
-};
+
+  // Details modal + view toggle state
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' 
+
   useEffect(() => {
     loadData();
     loadDropdownData();
-  }, [currentPage]);
+  }, [searchParams]);
+const loadData = async () => {
+  try {
+    setLoading(true);
+    setError('');
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllPermiConstruction(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(t('document.messages.loadError') + ': ' + (err.message || t('common.unknownError')));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Extract all params from URL
+    const page = parseInt(searchParams.get('page')) || 0;
+    const size = parseInt(searchParams.get('size')) || 20;
+    const statusId = searchParams.get('statusId') || undefined;
+    const sectionCategoryId = searchParams.get('sectionCategoryId') || undefined;
+    const search = searchParams.get('search') || undefined;
+    const sort = searchParams.get('sort') || 'numeroPermis';
+    const direction = searchParams.get('direction') || 'asc';
 
+    const response = await getAllPermiConstruction({
+      page,
+      size,
+      sort,
+      direction,
+      statusId,
+      sectionCategoryId,
+      search
+    });
+
+    setData(response.content || []);
+    setTotalPages(response.totalPages || 0);
+ setTotalElements(response.totalElemtns)
+  } catch (err) {
+    setError('Error loading data: ' + (err.message || 'Unknown error'));
+    console.error('Load error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
   const loadDropdownData = async () => {
     try {
       const [statusesData, categoriesData] = await Promise.all([
@@ -95,25 +104,6 @@ const formatDateForInput = (date) => {
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
-
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
-  };
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -292,65 +282,14 @@ const formatDateForInput = (date) => {
     setItemToDelete(null);
   };
 
-  const handleViewDocument = async (documentId) => {
-    if (!documentId) {
-      alert(t('document.messages.noDocument'));
-      return;
-    }
+  const handleShowDetails = (item) => {
+    setSelectedDocument(item);
+    setShowDetailsModal(true);
+  };
 
-    try {
-      const token = localStorage.getItem('authToken');
-
-      // First, get the document metadata to extract file path
-      const documentResponse = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!documentResponse.ok) {
-        throw new Error(t('document.messages.fetchMetadataError'));
-      }
-
-      const documentData = await documentResponse.json();
-      const filePath = documentData.data?.filePath;
-
-      if (!filePath) {
-        throw new Error(t('document.messages.filePathNotFound'));
-      }
-
-      // Now fetch the actual file content using the file path
-      const fileResponse = await fetch(`${API_BASE_URL}/files/download/${filePath}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!fileResponse.ok) {
-        throw new Error(t('document.messages.downloadError'));
-      }
-
-      const blob = await fileResponse.blob();
-      const url = URL.createObjectURL(blob);
-
-      // Open the file in a new tab
-      const win = window.open(url, '_blank');
-      if (!win) {
-        // If popup was blocked, create a download link
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = documentData.data?.originalFileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-    } catch (err) {
-      console.error('View document error:', err);
-      alert(t('document.messages.openError') + ': ' + err.message);
-    }
+  const handleCloseDetails = () => {
+    setShowDetailsModal(false);
+    setSelectedDocument(null);
   };
 
   const formatDate = (dateString) => {
@@ -396,34 +335,26 @@ const formatDateForInput = (date) => {
                   </Button>
                 </Col>
               </Row>
+
+              {/* View Toggle Tabs */}
+              <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
+                <Nav.Item>
+                  <Nav.Link eventKey="cards">
+                    <i className="bi bi-grid-3x3-gap me-2"></i>
+                    {language === 'fr' ? 'Cartes' : 'Cards'}
+                  </Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="table">
+                    <i className="bi bi-table me-2"></i>
+                    {language === 'fr' ? 'Tableau' : 'Table'}
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-              <SearchComponent
-                dropdownLabel={t('search.filter')}
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(value) => setSearchFilters({ ...searchFilters, statusFilter: value })}
-
-                textbox1Label={t('search.search')}
-                textbox1Placeholder={t('search.placeholder')}
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(value) => setSearchFilters({ ...searchFilters, searchText: value })}
-
-                dateStartLabel={t('search.dateStart')}
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(value) => setSearchFilters({ ...searchFilters, dateStart: value })}
-
-                dateEndLabel={t('search.dateEnd')}
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(value) => setSearchFilters({ ...searchFilters, dateEnd: value })}
-
-                onSearch={handleSearch}
-                searchButtonText={t('search.searchButton')}
-
-                showTextbox2={false}
-                showTextbox3={false}
-              />
+          <SimpleSearchComponent/>
 
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError('')}>
@@ -431,121 +362,135 @@ const formatDateForInput = (date) => {
                 </Alert>
               )}
 
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th>{t('common.id')}</th>
-                      <th>{t('document.fields.referenceTitreFoncier')}</th>
-                      <th>{t('document.fields.refPermisConstuire')}</th>
-                      <th>{t('document.fields.dateValidation')}</th>
-                      <th>{t('document.fields.dateEstimeeTravaux')}</th>
-                      <th>{t('document.sectionCategory')}</th>
-                      <th className="text-center" style={{ width: '200px' }}>{t('common.actions')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.length === 0 ? (
+              {activeView === 'table' && (
+                <div className="table-responsive">
+                  <Table striped bordered hover>
+                    <thead>
                       <tr>
-                        <td colSpan="7" className="text-center text-muted">
-                          {t('common.noData')}
-                        </td>
+                        <th>{t('common.id')}</th>
+                        <th>{t('document.fields.referenceTitreFoncier')}</th>
+                        <th>{t('document.fields.refPermisConstuire')}</th>
+                        <th>{t('document.fields.dateValidation')}</th>
+                        <th>{t('document.fields.dateEstimeeTravaux')}</th>
+                        <th>{t('document.sectionCategory')}</th>
+                        <th className="text-center" style={{ width: '200px' }}>{t('common.actions')}</th>
                       </tr>
-                    ) : (
-                      data.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.referenceTitreFoncier}</td>
-                          <td>{item.refPermisConstuire}</td>
-                          <td>{formatDate(item.dateValidation)}</td>
-                          <td>{formatDate(item.dateEstimeeTravaux)}</td>
-                          <td>
-                            <Badge bg="info">{item.sectionCategory?.name || '-'}</Badge>
-                          </td>
-                          <td className="text-center">
-                            <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Document Button */}
-                              {item.document?.id && (
-                                <Button
-                                  variant="outline-primary"
-                                  size="sm"
-                                  onClick={() => handleViewDocument(item.document.id)}
-                                  className="d-flex align-items-center"
-                                  title={t('document.actions.viewDocument')}
-                                >
-                                  <i className="bi bi-eye me-1"></i>
-                                  <span className="d-none d-sm-inline">
-                                    {t('common.view')}
-                                  </span>
-                                </Button>
-                              )}
-
-                              {/* Edit Button */}
-                              <Button
-                                variant="outline-warning"
-                                size="sm"
-                                onClick={() => handleShowModal(item)}
-                                className="d-flex align-items-center"
-                                title={t('common.edit')}
-                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {t('common.edit')}
-                                </span>
-                              </Button>
-
-                              {/* Delete Button */}
-                              <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={() => handleDeleteClick(item)}
-                                className="d-flex align-items-center"
-                                title={t('common.delete')}
-                              >
-                                <i className="bi bi-trash me-1"></i>
-                                <span className="d-none d-sm-inline">
-                                  {t('common.delete')}
-                                </span>
-                              </Button>
-                            </div>
+                    </thead>
+                    <tbody>
+                      {data.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="text-center text-muted">
+                            {t('common.noData')}
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </Table>
-              </div>
+                      ) : (
+                        data.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.id}</td>
+                            <td>{item.referenceTitreFoncier}</td>
+                            <td>{item.refPermisConstuire}</td>
+                            <td>{formatDate(item.dateValidation)}</td>
+                            <td>{formatDate(item.dateEstimeeTravaux)}</td>
+                            <td>
+                              <Badge bg="info">{item.sectionCategory?.name || '-'}</Badge>
+                            </td>
+                            <td className="text-center">
+                              <div className="d-flex gap-1 justify-content-center action-buttons">
+                                {/* View Details Button */}
+                                {item.document?.id && (
+                                  <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={() => handleShowDetails(item)}
+                                    className="d-flex align-items-center"
+                                    title={t('document.actions.viewDocument')}
+                                  >
+                                    <i className="bi bi-eye me-1"></i>
+                                    <span className="d-none d-sm-inline">
+                                      {t('common.view')}
+                                    </span>
+                                  </Button>
+                                )}
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>
-                    {t('common.pageInfo', { current: currentPage + 1, total: totalPages })}
-                  </div>
-                  <div>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="me-2"
-                      disabled={currentPage === 0}
-                      onClick={() => setCurrentPage(prev => prev - 1)}
-                    >
-                      {t('common.previous')}
-                    </Button>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      disabled={currentPage >= totalPages - 1}
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      {t('common.next')}
-                    </Button>
-                  </div>
+                                {/* Edit Button */}
+                                <Button
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => handleShowModal(item)}
+                                  className="d-flex align-items-center"
+                                  title={t('common.edit')}
+                                >
+                                  <i className="bi bi-pencil me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {t('common.edit')}
+                                  </span>
+                                </Button>
+
+                                {/* Delete Button */}
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(item)}
+                                  className="d-flex align-items-center"
+                                  title={t('common.delete')}
+                                >
+                                  <i className="bi bi-trash me-1"></i>
+                                  <span className="d-none d-sm-inline">
+                                    {t('common.delete')}
+                                  </span>
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
                 </div>
               )}
+
+              {activeView === 'cards' && (
+                <Row className="g-4">
+                  {data.length === 0 ? (
+                    <Col xs={12}>
+                      <Alert variant="info" className="text-center">
+                        <i className="bi bi-info-circle me-2"></i>
+                        {t('common.noData')}
+                      </Alert>
+                    </Col>
+                  ) : (
+                    data.map((item) => (
+                      <DocumentCard
+                        key={item.id}
+                        item={item}
+                        language={language}
+                        onViewDetails={() => handleShowDetails(item)}
+                        onEdit={handleShowModal}
+                        onDelete={handleDeleteClick}
+                        getDisplayName={(it) => it.document?.originalFileName || it.numeroPermis || it.refPermisConstuire}
+                        getDescription={(it) => it.projet}
+                      />
+                    ))
+                  )}
+                </Row>
+              )}
+
+          
+              <PaginationControl totalElements={totalElements}totalPages={totalPages}/>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      <GenericDocumentDetailsModal
+        show={showDetailsModal}
+        onHide={handleCloseDetails}
+        title={selectedDocument?.document?.originalFileName || 'Document Details'}
+        document={selectedDocument}
+        language={language}
+        onEdit={(doc) => { handleCloseDetails(); handleShowModal(doc); }}
+        showEditButton={true}
+      />
 
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>

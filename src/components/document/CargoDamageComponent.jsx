@@ -8,15 +8,15 @@ import { getAllDocStatuses, getAllAccounts } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
-import DocumentDetailsView from './DocumentDetailsView';
+import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal';
+import DocumentCard from '../DocumentCard';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
-import { API_BASE_URL } from '../../services/apiConfig';
+
 import * as downloadService from '../../services/downloadService';
-import pdfIcon from '../../assets/documents_icons/pdf.png';
-import excelIcon from '../../assets/documents_icons/excel.png';
-import wordIcon from '../../assets/documents_icons/word.png';
-import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 import { CurrentUserId } from '../../services/authUtils';
+import SimpleSearchComponent from '../SimpleSearchComponent';
+import PaginationControl from '../PaginationControl';
+import { useSearchParams } from 'react-router-dom';
 
 const CargoDamageComponent = () => {
   const [data, setData] = useState([]);
@@ -40,9 +40,10 @@ const CargoDamageComponent = () => {
     status: { id: '' }
   });
   const [language] = useState('fr');
-  const [currentPage, setCurrentPage] = useState(0);
+
   const [totalPages, setTotalPages] = useState(0);
-  const pageSize = 10;
+  const [totalElements, setTotalElements] = useState(0);
+
 
   // Modal states
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -55,33 +56,49 @@ const CargoDamageComponent = () => {
   // View mode state
   const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' - default is cards
 
-  // Search filters state
-  const [searchFilters, setSearchFilters] = useState({
-    statusFilter: '',
-    searchText: '',
-    dateStart: '',
-    dateEnd: ''
-  });
+ 
+const [searchParams] = useSearchParams();
 
+const currentPage = parseInt(searchParams.get('page') || '0');
+const pageSize = parseInt(searchParams.get('size') || '20');
+const sort = searchParams.get('sort') || 'refeRequest';
+const direction = searchParams.get('direction') || 'asc';
+const statusId = searchParams.get('statusId') ? parseInt(searchParams.get('statusId')) : undefined;
+const documentId = searchParams.get('documentId') ? parseInt(searchParams.get('documentId')) : undefined;
+const searchTerm = searchParams.get('search') || '';
   useEffect(() => {
     loadData();
     loadDropdownData();
-  }, [currentPage]);
+  }, [searchParams]);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await getAllCargoDamage(currentPage, pageSize);
-      setData(response.content || []);
-      setTotalPages(response.totalPages || 0);
-    } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Load error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const loadData = async () => {
+  try {
+    setLoading(true);
+    setError('');
+
+    const response = await getAllCargoDamage({
+      page: currentPage,
+      size: pageSize,
+      sort,
+      direction,
+      statusId,
+      documentId,
+      search: searchTerm
+    });
+
+    setData(response.content || []);
+    setTotalPages(response.totalPages || 0);
+    setTotalElements(response.totalElements || 0);
+  } catch (err) {
+    setError(
+      getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error')
+    );
+    console.error('Load error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const loadDropdownData = async () => {
     try {
@@ -96,25 +113,6 @@ const CargoDamageComponent = () => {
     }
   };
 
-  // Handle search
-  const handleSearch = (searchData) => {
-    console.log('=== SEARCH COMPONENT VALUES ===');
-    console.log('All Search Data:', searchData);
-    console.log('Dropdown (Status Filter):', searchData.dropdown);
-    console.log('Textbox 1 (Search Text):', searchData.textbox1);
-    console.log('Textbox 2:', searchData.textbox2);
-    console.log('Textbox 3:', searchData.textbox3);
-    console.log('Date Start:', searchData.dateStart);
-    console.log('Date End:', searchData.dateEnd);
-    console.log('===============================');
-
-    setSearchFilters({
-      statusFilter: searchData.dropdown,
-      searchText: searchData.textbox1,
-      dateStart: searchData.dateStart,
-      dateEnd: searchData.dateEnd
-    });
-  };
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -272,15 +270,6 @@ const CargoDamageComponent = () => {
     setSelectedDocument(null);
   };
 
-  // Helper function for title click - shows download confirmation
-  const handleTitleClick = (cargoDamage) => {
-    if (cargoDamage?.document) {
-      setFileToDownload(cargoDamage.document);
-      setShowDownloadModal(true);
-    } else {
-      alert(language === 'fr' ? 'Aucun document disponible' : 'No document available');
-    }
-  };
 
   // Handle download confirmation
   const handleConfirmDownload = () => {
@@ -297,46 +286,7 @@ const CargoDamageComponent = () => {
     setFileToDownload(null);
   };
 
-  // Helper function to get document icon based on document object
-  const getDocumentIcon = (document) => {
-    if (!document) return null;
-    
-    const fileName = (document.originalFileName || document.fileName || '').toLowerCase();
-    const contentType = (document.contentType || '').toLowerCase();
-    
-    // Check for PDF
-    if (fileName.endsWith('.pdf') || contentType.includes('pdf')) {
-      return pdfIcon;
-    }
-    
-    // Check for Excel (.xls, .xlsx, .xlsm, .xlsb, .xltx, .xltm, .csv)
-    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx') || 
-        fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') ||
-        fileName.endsWith('.xltx') || fileName.endsWith('.xltm') ||
-        fileName.endsWith('.csv') ||
-        contentType.includes('spreadsheet') || contentType.includes('excel')) {
-      return excelIcon;
-    }
-    
-    // Check for Word (.doc, .docx, .docm, .dotx, .dotm)
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx') || 
-        fileName.endsWith('.docm') || fileName.endsWith('.dotx') ||
-        fileName.endsWith('.dotm') ||
-        contentType.includes('word') || contentType.includes('document')) {
-      return wordIcon;
-    }
-    
-    // Check for PowerPoint (.ppt, .pptx, .pptm, .potx, .potm)
-    if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx') || 
-        fileName.endsWith('.pptm') || fileName.endsWith('.potx') ||
-        fileName.endsWith('.potm') ||
-        contentType.includes('powerpoint') || contentType.includes('presentation')) {
-      return powerpointIcon;
-    }
-    
-    return null; // Return null if no match
-  };
-
+  // Document icons are handled by `DocumentCard` component now.
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString(language);
@@ -426,30 +376,7 @@ const CargoDamageComponent = () => {
               </Row>
             </Card.Header>
             <Card.Body>
-              <SearchComponent
-                dropdownLabel="Status"
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={(e) => setSearchFilters({ ...searchFilters, statusFilter: e.target.value })}
-
-                textbox1Label="Search"
-                textbox1Placeholder="Enter search term..."
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={(e) => setSearchFilters({ ...searchFilters, searchText: e.target.value })}
-                showTextbox2={false}
-                showTextbox3={false}
-
-                dateStartLabel="From Date"
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={(e) => setSearchFilters({ ...searchFilters, dateStart: e.target.value })}
-
-                dateEndLabel="To Date"
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={(e) => setSearchFilters({ ...searchFilters, dateEnd: e.target.value })}
-
-                onSearch={handleSearch}
-                searchButtonText="Search"
-              />
+      <SimpleSearchComponent/>
 
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
@@ -550,104 +477,37 @@ const CargoDamageComponent = () => {
                       </Alert>
                     </Col>
                   ) : (
-                    data.map((item) => {
-                      const docIcon = getDocumentIcon(item.document);
-                      return (
-                        <Col key={item.id} xs={12} sm={6} md={4} lg={3}>
-                          <Card className={`h-100 shadow-sm hover-shadow ${docIcon ? 'doc-card-with-icon' : ''}`}>
-                            {docIcon && (
-                              <div className="doc-icon-badge">
-                                <img src={docIcon} alt="Document Type" />
-                              </div>
-                            )}
-                            <Card.Body>
-                              <Card.Title 
-                                className="text-primary text-truncate-single" 
-                                title={item.document?.originalFileName || item.refeRequest}
-                                onClick={() => handleTitleClick(item)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <i className="bi bi-file-earmark-text me-2"></i>
-                                {downloadService.removeFileExtension(item.document?.originalFileName) || item.refeRequest}
-                              </Card.Title>
-                              <Card.Text className="text-muted small text-clamp-3" style={{ minHeight: '60px' }}>
-                                {item.description || (language === 'fr' ? 'Aucune description' : 'No description')}
-                              </Card.Text>
-                            </Card.Body>
-                          <ListGroup className="list-group-flush">
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
-                              {item.document?.version || '-'}
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Fichier:' : 'File:'}</strong>{' '}
-                              <small className="text-truncate d-block">
-                                {item.document?.originalFileName || '-'}
-                              </small>
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
-                              <Badge bg={item.document?.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                                {item.document?.status || '-'}
-                              </Badge>
-                            </ListGroup.Item>
-                          </ListGroup>
-                          <Card.Body>
-                              <div className="d-flex gap-2 flex-wrap">
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  onClick={() => handleShowDetails(item)}
-                                  className="p-0 text-decoration-none"
-                                >
-                                  <i className="bi bi-eye me-1"></i>
-                                  {language === 'fr' ? 'Détails' : 'Details'}
-                                </Button>
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  onClick={() => handleShowModal(item)}
-                                  className="p-0 text-decoration-none"
-                                >
-                                  <i className="bi bi-pencil me-1"></i>
-                                  {language === 'fr' ? 'Modifier' : 'Edit'}
-                                </Button>
-                                <Button
-                                  variant="link"
-                                  size="sm"
-                                  onClick={() => handleDeleteClick(item)}
-                                  className="p-0 text-decoration-none text-danger"
-                                >
-                                  <i className="bi bi-trash me-1"></i>
-                                  {language === 'fr' ? 'Supprimer' : 'Delete'}
-                                </Button>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      );
-                    })
+                    data.map((item) => (
+                      <DocumentCard
+                        key={item.id}
+                        item={item}
+                        language={language}
+                        onViewDetails={handleShowDetails}
+                        onEdit={handleShowModal}
+                        onDelete={handleDeleteClick}
+                        getDisplayName={(it) => it.document?.originalFileName || it.refeRequest}
+                        getDescription={(it) => it.description}
+                      />
+                    ))
                   )}
                 </Row>
               )}
 
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div>{language === 'fr' ? `Page ${currentPage + 1} sur ${totalPages}` : `Page ${currentPage + 1} of ${totalPages}`}</div>
-                  <div>
-                    <Button variant="outline-primary" size="sm" className="me-2" disabled={currentPage === 0} onClick={() => setCurrentPage(prev => prev - 1)}>
-                      {language === 'fr' ? 'Précédent' : 'Previous'}
-                    </Button>
-                    <Button variant="outline-primary" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(prev => prev + 1)}>
-                      {language === 'fr' ? 'Suivant' : 'Next'}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <PaginationControl totalElements={totalElements} totalPages={totalPages }/>
             </Card.Body>
           </Card>
         </Col>
       </Row>
+
+      <GenericDocumentDetailsModal
+        show={showDetailsModal}
+        onHide={handleCloseDetails}
+        title={selectedDocument?.document?.originalFileName || 'Document Details'}
+        document={selectedDocument}
+        language={language}
+        onEdit={(doc) => { handleCloseDetails(); handleShowModal(doc); }}
+        showEditButton={true}
+      />
 
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
@@ -695,8 +555,7 @@ const CargoDamageComponent = () => {
             </Row>
 
             <Row>
-        
-              <Col md={4}>
+        {!editingItem&&(     <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -718,7 +577,8 @@ const CargoDamageComponent = () => {
                     </Form.Text>
                   )}
                 </Form.Group>
-              </Col>
+              </Col>)}
+         
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
@@ -782,169 +642,7 @@ const CargoDamageComponent = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Document Details Modal */}
-      <DocumentDetailsView
-        show={showDetailsModal}
-        onHide={handleCloseDetails}
-        title={selectedDocument?.document?.originalFileName || 'Document Details'}
-        closeButtonText={language === 'fr' ? 'Fermer' : 'Close'}      >
-        {selectedDocument && (
-          <div>
-            <Row className="mb-3">
-              <Col md={6}>
-                <h6 className="text-muted">{language === 'fr' ? 'Informations Générales' : 'General Information'}</h6>
-                <ListGroup variant="flush">
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.refeRequest', language)}:</strong> {selectedDocument.refeRequest}
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.description', language)}:</strong>{' '}
-                    {selectedDocument.description || '-'}
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.quotationContractNum', language)}:</strong>{' '}
-                    {selectedDocument.quotationContractNum || '-'}
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.dateRequest', language)}:</strong>{' '}
-                    {selectedDocument.dateRequest ? new Date(selectedDocument.dateRequest).toLocaleDateString(language) : '-'}
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.dateContract', language)}:</strong>{' '}
-                    {selectedDocument.dateContract ? new Date(selectedDocument.dateContract).toLocaleDateString(language) : '-'}
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <strong>{getText('document.fields.status', language)}:</strong>{' '}
-                    <Badge bg="info">{selectedDocument.status?.name || '-'}</Badge>
-                  </ListGroup.Item>
-                </ListGroup>
-              </Col>
-              <Col md={6}>
-                <h6 className="text-muted">{language === 'fr' ? 'Informations du Document' : 'Document Information'}</h6>
-                {selectedDocument.document ? (
-                  <ListGroup variant="flush">
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom du fichier:' : 'File name:'}</strong>{' '}
-                      <small>{selectedDocument.document.fileName}</small>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom original:' : 'Original name:'}</strong>{' '}
-                      {selectedDocument.document.originalFileName}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Type:' : 'Type:'}</strong>{' '}
-                      {selectedDocument.document.contentType}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Taille:' : 'Size:'}</strong>{' '}
-                      {(selectedDocument.document.fileSize / 1024).toFixed(2)} KB
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
-                      {selectedDocument.document.version || '-'}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
-                      <Badge bg={selectedDocument.document.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                        {selectedDocument.document.status}
-                      </Badge>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Créé le:' : 'Created:'}</strong>{' '}
-                      {new Date(selectedDocument.document.createdAt).toLocaleString(language)}
-                    </ListGroup.Item>
-                    {selectedDocument.document.updatedAt && (
-                      <ListGroup.Item>
-                        <strong>{language === 'fr' ? 'Modifié le:' : 'Updated:'}</strong>{' '}
-                        {new Date(selectedDocument.document.updatedAt).toLocaleString(language)}
-                      </ListGroup.Item>
-                    )}
-                    {selectedDocument.document.owner?.fullName && (
-                      <ListGroup.Item>
-                        <strong>{language === 'fr' ? 'Propriétaire:' : 'Owner:'}</strong>{' '}
-                        {selectedDocument.document.owner.fullName}
-                      </ListGroup.Item>
-                    )}
-                  </ListGroup>
-                ) : (
-                  <Alert variant="warning">
-                    {language === 'fr' ? 'Aucune information de document disponible' : 'No document information available'}
-                  </Alert>
-                )}
-              </Col>
-            </Row>
-
-            {selectedDocument.document?.owner && (
-              <Row className="mb-3">
-                <Col>
-                  <h6 className="text-muted">{language === 'fr' ? 'Propriétaire du Document' : 'Document Owner'}</h6>
-                  <ListGroup variant="flush">
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
-                      {selectedDocument.document.owner.fullName}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
-                      {selectedDocument.document.owner.username}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Email:' : 'Email:'}</strong>{' '}
-                      {selectedDocument.document.owner.email}
-                    </ListGroup.Item>
-                  </ListGroup>
-                </Col>
-              </Row>
-            )}
-
-            {selectedDocument.doneBy && (
-              <Row>
-                <Col>
-                  <h6 className="text-muted">{getText('document.fields.doneBy', language)}</h6>
-                  <ListGroup variant="flush">
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
-                      {selectedDocument.doneBy.fullName}
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
-                      {selectedDocument.doneBy.username}
-                    </ListGroup.Item>
-                  </ListGroup>
-                </Col>
-              </Row>
-            )}
-
-            <div className="mt-4 d-flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  if (selectedDocument?.document) {
-                    downloadService.openFileInNewTab(selectedDocument.document);
-                  }
-                }}
-                disabled={!selectedDocument?.document?.filePath}
-              >
-                <i className="bi bi-eye me-2"></i>
-                {language === 'fr' ? 'Ouvrir le document' : 'Open Document'}
-              </Button>
-              <Button
-                variant="success"
-                size="sm"
-                onClick={() => {
-                  if (selectedDocument?.document) {
-                    downloadService.downloadFile(selectedDocument.document);
-                  }
-                }}
-                disabled={!selectedDocument?.document?.filePath}
-              >
-                <i className="bi bi-download me-2"></i>
-                {language === 'fr' ? 'Télécharger' : 'Download'}
-              </Button>
-            </div>
-          </div>
-        )}
-      </DocumentDetailsView>
+      {/* Document details are shown via GenericDocumentDetailsModal */}
 
       {/* Download Confirmation Modal */}
       <DownloadConfirmationModal

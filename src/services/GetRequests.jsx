@@ -408,20 +408,62 @@ export const getAllSectionCategories = async () => {
 };
 
 // Get all norme loi
-export const getAllNormeLoi = async (page = 0, size = 20, sort = 'reference', direction = 'asc') => {
+export const getAllNormeLoi = async ({
+  page = 0,
+  size = 20,
+  sort = 'reference',
+  direction = 'asc',
+  statusId,
+  documentId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/norme-loi?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
-    return response.data;
-  } catch (error) {
-    console.error('Get norme loi error:', error);
-    throw error.response?.data || { message: 'Failed to get norme loi' };
-  }
-};
+    const response = await apiClient.get('/document/norme-loi', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        search
+      }
+    })
 
-// Get all comm asset land
-export const getAllCommAssetLand = async (page = 0, size = 20, sort = 'reference', direction = 'asc') => {
+    return response.data
+  } catch (error) {
+    console.error('Get norme loi error:', error)
+    throw error.response?.data || { message: 'Failed to get norme loi' }
+  }
+}
+
+
+// Get all commercial asset land
+export const getAllCommAssetLand = async ({
+  page = 0,
+  size = 20,
+  sort = 'reference',
+  direction = 'asc',
+  statusId,
+  documentId,
+  sectionCategoryId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/comm-asset-land?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const params = {
+      page,
+      size,
+      sort,
+      direction,
+      // Only include params that have a value
+      ...(statusId !== undefined ? { statusId } : {}),
+      ...(documentId !== undefined ? { documentId } : {}),
+      ...(sectionCategoryId !== undefined ? { sectionCategoryId } : {}),
+      ...(search ? { search: search.trim() } : {})
+    };
+
+    const response = await apiClient.get('/document/comm-asset-land', { params });
+
     return response.data;
   } catch (error) {
     console.error('Get comm asset land error:', error);
@@ -429,10 +471,33 @@ export const getAllCommAssetLand = async (page = 0, size = 20, sort = 'reference
   }
 };
 
+
 // Get all permi construction
-export const getAllPermiConstruction = async (page = 0, size = 20, sort = 'numeroPermis', direction = 'asc') => {
+// Get all construction permits
+export const getAllPermiConstruction = async ({
+  page = 0,
+  size = 20,
+  sort = 'numeroPermis',
+  direction = 'asc',
+  statusId,
+  documentId,
+  sectionCategoryId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/permi-construction?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/permi-construction', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        sectionCategoryId,
+        search
+      }
+    });
+
     return response.data;
   } catch (error) {
     console.error('Get permi construction error:', error);
@@ -440,10 +505,32 @@ export const getAllPermiConstruction = async (page = 0, size = 20, sort = 'numer
   }
 };
 
-// Get all accord concession
-export const getAllAccordConcession = async (page = 0, size = 20, sort = 'numeroAccord', direction = 'asc') => {
+
+// Get all accord concessions
+export const getAllAccordConcession = async ({
+  page = 0,
+  size = 20,
+  sort = 'numeroAccord',
+  direction = 'asc',
+  statusId,
+  documentId,
+  sectionCategoryId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/accord-concession?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/accord-concession', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        sectionCategoryId,
+        search
+      }
+    });
+
     return response.data;
   } catch (error) {
     console.error('Get accord concession error:', error);
@@ -451,16 +538,38 @@ export const getAllAccordConcession = async (page = 0, size = 20, sort = 'numero
   }
 };
 
+
+
 // Get all estate
-export const getAllEstate = async (page = 0, size = 20, sort = 'reference', direction = 'asc') => {
+export const getAllEstate = async ({
+  page = 0,
+  size = 20,
+  sort = 'reference',
+  direction = 'asc',
+  statusId,
+  documentId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/estate?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
-    return response.data;
+    const response = await apiClient.get('/document/estate', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        search
+      }
+    })
+
+    return response.data
   } catch (error) {
-    console.error('Get estate error:', error);
-    throw error.response?.data || { message: 'Failed to get estate' };
+    console.error('Get estate error:', error)
+    throw error.response?.data || { message: 'Failed to get estate' }
   }
-};
+}
+
 
 // Get all equipment id
 export const getAllEquipmentId = async (page = 0, size = 20, sort = 'serialNumber', direction = 'asc') => {
@@ -474,15 +583,37 @@ export const getAllEquipmentId = async (page = 0, size = 20, sort = 'serialNumbe
 };
 
 // Get all cert licenses
-export const getAllCertLicenses = async (page = 0, size = 20, sort = 'dateCertificate', direction = 'asc') => {
+// Get all cert licenses
+export const getAllCertLicenses = async ({
+  page = 0,
+  size = 20,
+  sort = 'description',
+  direction = 'asc',
+  statusId,
+  documentId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/cert-licenses?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
-    return response.data;
+    const response = await apiClient.get('/document/cert-licenses', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        search
+      }
+    })
+
+    return response.data
   } catch (error) {
-    console.error('Get cert licenses error:', error);
-    throw error.response?.data || { message: 'Failed to get cert licenses' };
+    console.error('Get cert licenses error:', error)
+    throw error.response?.data || {
+      message: 'Failed to get cert licenses'
+    }
   }
-};
+}
 
 // Get all comm comp policies
 export const getAllCommCompPolicies = async (page = 0, size = 20, sort = 'reference', direction = 'asc') => {
@@ -528,16 +659,36 @@ export const getAllCommThirdParty = async (page = 0, size = 20, sort = 'name', d
   }
 };
 
-// Get all cargo damage
-export const getAllCargoDamage = async (page = 0, size = 20, sort = 'refeRequest', direction = 'asc') => {
+
+// services/GetRequests.ts
+export const getAllCargoDamage = async ({
+  page = 0,
+  size = 20,
+  sort = 'refeRequest',
+  direction = 'asc',
+  statusId,
+  documentId,
+  search
+}= {}) => {
   try {
-    const response = await apiClient.get(`/document/cargo-damage?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
-    return response.data;
+    const response = await apiClient.get('/document/cargo-damage', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        search
+      }
+    })
+
+    return response.data
   } catch (error) {
-    console.error('Get cargo damage error:', error);
-    throw error.response?.data || { message: 'Failed to get cargo damage' };
+    console.error('Get cargo damage error:', error)
+    throw error.response?.data || { message: 'Failed to get cargo damage' }
   }
-};
+}
 
 // Get all litigation followup
 export const getAllLitigationFollowup = async (page = 0, size = 20, sort = 'concern', direction = 'asc') => {

@@ -1,4 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Row, Col, Form, Button, InputGroup } from 'react-bootstrap'
+import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 const SearchComponent = ({
   // Dropdown configuration
@@ -43,18 +46,216 @@ const SearchComponent = ({
   showTextbox1 = true,
   showTextbox2 = false,
   showTextbox3 = false,
-  showDateRange = true
+  showDateRange = true,
+
+  // New: sync behavior
+  syncToUrl = true,
+  // paramNames allow parent components to map fields to desired query param keys
+  paramNames = {
+    dropdown: 'filter',
+    textbox1: 'search',
+    textbox2: 'f2',
+    textbox3: 'f3',
+    dateStart: 'start',
+    dateEnd: 'end'
+  },
+  // whether to reset page to 0 when performing a new search
+  resetPageOnSearch = true
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // local state used when parent doesn't control the inputs
+  const [localDropdown, setLocalDropdown] = useState(dropdownValue || '')
+  const [localTextbox1, setLocalTextbox1] = useState(textbox1Value || '')
+  const [localTextbox2, setLocalTextbox2] = useState(textbox2Value || '')
+  const [localTextbox3, setLocalTextbox3] = useState(textbox3Value || '')
+  const [localDateStart, setLocalDateStart] = useState(dateStartValue || '')
+  const [localDateEnd, setLocalDateEnd] = useState(dateEndValue || '')
+
+  // helpers to detect controlled usage
+  const isControlled = (value, onChange) => typeof onChange === 'function'
+
+  // read initial values from URL and propagate to controlled callbacks or local state
+  useEffect(() => {
+    if (!syncToUrl) return
+
+    const read = () => {
+      const d = searchParams.get(paramNames.dropdown) || ''
+      const t1 = searchParams.get(paramNames.textbox1) || ''
+      const t2 = searchParams.get(paramNames.textbox2) || ''
+      const t3 = searchParams.get(paramNames.textbox3) || ''
+      const s = searchParams.get(paramNames.dateStart) || ''
+      const e = searchParams.get(paramNames.dateEnd) || ''
+
+      if (isControlled(dropdownValue, onDropdownChange)) {
+        if (d) onDropdownChange(d)
+      } else {
+        setLocalDropdown(d)
+      }
+
+      if (isControlled(textbox1Value, onTextbox1Change)) {
+        if (t1) onTextbox1Change(t1)
+      } else {
+        setLocalTextbox1(t1)
+      }
+
+      if (isControlled(textbox2Value, onTextbox2Change)) {
+        if (t2) onTextbox2Change(t2)
+      } else {
+        setLocalTextbox2(t2)
+      }
+
+      if (isControlled(textbox3Value, onTextbox3Change)) {
+        if (t3) onTextbox3Change(t3)
+      } else {
+        setLocalTextbox3(t3)
+      }
+
+      if (isControlled(dateStartValue, onDateStartChange)) {
+        if (s) onDateStartChange(s)
+      } else {
+        setLocalDateStart(s)
+      }
+
+      if (isControlled(dateEndValue, onDateEndChange)) {
+        if (e) onDateEndChange(e)
+      } else {
+        setLocalDateEnd(e)
+      }
+    }
+
+    read()
+  }, [])
+
+  // update local state when parent prop values change (keep in sync for uncontrolled fallback)
+  useEffect(
+    () => {
+      if (!isControlled(dropdownValue, onDropdownChange)) {
+        setLocalDropdown(dropdownValue || '')
+      }
+    },
+    [dropdownValue]
+  )
+  useEffect(
+    () => {
+      if (!isControlled(textbox1Value, onTextbox1Change)) {
+        setLocalTextbox1(textbox1Value || '')
+      }
+    },
+    [textbox1Value]
+  )
+  useEffect(
+    () => {
+      if (!isControlled(textbox2Value, onTextbox2Change)) {
+        setLocalTextbox2(textbox2Value || '')
+      }
+    },
+    [textbox2Value]
+  )
+  useEffect(
+    () => {
+      if (!isControlled(textbox3Value, onTextbox3Change)) {
+        setLocalTextbox3(textbox3Value || '')
+      }
+    },
+    [textbox3Value]
+  )
+  useEffect(
+    () => {
+      if (!isControlled(dateStartValue, onDateStartChange)) {
+        setLocalDateStart(dateStartValue || '')
+      }
+    },
+    [dateStartValue]
+  )
+  useEffect(
+    () => {
+      if (!isControlled(dateEndValue, onDateEndChange)) {
+        setLocalDateEnd(dateEndValue || '')
+      }
+    },
+    [dateEndValue]
+  )
+
+  const currentDropdown = isControlled(dropdownValue, onDropdownChange)
+    ? dropdownValue
+    : localDropdown
+  const currentTextbox1 = isControlled(textbox1Value, onTextbox1Change)
+    ? textbox1Value
+    : localTextbox1
+  const currentTextbox2 = isControlled(textbox2Value, onTextbox2Change)
+    ? textbox2Value
+    : localTextbox2
+  const currentTextbox3 = isControlled(textbox3Value, onTextbox3Change)
+    ? textbox3Value
+    : localTextbox3
+  const currentDateStart = isControlled(dateStartValue, onDateStartChange)
+    ? dateStartValue
+    : localDateStart
+  const currentDateEnd = isControlled(dateEndValue, onDateEndChange)
+    ? dateEndValue
+    : localDateEnd
+
   const handleSearch = () => {
     const searchData = {
-      dropdown: dropdownValue,
-      textbox1: textbox1Value,
-      textbox2: textbox2Value,
-      textbox3: textbox3Value,
-      dateStart: dateStartValue,
-      dateEnd: dateEndValue
+      dropdown: currentDropdown,
+      textbox1: currentTextbox1,
+      textbox2: currentTextbox2,
+      textbox3: currentTextbox3,
+      dateStart: currentDateStart,
+      dateEnd: currentDateEnd
     }
+
+    // call callback for backwards compatibility
     onSearch(searchData)
+
+    if (!syncToUrl) return
+
+    // update URL search params while preserving other params
+    const params = new URLSearchParams(searchParams)
+
+    const setOrDelete = (key, value) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value))
+      } else params.delete(key)
+    }
+
+    setOrDelete(paramNames.dropdown, searchData.dropdown)
+    setOrDelete(paramNames.textbox1, searchData.textbox1)
+    setOrDelete(paramNames.textbox2, searchData.textbox2)
+    setOrDelete(paramNames.textbox3, searchData.textbox3)
+    setOrDelete(paramNames.dateStart, searchData.dateStart)
+    setOrDelete(paramNames.dateEnd, searchData.dateEnd)
+
+    if (resetPageOnSearch) params.set('page', '0')
+
+    setSearchParams(params)
+  }
+
+  // handlers for on-change that respect controlled/uncontrolled pattern
+  const handleDropdownChange = val => {
+    if (isControlled(dropdownValue, onDropdownChange)) onDropdownChange(val)
+    else setLocalDropdown(val)
+  }
+  const handleTextbox1Change = val => {
+    if (isControlled(textbox1Value, onTextbox1Change)) onTextbox1Change(val)
+    else setLocalTextbox1(val)
+  }
+  const handleTextbox2Change = val => {
+    if (isControlled(textbox2Value, onTextbox2Change)) onTextbox2Change(val)
+    else setLocalTextbox2(val)
+  }
+  const handleTextbox3Change = val => {
+    if (isControlled(textbox3Value, onTextbox3Change)) onTextbox3Change(val)
+    else setLocalTextbox3(val)
+  }
+  const handleDateStartChange = val => {
+    if (isControlled(dateStartValue, onDateStartChange)) onDateStartChange(val)
+    else setLocalDateStart(val)
+  }
+  const handleDateEndChange = val => {
+    if (isControlled(dateEndValue, onDateEndChange)) onDateEndChange(val)
+    else setLocalDateEnd(val)
   }
 
   return (
@@ -69,8 +270,8 @@ const SearchComponent = ({
               </Form.Label>
               <Form.Select
                 size='sm'
-                value={dropdownValue}
-                onChange={e => onDropdownChange(e.target.value)}
+                value={currentDropdown}
+                onChange={e => handleDropdownChange(e.target.value)}
               >
                 <option value=''>All</option>
                 {dropdownItems.map((item, index) =>
@@ -93,8 +294,8 @@ const SearchComponent = ({
                 type='text'
                 size='sm'
                 placeholder={textbox1Placeholder}
-                value={textbox1Value}
-                onChange={e => onTextbox1Change(e.target.value)}
+                value={currentTextbox1}
+                onChange={e => handleTextbox1Change(e.target.value)}
               />
             </Form.Group>
           </Col>}
@@ -110,8 +311,8 @@ const SearchComponent = ({
                 type='text'
                 size='sm'
                 placeholder={textbox2Placeholder}
-                value={textbox2Value}
-                onChange={e => onTextbox2Change(e.target.value)}
+                value={currentTextbox2}
+                onChange={e => handleTextbox2Change(e.target.value)}
               />
             </Form.Group>
           </Col>}
@@ -127,8 +328,8 @@ const SearchComponent = ({
                 type='text'
                 size='sm'
                 placeholder={textbox3Placeholder}
-                value={textbox3Value}
-                onChange={e => onTextbox3Change(e.target.value)}
+                value={currentTextbox3}
+                onChange={e => handleTextbox3Change(e.target.value)}
               />
             </Form.Group>
           </Col>}
@@ -143,8 +344,8 @@ const SearchComponent = ({
               <Form.Control
                 type='date'
                 size='sm'
-                value={dateStartValue}
-                onChange={e => onDateStartChange(e.target.value)}
+                value={currentDateStart}
+                onChange={e => handleDateStartChange(e.target.value)}
               />
             </Form.Group>
           </Col>}
@@ -159,8 +360,8 @@ const SearchComponent = ({
               <Form.Control
                 type='date'
                 size='sm'
-                value={dateEndValue}
-                onChange={e => onDateEndChange(e.target.value)}
+                value={currentDateEnd}
+                onChange={e => handleDateEndChange(e.target.value)}
               />
             </Form.Group>
           </Col>}
