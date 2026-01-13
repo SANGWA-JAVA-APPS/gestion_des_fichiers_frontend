@@ -32,7 +32,7 @@ const CountryComponent = () => {
     flagUrl: ''
   })
 
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   // Load countries on mount
   useEffect(() => {
@@ -43,9 +43,11 @@ const CountryComponent = () => {
     try {
       setLoading(true)
       const data = await getAllCountries()
-      setCountries(Array.isArray(data) ? data : [])
+      // Handle different response structures
+      const countriesArray = data.content || data.data || data
+      setCountries(Array.isArray(countriesArray) ? countriesArray : [])
     } catch (err) {
-      setError('Failed to load countries: ' + err.message)
+      setError(t('countries.errorLoading') + err.message)
       setCountries([])
     } finally {
       setLoading(false)
@@ -113,17 +115,17 @@ const CountryComponent = () => {
       handleCloseModal()
       loadCountries()
     } catch (err) {
-      setError('Failed to save country: ' + err.message)
+      setError(t('countries.errorSaving') + err.message)
     }
   }
 
   const handleDelete = async countryId => {
-    if (window.confirm('Are you sure you want to delete this country?')) {
+    if (window.confirm(t('countries.deleteConfirm'))) {
       try {
         await deleteCountry(countryId)
         loadCountries()
       } catch (err) {
-        setError('Failed to delete country: ' + err.message)
+        setError(t('countries.errorDeleting') + err.message)
       }
     }
   }
@@ -134,7 +136,9 @@ const CountryComponent = () => {
         <Row>
           <Col xs={12} className='text-center'>
             <Spinner animation='border' role='status'>
-              <span className='visually-hidden'>Loading...</span>
+              <span className='visually-hidden'>
+                {t('common.loading')}
+              </span>
             </Spinner>
           </Col>
         </Row>
@@ -150,12 +154,12 @@ const CountryComponent = () => {
             {t('adminMenu.countries')}
           </h5>
           <p className='text-muted'>
-            Manage countries with ISO codes, phone codes, and flags
+            {t('countries.subtitle')}
           </p>
         </Col>
         <Col xs='auto'>
           <Button variant='primary' onClick={() => handleShowModal()}>
-            <i className='fas fa-plus me-2' /> Add New Country
+            <i className='fas fa-plus me-2' /> {t('countries.addCountry')}
           </Button>
         </Col>
       </Row>
@@ -177,8 +181,8 @@ const CountryComponent = () => {
                 ? <Row>
                   <Col xs={12} className='text-center py-4'>
                     <p className='text-muted'>
-                        No countries found. Add your first country!
-                      </p>
+                      {t('countries.noCountries')}
+                    </p>
                   </Col>
                 </Row>
                 : <Table responsive striped hover>
@@ -188,7 +192,7 @@ const CountryComponent = () => {
                         {t('document.fields.flag')}
                       </th>
                       <th>
-                        {t('document.fields.name')}
+                        {t('document.fields.countryName')}
                       </th>
                       <th>
                         {t('document.fields.isoCode')}
@@ -200,10 +204,10 @@ const CountryComponent = () => {
                         {t('document.fields.description')}
                       </th>
                       <th>
-                        {t('document.fields.status')}
+                        {t('common.status')}
                       </th>
                       <th>
-                        {t('document.actions')}
+                        {t('countries.actions')}
                       </th>
                     </tr>
                   </thead>
@@ -231,20 +235,24 @@ const CountryComponent = () => {
                         </td>
                         <td>
                           {country.isoCode ||
-                          <span className='text-muted'>N/A</span>}
+                          <span className='text-muted'>
+                            {t('countries.notAvailable')}
+                          </span>}
                         </td>
                         <td>
                           {country.phoneCode
                               ? <span className='badge bg-secondary'>
                                 {country.phoneCode}
                               </span>
-                              : <span className='text-muted'>N/A</span>}
+                              : <span className='text-muted'>
+                                {t('countries.notAvailable')}
+                              </span>}
                         </td>
                         <td>
                           {country.description ||
                           <span className='text-muted'>
-                                No description
-                              </span>}
+                            {t('countries.noDescription')}
+                          </span>}
                         </td>
                         <td>
                           <span
@@ -252,7 +260,9 @@ const CountryComponent = () => {
                                 ? 'bg-success'
                                 : 'bg-secondary'}`}
                             >
-                            {country.active ? 'Active' : 'Inactive'}
+                            {country.active
+                                ? t('common.active')
+                                : t('common.inactive')}
                           </span>
                         </td>
                         <td>
@@ -262,15 +272,16 @@ const CountryComponent = () => {
                             className='me-2'
                             onClick={() => handleShowModal(country)}
                             >
-                            <i className='fas fa-edit' /> Edit
-                            </Button>
+                            <i className='fas fa-edit' /> {t('common.edit')}
+                          </Button>
                           <Button
                             variant='outline-danger'
                             size='sm'
                             onClick={() => handleDelete(country.id)}
                             >
-                            <i className='fas fa-trash' /> Delete
-                            </Button>
+                            <i className='fas fa-trash' />{' '}
+                            {t('common.delete')}
+                          </Button>
                         </td>
                       </tr>
                       )}
@@ -285,7 +296,9 @@ const CountryComponent = () => {
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingCountry ? 'Edit Country' : 'Add New Country'}
+            {editingCountry
+              ? t('countries.editCountry')
+              : t('countries.addCountry')}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
@@ -293,7 +306,9 @@ const CountryComponent = () => {
             <Row>
               <Col xs={12}>
                 <Form.Group className='mb-3'>
-                  <Form.Label>Country *</Form.Label>
+                  <Form.Label>
+                    {t('countries.country')} *
+                  </Form.Label>
                   <CountryInput
                     value={formData.countryName || ''}
                     onChange={country =>
@@ -308,13 +323,19 @@ const CountryComponent = () => {
                 </Form.Group>
 
                 <Form.Group className='mb-3'>
-                  <Form.Label>Description</Form.Label>
+                  <Form.Label>
+                    {t('countries.description')}
+                  </Form.Label>
                   <Form.Control
                     type='text'
                     name='description'
                     value={formData.description}
                     onChange={handleChange}
-                    placeholder='Enter description'
+                    placeholder={
+                      language === 'fr'
+                        ? 'Entrez la description'
+                        : 'Enter description'
+                    }
                   />
                 </Form.Group>
               </Col>
@@ -322,10 +343,10 @@ const CountryComponent = () => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant='secondary' onClick={handleCloseModal}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant='primary' type='submit'>
-              {editingCountry ? 'Update' : 'Create'} Country
+              {editingCountry ? t('countries.update') : t('countries.create')}
             </Button>
           </Modal.Footer>
         </Form>

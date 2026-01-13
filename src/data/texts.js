@@ -1,5 +1,1125 @@
 // Global text translations for French and English
 export const texts = {
+  pagination: {
+    page: {
+      fr: 'Page',
+      en: 'Page'
+    },
+    of: {
+      fr: 'sur',
+      en: 'of'
+    },
+    items: {
+      fr: 'éléments',
+      en: 'items'
+    },
+    total: {
+      fr: 'Total',
+      en: 'Total'
+    },
+    showing: {
+      fr: 'Affichage',
+      en: 'Showing'
+    },
+    perPage: {
+      fr: 'par page',
+      en: 'per page'
+    },
+    previous: {
+      fr: 'Précédent',
+      en: 'Previous'
+    },
+    next: {
+      fr: 'Suivant',
+      en: 'Next'
+    },
+    first: {
+      fr: 'Premier',
+      en: 'First'
+    },
+    last: {
+      fr: 'Dernier',
+      en: 'Last'
+    },
+    goToPage: {
+      fr: 'Aller à la page',
+      en: 'Go to page'
+    },
+    rowsPerPage: {
+      fr: 'Lignes par page',
+      en: 'Rows per page'
+    },
+    // Add these for screen readers/accessibility
+    ariaLabels: {
+      previousPage: {
+        fr: 'Page précédente',
+        en: 'Previous page'
+      },
+      nextPage: {
+        fr: 'Page suivante',
+        en: 'Next page'
+      },
+      page: {
+        fr: 'Page {page}',
+        en: 'Page {page}'
+      },
+      currentPage: {
+        fr: 'Page courante, page {page}',
+        en: 'Current page, page {page}'
+      },
+      gotoPage: {
+        fr: 'Aller à la page {page}',
+        en: 'Go to page {page}'
+      },
+      pageSize: {
+        fr: 'Sélectionner le nombre de lignes par page',
+        en: 'Select number of rows per page'
+      },
+      ellipsis: {
+        fr: 'Plus de pages',
+        en: 'More pages'
+      }
+    },
+    // Status messages
+    status: {
+      totalItems: {
+        fr: '{total} éléments au total',
+        en: '{total} items total'
+      },
+      currentRange: {
+        fr: 'Éléments {start}-{end} sur {total}',
+        en: 'Items {start}-{end} of {total}'
+      },
+      singlePage: {
+        fr: '1 page',
+        en: '1 page'
+      },
+      multiplePages: {
+        fr: '{pages} pages',
+        en: '{pages} pages'
+      }
+    }
+  },
+  // Add this to your texts object in texts.js
+  sidebar: {
+    docstatus: {
+      fr: 'Statut du Document',
+      en: 'Docstatus'
+    },
+    helpCenter: {
+      fr: "Centre d'Aide",
+      en: 'Help Center'
+    },
+    signIn: {
+      fr: 'Se Connecter',
+      en: 'Sign In'
+    },
+    signUp: {
+      fr: "S'Inscrire",
+      en: 'Sign Up'
+    },
+    userManagement: {
+      fr: 'Gestion des Utilisateurs',
+      en: 'User Management'
+    },
+    main: {
+      fr: 'Principal',
+      en: 'Main'
+    },
+    accounts: {
+      fr: 'Comptes',
+      en: 'Accounts'
+    },
+    accountCategories: {
+      fr: 'Catégories de Comptes',
+      en: 'Account Categories'
+    },
+    accountsList: {
+      fr: 'Comptes',
+      en: 'Accounts'
+    },
+    locations: {
+      fr: 'Localisations',
+      en: 'Locations'
+    },
+    countryManagement: {
+      fr: 'Gestion des Pays',
+      en: 'Country Management'
+    },
+    locationEntities: {
+      fr: 'Entités de Localisation',
+      en: 'Location Entities'
+    },
+    moduleManagement: {
+      fr: 'Gestion des Modules',
+      en: 'Module Management'
+    },
+    sectionManagement: {
+      fr: 'Gestion des Sections',
+      en: 'Section Management'
+    },
+    documents: {
+      fr: 'Documents',
+      en: 'Documents'
+    },
+    docStatus: {
+      fr: 'Statut du Document',
+      en: 'Docstatus'
+    },
+    sectionCategory: {
+      fr: 'Catégorie de Section',
+      en: 'Section Category'
+    },
+    normeLoi: {
+      fr: 'Norme et Loi',
+      en: 'NormeLoi'
+    },
+    commAssetLand: {
+      fr: 'Actif Commercial - Terrain',
+      en: 'Comm Asset Land'
+    },
+    permiConstruction: {
+      fr: 'Permis de Construction',
+      en: 'Permi Construction'
+    },
+    accordConcession: {
+      fr: 'Accord de Concession',
+      en: 'Accord Concession'
+    },
+    estate: {
+      fr: 'Immobilier',
+      en: 'Estate'
+    },
+    certLicenses: {
+      fr: 'Certificats et Licences',
+      en: 'Cert Licenses'
+    },
+    cargoDamage: {
+      fr: 'Dommages de Cargaison',
+      en: 'Cargo Damage'
+    },
+    enterprise: {
+      fr: 'Entreprise',
+      en: 'Enterprise'
+    },
+    startup: {
+      fr: 'Startup',
+      en: 'Startup'
+    }
+  },
+  // Add this to your texts object in texts.js
+  simpleSearch: {
+    dropdownLabel: {
+      fr: 'Filtre',
+      en: 'Filter'
+    },
+    textbox1Label: {
+      fr: 'Recherche',
+      en: 'Search'
+    },
+    textbox1Placeholder: {
+      fr: 'Entrez un terme de recherche...',
+      en: 'Enter search term...'
+    },
+    startDate: {
+      fr: 'Date de début',
+      en: 'Start Date'
+    },
+    endDate: {
+      fr: 'Date de fin',
+      en: 'End Date'
+    },
+    searchButton: {
+      fr: 'Rechercher',
+      en: 'Search'
+    },
+    clearButton: {
+      fr: 'Effacer',
+      en: 'Clear'
+    },
+    allOption: {
+      fr: 'Tous',
+      en: 'All'
+    }
+  },
+  // Add this to your texts object in texts.js
+  docStatus: {
+    title: {
+      fr: 'Statut du Document',
+      en: 'Document Status'
+    },
+    name: {
+      fr: 'Nom',
+      en: 'Name'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    id: {
+      fr: 'ID',
+      en: 'ID'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    refresh: {
+      fr: 'Actualiser',
+      en: 'Refresh'
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des statuts : ',
+      en: 'Failed to load statuses: '
+    },
+    errorSaving: {
+      fr: 'Échec de la sauvegarde du statut : ',
+      en: 'Failed to save status: '
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression du statut : ',
+      en: 'Failed to delete status: '
+    }
+  },
+  // Add this to your texts object in texts.js
+  sections: {
+    management: {
+      fr: 'Gestion des Sections',
+      en: 'Section Management'
+    },
+    subtitle: {
+      fr:
+        "Gérer les sections avec informations sur le module, l'accès et la capacité",
+      en: 'Manage sections with module, access, and capacity information'
+    },
+    addSection: {
+      fr: 'Ajouter une Section',
+      en: 'Add Section'
+    },
+    editSection: {
+      fr: 'Modifier la Section',
+      en: 'Edit Section'
+    },
+    name: {
+      fr: 'Nom',
+      en: 'Name'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    code: {
+      fr: 'Code',
+      en: 'Code'
+    },
+    type: {
+      fr: 'Type',
+      en: 'Type'
+    },
+    floorRoom: {
+      fr: 'Étage/Salle',
+      en: 'Floor/Room'
+    },
+    module: {
+      fr: 'Module',
+      en: 'Module'
+    },
+    access: {
+      fr: 'Accès',
+      en: 'Access'
+    },
+    capacity: {
+      fr: 'Capacité',
+      en: 'Capacity'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    floor: {
+      fr: 'Étage',
+      en: 'Floor'
+    },
+    room: {
+      fr: 'Salle',
+      en: 'Room'
+    },
+    floorNumber: {
+      fr: "Numéro d'Étage",
+      en: 'Floor Number'
+    },
+    roomNumber: {
+      fr: 'Numéro de Salle',
+      en: 'Room Number'
+    },
+    coordinates: {
+      fr: 'Coordonnées',
+      en: 'Coordinates'
+    },
+    basicInfo: {
+      fr: 'Informations de Base',
+      en: 'Basic Info'
+    },
+    locationCapacity: {
+      fr: 'Localisation & Capacité',
+      en: 'Location & Capacity'
+    },
+    moduleAccess: {
+      fr: 'Module & Accès',
+      en: 'Module & Access'
+    },
+    accessLevel: {
+      fr: "Niveau d'Accès",
+      en: 'Access Level'
+    },
+    selectModule: {
+      fr: 'Sélectionner un module',
+      en: 'Select module'
+    },
+    selectType: {
+      fr: 'Sélectionner un type',
+      en: 'Select type'
+    },
+    selectAccessLevel: {
+      fr: "Sélectionner un niveau d'accès",
+      en: 'Select access level'
+    },
+    noSections: {
+      fr: 'Aucune section trouvée. Ajoutez votre première section !',
+      en: 'No sections found. Add your first section!'
+    },
+    notAvailable: {
+      fr: 'Non disponible',
+      en: 'N/A'
+    },
+    // Section types translations
+    types: {
+      OFFICE: {
+        fr: 'Bureau',
+        en: 'Office'
+      },
+      CONFERENCE_ROOM: {
+        fr: 'Salle de Conférence',
+        en: 'Conference Room'
+      },
+      STORAGE: {
+        fr: 'Stockage',
+        en: 'Storage'
+      },
+      LOBBY: {
+        fr: 'Hall',
+        en: 'Lobby'
+      },
+      CORRIDOR: {
+        fr: 'Couloir',
+        en: 'Corridor'
+      },
+      RESTROOM: {
+        fr: 'Toilettes',
+        en: 'Restroom'
+      },
+      KITCHEN: {
+        fr: 'Cuisine',
+        en: 'Kitchen'
+      },
+      SERVER_ROOM: {
+        fr: 'Salle des Serveurs',
+        en: 'Server Room'
+      },
+      PARKING: {
+        fr: 'Parking',
+        en: 'Parking'
+      },
+      SECURITY: {
+        fr: 'Sécurité',
+        en: 'Security'
+      },
+      RECEPTION: {
+        fr: 'Réception',
+        en: 'Reception'
+      },
+      ARCHIVE: {
+        fr: 'Archives',
+        en: 'Archive'
+      },
+      OTHER: {
+        fr: 'Autre',
+        en: 'Other'
+      }
+    },
+    // Access levels translations
+    accessLevels: {
+      PUBLIC: {
+        fr: 'Public',
+        en: 'Public'
+      },
+      RESTRICTED: {
+        fr: 'Restreint',
+        en: 'Restricted'
+      },
+      PRIVATE: {
+        fr: 'Privé',
+        en: 'Private'
+      },
+      CONFIDENTIAL: {
+        fr: 'Confidentiel',
+        en: 'Confidential'
+      },
+      TOP_SECRET: {
+        fr: 'Top Secret',
+        en: 'Top Secret'
+      }
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des données : ',
+      en: 'Failed to load data: '
+    },
+    errorSaving: {
+      fr: 'Échec de la sauvegarde de la section : ',
+      en: 'Failed to save section: '
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression de la section : ',
+      en: 'Failed to delete section: '
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer cette section ?',
+      en: 'Are you sure you want to delete this section?'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    }
+  },
+  // Add this to your texts object in texts.js
+  modules: {
+    management: {
+      fr: 'Gestion des Modules',
+      en: 'Module Management'
+    },
+    addModule: {
+      fr: 'Ajouter un Module',
+      en: 'Add Module'
+    },
+    editModule: {
+      fr: 'Modifier le Module',
+      en: 'Edit Module'
+    },
+    name: {
+      fr: 'Nom',
+      en: 'Name'
+    },
+    code: {
+      fr: 'Code',
+      en: 'Code'
+    },
+    type: {
+      fr: 'Type',
+      en: 'Type'
+    },
+    locationEntity: {
+      fr: 'Entité de Localisation',
+      en: 'Location Entity'
+    },
+    area: {
+      fr: 'Superficie',
+      en: 'Area'
+    },
+    coordinates: {
+      fr: 'Coordonnées',
+      en: 'Coordinates'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    areaSize: {
+      fr: 'Taille de la Zone',
+      en: 'Area Size'
+    },
+    areaUnit: {
+      fr: 'Unité de Surface',
+      en: 'Area Unit'
+    },
+    selectEntity: {
+      fr: 'Sélectionner une entité',
+      en: 'Select entity'
+    },
+    selectType: {
+      fr: 'Sélectionner un type',
+      en: 'Select type'
+    },
+    noModules: {
+      fr: 'Aucun module trouvé. Ajoutez votre premier module !',
+      en: 'No modules found. Add your first module!'
+    },
+    notAvailable: {
+      fr: 'Non disponible',
+      en: 'N/A'
+    },
+    types: {
+      ADMINISTRATIVE: {
+        fr: 'Administratif',
+        en: 'Administrative'
+      },
+      COMMERCIAL: {
+        fr: 'Commercial',
+        en: 'Commercial'
+      },
+      RESIDENTIAL: {
+        fr: 'Résidentiel',
+        en: 'Residential'
+      },
+      INDUSTRIAL: {
+        fr: 'Industriel',
+        en: 'Industrial'
+      },
+      AGRICULTURAL: {
+        fr: 'Agricole',
+        en: 'Agricultural'
+      },
+      RECREATIONAL: {
+        fr: 'Loisirs',
+        en: 'Recreational'
+      },
+      EDUCATIONAL: {
+        fr: 'Éducatif',
+        en: 'Educational'
+      },
+      HEALTHCARE: {
+        fr: 'Santé',
+        en: 'Healthcare'
+      },
+      TRANSPORT: {
+        fr: 'Transport',
+        en: 'Transport'
+      },
+      OTHER: {
+        fr: 'Autre',
+        en: 'Other'
+      }
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des modules : ',
+      en: 'Failed to load modules: '
+    },
+    errorSaving: {
+      fr: 'Échec de la sauvegarde du module : ',
+      en: 'Failed to save module: '
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression du module : ',
+      en: 'Failed to delete module: '
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer ce module ?',
+      en: 'Are you sure you want to delete this module?'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    }
+  },
+  // Add this to your texts object in texts.js
+  entities: {
+    management: {
+      fr: 'Gestion des Entités Géographiques',
+      en: 'Location Entity Management'
+    },
+    subtitle: {
+      fr:
+        'Gérer les provinces, états, régions, districts, villes, communes et villages',
+      en:
+        'Manage provinces, states, regions, districts, cities, towns, and villages'
+    },
+    addEntity: {
+      fr: 'Ajouter une Entité',
+      en: 'Add Entity'
+    },
+    editEntity: {
+      fr: "Modifier l'Entité",
+      en: 'Edit Entity'
+    },
+    name: {
+      fr: 'Nom',
+      en: 'Name'
+    },
+    type: {
+      fr: 'Type',
+      en: 'Type'
+    },
+    code: {
+      fr: 'Code',
+      en: 'Code'
+    },
+    country: {
+      fr: 'Pays',
+      en: 'Country'
+    },
+    postalCode: {
+      fr: 'Code Postal',
+      en: 'Postal Code'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    selectCountry: {
+      fr: 'Sélectionner un pays',
+      en: 'Select country'
+    },
+    noEntities: {
+      fr: 'Aucune entité trouvée. Ajoutez votre première entité !',
+      en: 'No entities found. Add your first entity!'
+    },
+    notAvailable: {
+      fr: 'Non disponible',
+      en: 'N/A'
+    },
+    types: {
+      PROVINCE: {
+        fr: 'Province',
+        en: 'Province'
+      },
+      STATE: {
+        fr: 'État',
+        en: 'State'
+      },
+      REGION: {
+        fr: 'Région',
+        en: 'Region'
+      },
+      DISTRICT: {
+        fr: 'District',
+        en: 'District'
+      },
+      CITY: {
+        fr: 'Ville',
+        en: 'City'
+      },
+      TOWN: {
+        fr: 'Commune',
+        en: 'Town'
+      },
+      VILLAGE: {
+        fr: 'Village',
+        en: 'Village'
+      }
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des entités : ',
+      en: 'Failed to load entities: '
+    },
+    errorSaving: {
+      fr: "Échec de l'enregistrement de l'entité : ",
+      en: 'Failed to save entity: '
+    },
+    errorDeleting: {
+      fr: "Échec de la suppression de l'entité : ",
+      en: 'Failed to delete entity: '
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer cette entité ?',
+      en: 'Are you sure you want to delete this entity?'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    }
+  },
+  // Add this to your texts object in texts.js
+  locations: {
+    management: {
+      fr: 'Gestion des Emplacements',
+      en: 'Location Management'
+    },
+    addLocation: {
+      fr: 'Ajouter un Emplacement',
+      en: 'Add Location'
+    },
+    editLocation: {
+      fr: "Modifier l'Emplacement",
+      en: 'Edit Location'
+    },
+    name: {
+      fr: 'Nom',
+      en: 'Name'
+    },
+    address: {
+      fr: 'Adresse',
+      en: 'Address'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    noLocations: {
+      fr: 'Aucun emplacement trouvé. Ajoutez votre premier emplacement !',
+      en: 'No locations found. Add your first location!'
+    },
+    noAddress: {
+      fr: 'Aucune adresse',
+      en: 'No address'
+    },
+    noDescription: {
+      fr: 'Aucune description',
+      en: 'No description'
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des emplacements : ',
+      en: 'Failed to load locations: '
+    },
+    errorSaving: {
+      fr: "Échec de la sauvegarde de l'emplacement : ",
+      en: 'Failed to save location: '
+    },
+    errorDeleting: {
+      fr: "Échec de la suppression de l'emplacement : ",
+      en: 'Failed to delete location: '
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer cet emplacement ?',
+      en: 'Are you sure you want to delete this location?'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    }
+  },
+  countries: {
+    subtitle: {
+      fr: 'Gérer les pays avec codes ISO, codes téléphoniques et drapeaux',
+      en: 'Manage countries with ISO codes, phone codes, and flags'
+    },
+    addCountry: {
+      fr: 'Ajouter un Pays',
+      en: 'Add Country'
+    },
+    editCountry: {
+      fr: 'Modifier le Pays',
+      en: 'Edit Country'
+    },
+    country: {
+      fr: 'Pays',
+      en: 'Country'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    noCountries: {
+      fr: 'Aucun pays trouvé. Ajoutez votre premier pays !',
+      en: 'No countries found. Add your first country!'
+    },
+    noDescription: {
+      fr: 'Pas de description',
+      en: 'No description'
+    },
+    notAvailable: {
+      fr: 'Non disponible',
+      en: 'N/A'
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des pays : ',
+      en: 'Failed to load countries: '
+    },
+    errorSaving: {
+      fr: 'Échec de la sauvegarde du pays : ',
+      en: 'Failed to save country: '
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression du pays : ',
+      en: 'Failed to delete country: '
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer ce pays ?',
+      en: 'Are you sure you want to delete this country?'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    }
+  },
+  // Add this to your texts object in texts.js
+  accounts: {
+    management: {
+      fr: 'Gestion des Comptes',
+      en: 'Account Management'
+    },
+    subtitle: {
+      fr: 'Gérer les comptes utilisateurs',
+      en: 'Manage user accounts'
+    },
+    addAccount: {
+      fr: 'Ajouter un Compte',
+      en: 'Add Account'
+    },
+    editAccount: {
+      fr: 'Modifier le Compte',
+      en: 'Edit Account'
+    },
+    createAccount: {
+      fr: 'Créer un Compte',
+      en: 'Create Account'
+    },
+    fullName: {
+      fr: 'Nom Complet',
+      en: 'Full Name'
+    },
+    email: {
+      fr: 'Email',
+      en: 'Email'
+    },
+    phone: {
+      fr: 'Téléphone',
+      en: 'Phone'
+    },
+    category: {
+      fr: 'Catégorie',
+      en: 'Category'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    username: {
+      fr: "Nom d'utilisateur",
+      en: 'Username'
+    },
+    password: {
+      fr: 'Mot de passe',
+      en: 'Password'
+    },
+    gender: {
+      fr: 'Genre',
+      en: 'Gender'
+    },
+    male: {
+      fr: 'Homme',
+      en: 'Male'
+    },
+    female: {
+      fr: 'Femme',
+      en: 'Female'
+    },
+    notSpecified: {
+      fr: 'Non spécifié',
+      en: 'Not specified'
+    },
+    selectCategory: {
+      fr: 'Sélectionner une catégorie',
+      en: 'Select category'
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des données',
+      en: 'Failed to load data'
+    },
+    errorSaving: {
+      fr: "Échec de l'enregistrement du compte",
+      en: 'Failed to save account'
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression du compte',
+      en: 'Failed to delete account'
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer ce compte ?',
+      en: 'Are you sure you want to delete this account?'
+    }
+  },
+  // Add this to your texts object in texts.js
+  roles: {
+    management: {
+      fr: 'Gestion des Rôles',
+      en: 'Role Management'
+    },
+    subtitle: {
+      fr: 'Gérer les rôles et les permissions des utilisateurs',
+      en: 'Manage user roles and permissions'
+    },
+    addNewRole: {
+      fr: 'Ajouter un Nouveau Rôle',
+      en: 'Add New Role'
+    },
+    addRole: {
+      fr: 'Ajouter un Rôle',
+      en: 'Add Role'
+    },
+    editRole: {
+      fr: 'Modifier le Rôle',
+      en: 'Edit Role'
+    },
+    roleName: {
+      fr: 'Nom du Rôle',
+      en: 'Role Name'
+    },
+    accessLevel: {
+      fr: "Niveau d'Accès",
+      en: 'Access Level'
+    },
+    status: {
+      fr: 'Statut',
+      en: 'Status'
+    },
+    type: {
+      fr: 'Type',
+      en: 'Type'
+    },
+    permissions: {
+      fr: 'Permissions',
+      en: 'Permissions'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    edit: {
+      fr: 'Modifier',
+      en: 'Edit'
+    },
+    delete: {
+      fr: 'Supprimer',
+      en: 'Delete'
+    },
+    system: {
+      fr: 'Système',
+      en: 'System'
+    },
+    custom: {
+      fr: 'Personnalisé',
+      en: 'Custom'
+    },
+    active: {
+      fr: 'Actif',
+      en: 'Active'
+    },
+    inactive: {
+      fr: 'Inactif',
+      en: 'Inactive'
+    },
+    deprecated: {
+      fr: 'Obsolète',
+      en: 'Deprecated'
+    },
+    level1: {
+      fr: 'Niveau 1 - Administrateur',
+      en: 'Level 1 - Admin'
+    },
+    level2: {
+      fr: 'Niveau 2 - Gestionnaire',
+      en: 'Level 2 - Manager'
+    },
+    level3: {
+      fr: 'Niveau 3 - Utilisateur',
+      en: 'Level 3 - User'
+    },
+    level4: {
+      fr: 'Niveau 4 - Invité',
+      en: 'Level 4 - Guest'
+    },
+    systemRole: {
+      fr: 'Rôle Système',
+      en: 'System Role'
+    },
+    systemRoleHint: {
+      fr: 'Les rôles système ne peuvent pas être supprimés',
+      en: 'System roles cannot be deleted'
+    },
+    permissionsPlaceholder: {
+      fr: 'ex: LIRE, ÉCRIRE, SUPPRIMER, ADMIN (séparés par des virgules)',
+      en: 'e.g., READ, WRITE, DELETE, ADMIN (comma-separated)'
+    },
+    permissionsHint: {
+      fr:
+        'Entrez les permissions séparées par des virgules (LIRE, ÉCRIRE, SUPPRIMER, ADMIN, etc.)',
+      en:
+        'Enter permissions separated by commas (READ, WRITE, DELETE, ADMIN, etc.)'
+    },
+    descriptionPlaceholder: {
+      fr: 'Entrez la description du rôle et ses responsabilités',
+      en: 'Enter role description and responsibilities'
+    },
+    cancel: {
+      fr: 'Annuler',
+      en: 'Cancel'
+    },
+    create: {
+      fr: 'Créer',
+      en: 'Create'
+    },
+    update: {
+      fr: 'Mettre à jour',
+      en: 'Update'
+    },
+    deleteConfirm: {
+      fr: 'Êtes-vous sûr de vouloir supprimer ce rôle ?',
+      en: 'Are you sure you want to delete this role?'
+    },
+    deleteSystemRoleError: {
+      fr: 'Impossible de supprimer les rôles système',
+      en: 'Cannot delete system roles'
+    },
+    loading: {
+      fr: 'Chargement...',
+      en: 'Loading...'
+    },
+    noRoles: {
+      fr: 'Aucun rôle trouvé. Ajoutez votre premier rôle !',
+      en: 'No roles found. Add your first role!'
+    },
+    noPermissions: {
+      fr: 'Aucune permission',
+      en: 'No permissions'
+    },
+    errorLoading: {
+      fr: 'Échec du chargement des rôles : ',
+      en: 'Failed to load roles: '
+    },
+    errorSaving: {
+      fr: 'Échec de la sauvegarde du rôle : ',
+      en: 'Failed to save role: '
+    },
+    errorDeleting: {
+      fr: 'Échec de la suppression du rôle : ',
+      en: 'Failed to delete role: '
+    }
+  },
   // Application info
   appName: {
     fr: 'GESTION DES FICHIERS',
@@ -136,6 +1256,10 @@ export const texts = {
 
   // Common UI elements
   common: {
+    filter: {
+      fr: 'Filtrer',
+      en: 'Filter'
+    },
     confirmDelete: {
       fr: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
       en: 'Are you sure you want to delete this item?'
@@ -147,6 +1271,31 @@ export const texts = {
     select: {
       fr: 'Sélectionner',
       en: 'Select'
+    },
+
+    deleteConfirmation: {
+      fr: 'Confirmation de suppression',
+      en: 'Delete Confirmation'
+    },
+    deleteWarning: {
+      fr: 'Cette action est irréversible.',
+      en: 'This action is irreversible.'
+    },
+    noData: {
+      fr: 'Aucune donnée disponible',
+      en: 'No data available'
+    },
+    language: {
+      fr: 'Langue',
+      en: 'Language'
+    },
+    teams: {
+      fr: 'Équipes',
+      en: 'Teams'
+    },
+    loading: {
+      fr: 'Chargement...',
+      en: 'Loading...'
     },
     cancel: {
       fr: 'Annuler',
@@ -172,17 +1321,18 @@ export const texts = {
       fr: 'Rechercher',
       en: 'Search'
     },
-    loading: {
-      fr: 'Chargement...',
-      en: 'Loading...'
-    },
+
     error: {
       fr: "Une erreur s'est produite",
       en: 'An error occurred'
     },
     status: { fr: 'Statut', en: 'Status' },
     active: { fr: 'Actif', en: 'Active' },
-    inactive: { fr: 'Inactif', en: 'Inactive' }
+    inactive: { fr: 'Inactif', en: 'Inactive' },
+    unknownError: {
+      fr: 'Erreur inconnue',
+      en: 'Unknown error'
+    }
   },
 
   // Page descriptions
@@ -203,77 +1353,8 @@ export const texts = {
 
   // Document Management
   document: {
-    // Document Menu Items
-    docStatus: {
-      fr: 'Statut du Document',
-      en: 'Document Status'
-    },
-    sectionCategory: {
-      fr: 'Catégorie de Section',
-      en: 'Section Category'
-    },
-    normeLoi: {
-      fr: 'Norme et Loi',
-      en: 'Standards and Law'
-    },
-    commAssetLand: {
-      fr: 'Actif Commercial - Terrain',
-      en: 'Commercial Asset - Land'
-    },
-    permiConstruction: {
-      fr: 'Permis de Construction',
-      en: 'Construction Permit'
-    },
-    accordConcession: {
-      fr: 'Accord de Concession',
-      en: 'Concession Agreement'
-    },
-    estate: {
-      fr: 'Immobilier',
-      en: 'Real Estate'
-    },
-    equipmentId: {
-      fr: "Identification d'Équipement",
-      en: 'Equipment Identification'
-    },
-    certLicenses: {
-      fr: 'Certificats et Licences',
-      en: 'Certificates and Licenses'
-    },
-    commCompPolicies: {
-      fr: 'Politiques de Conformité',
-      en: 'Compliance Policies'
-    },
-    commFollowupAudit: {
-      fr: "Suivi d'Audit de Conformité",
-      en: 'Compliance Audit Follow-up'
-    },
-    dueDiligence: {
-      fr: 'Diligence Raisonnable',
-      en: 'Due Diligence'
-    },
-    commThirdParty: {
-      fr: 'Tierce Partie Commerciale',
-      en: 'Commercial Third Party'
-    },
-    cargoDamage: {
-      fr: 'Dommages de Cargaison',
-      en: 'Cargo Damage'
-    },
-    litigationFollowup: {
-      fr: 'Suivi de Litige',
-      en: 'Litigation Follow-up'
-    },
-    insurance: {
-      fr: 'Assurance',
-      en: 'Insurance'
-    },
-    thirdPartyClaims: {
-      fr: 'Réclamations de Tiers',
-      en: 'Third Party Claims'
-    },
-
-    // Common Document Fields
+    // Documen
+    // t Menu Items
     fields: {
       id: {
         fr: 'ID',
@@ -335,6 +1416,27 @@ export const texts = {
         fr: 'Emplacement',
         en: 'Location'
       },
+
+      numeroPermis: {
+        fr: 'Numéro de Permis',
+        en: 'Permit Number'
+      },
+      projet: {
+        fr: 'Projet',
+        en: 'Project'
+      },
+      autoriteDelivrance: {
+        fr: 'Autorité de Délivrance',
+        en: 'Issuing Authority'
+      },
+      dateDelivrance: {
+        fr: 'Date de Délivrance',
+        en: 'Issue Date'
+      },
+      dateExpiration: {
+        fr: "Date d'Expiration",
+        en: 'Expiration Date'
+      },
       referenceTitreFoncier: {
         fr: 'Référence Titre Foncier',
         en: 'Land Title Reference'
@@ -343,14 +1445,19 @@ export const texts = {
         fr: 'Réf. Permis de Construire',
         en: 'Construction Permit Ref.'
       },
+      refePermisConstruire: {
+        fr: 'Réf. Permis de Construire',
+        en: 'Construction Permit Reference'
+      },
       dateValidation: {
-        fr: 'Date de Validation.',
+        fr: 'Date de Validation',
         en: 'Validation Date'
       },
       dateEstimeeTravaux: {
         fr: 'Date Estimée des Travaux',
         en: 'Estimated Work Date'
       },
+
       contratConcession: {
         fr: 'Contrat de Concession',
         en: 'Concession Contract'
@@ -551,6 +1658,137 @@ export const texts = {
         en: 'Department in Charge'
       }
     },
+    placeholders: {
+      projet: {
+        fr: 'Entrez le nom du projet',
+        en: 'Enter project name'
+      },
+      autoriteDelivrance: {
+        fr: "Entrez l'autorité de délivrance",
+        en: 'Enter issuing authority'
+      },
+      referenceTitreFoncier: {
+        fr: 'Entrez la référence du titre foncier',
+        en: 'Enter land title reference'
+      },
+      refPermisConstuire: {
+        fr: 'Entrez la référence du permis de construire',
+        en: 'Enter construction permit reference'
+      },
+      numeroPermis: {
+        fr: 'Entrez le numéro de permis',
+        en: 'Enter permit number'
+      },
+      searchTerm: {
+        fr: 'Entrez un terme de recherche...',
+        en: 'Enter search term...'
+      }
+    },
+    docStatus: {
+      fr: 'Statut du Document',
+      en: 'Document Status'
+    },
+    sectionCategory: {
+      fr: 'Catégorie de Section',
+      en: 'Section Category'
+    },
+    normeLoi: {
+      fr: 'Norme et Loi',
+      en: 'Standards and Law'
+    },
+    commAssetLand: {
+      fr: 'Actif Commercial - Terrain',
+      en: 'Commercial Asset - Land'
+    },
+    permiConstruction: {
+      fr: 'Permis de Construction',
+      en: 'Construction Permit'
+    },
+
+    projet: {
+      fr: 'Projet',
+      en: 'Project'
+    },
+    autoriteDelivrance: {
+      fr: 'Autorité de Délivrance',
+      en: 'Issuing Authority'
+    },
+    dateDelivrance: {
+      fr: 'Date de Délivrance',
+      en: 'Issue Date'
+    },
+    dateExpiration: {
+      fr: "Date d'Expiration",
+      en: 'Expiration Date'
+    },
+    referenceTitreFoncier: {
+      fr: 'Référence Titre Foncier',
+      en: 'Land Title Reference'
+    },
+    refPermisConstuire: {
+      fr: 'Réf. Permis de Construire',
+      en: 'Construction Permit Ref.'
+    },
+    refePermisConstruire: {
+      fr: 'Réf. Permis de Construire',
+      en: 'Construction Permit Reference'
+    },
+    dateValidation: {
+      fr: 'Date de Validation',
+      en: 'Validation Date'
+    },
+    dateEstimeeTravaux: {
+      fr: 'Date Estimée des Travaux',
+      en: 'Estimated Work Date'
+    },
+    accordConcession: {
+      fr: 'Accord de Concession',
+      en: 'Concession Agreement'
+    },
+    estate: {
+      fr: 'Immobilier',
+      en: 'Real Estate'
+    },
+    equipmentId: {
+      fr: "Identification d'Équipement",
+      en: 'Equipment Identification'
+    },
+    certLicenses: {
+      fr: 'Certificats et Licences',
+      en: 'Certificates and Licenses'
+    },
+    commCompPolicies: {
+      fr: 'Politiques de Conformité',
+      en: 'Compliance Policies'
+    },
+    commFollowupAudit: {
+      fr: "Suivi d'Audit de Conformité",
+      en: 'Compliance Audit Follow-up'
+    },
+    dueDiligence: {
+      fr: 'Diligence Raisonnable',
+      en: 'Due Diligence'
+    },
+    commThirdParty: {
+      fr: 'Tierce Partie Commerciale',
+      en: 'Commercial Third Party'
+    },
+    cargoDamage: {
+      fr: 'Dommages de Cargaison',
+      en: 'Cargo Damage'
+    },
+    litigationFollowup: {
+      fr: 'Suivi de Litige',
+      en: 'Litigation Follow-up'
+    },
+    insurance: {
+      fr: 'Assurance',
+      en: 'Insurance'
+    },
+    thirdPartyClaims: {
+      fr: 'Réclamations de Tiers',
+      en: 'Third Party Claims'
+    },
 
     // Document Status Values
     statusValues: {
@@ -678,6 +1916,18 @@ export const texts = {
 
     // Messages
     messages: {
+      fileRequired: {
+        fr: 'Un fichier est requis pour la création.',
+        en: 'A file is required for creation.'
+      },
+      documentRetained: {
+        fr: 'Document actuel conservé',
+        en: 'Current document retained'
+      },
+      viewDocument: {
+        fr: 'Voir le document',
+        en: 'View document'
+      },
       loadSuccess: {
         fr: 'Données chargées avec succès',
         en: 'Data loaded successfully'

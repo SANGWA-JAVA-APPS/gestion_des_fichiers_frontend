@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { sidebarData } from './sidebarData'
+
 import { SidebarItem } from './SidebarItem'
-import { getUserRole, hasAnyRole } from '../../services/authUtils'
+import {  hasAnyRole } from '../../services/authUtils'
+import { useSidebarData } from './sidebarData'
 
 
 export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
+    const sidebarData = useSidebarData()
   const [expandedGroups, setExpandedGroups] = useState([])
 
   const isIconOnly = sidebarState === 'icon-only'
   const isHidden = sidebarState === 'hidden'
 
-  const userRole = getUserRole() 
+
 
   useEffect(() => {
     const groupsToExpand = []

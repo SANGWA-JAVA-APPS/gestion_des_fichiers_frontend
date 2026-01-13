@@ -12,11 +12,14 @@ import {
   Spinner
 } from 'react-bootstrap';
 
+
 import { getAllAccounts, getAllAccountCategories } from '../../services/GetRequests';
 import { createAccount } from '../../services/Inserts';
 import { updateAccount, deleteAccount } from '../../services/UpdRequests';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const AccountComponent = () => {
+  const { t, language } = useLanguage(); // Get translation function and current language
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,12 +49,12 @@ const AccountComponent = () => {
         getAllAccounts(),
         getAllAccountCategories()
       ]);
-      console.log("the accountsRes ",accountsRes)
+      console.log("the accountsRes ", accountsRes);
       setAccounts(accountsRes);
       setCategories(categoriesRes);
     } catch (err) {
-      console.log("Failed to load data",err)
-      setError('Failed to load data');
+      console.log("Failed to load data", err);
+      setError(t('accounts.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -119,19 +122,19 @@ const AccountComponent = () => {
       handleCloseModal();
       loadData();
     } catch (err) {
-      console.log("Failed to save account",err)
-      setError('Failed to save account');
+      console.log("Failed to save account", err);
+      setError(t('accounts.errorSaving'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this account?')) return;
+    if (!window.confirm(t('accounts.deleteConfirm'))) return;
     try {
       await deleteAccount(id);
       loadData();
     } catch (err) {
-      console.log("Failed to delete account",err)
-      setError('Failed to delete account');
+      console.log("Failed to delete account", err);
+      setError(t('accounts.errorDeleting'));
     }
   };
 
@@ -139,6 +142,7 @@ const AccountComponent = () => {
     return (
       <Container className="text-center py-5">
         <Spinner animation="border" />
+        <p className="mt-2">{t('common.loading')}</p>
       </Container>
     );
   }
@@ -147,27 +151,31 @@ const AccountComponent = () => {
     <Container fluid>
       <Row className="mb-4">
         <Col>
-          <h4>Account Management</h4>
-          <p className="text-muted">Manage user accounts</p>
+          <h4>{t('accounts.management')}</h4>
+          <p className="text-muted">{t('accounts.subtitle')}</p>
         </Col>
         <Col xs="auto">
-          <Button onClick={() => handleShowModal()}>Add Account</Button>
+          <Button onClick={() => handleShowModal()}>{t('accounts.addAccount')}</Button>
         </Col>
       </Row>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       <Card>
         <Card.Body>
           <Table responsive hover>
             <thead>
               <tr>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th width="140">Actions</th>
+                <th>{t('accounts.fullName')}</th>
+                <th>{t('accounts.email')}</th>
+                <th>{t('accounts.phone')}</th>
+                <th>{t('accounts.category')}</th>
+                <th>{t('common.status')}</th>
+                <th width="140">{t('accounts.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -183,15 +191,24 @@ const AccountComponent = () => {
                   </td>
                   <td>
                     <span className={`badge ${acc.active ? 'bg-success' : 'bg-secondary'}`}>
-                      {acc.active ? 'ACTIVE' : 'INACTIVE'}
+                      {acc.active ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td>
-                    <Button size="sm" variant="outline-primary" onClick={() => handleShowModal(acc)}>
-                      Edit
-                    </Button>{' '}
-                    <Button size="sm" variant="outline-danger" onClick={() => handleDelete(acc.id)}>
-                      Delete
+                    <Button
+                      size="sm"
+                      variant="outline-primary"
+                      onClick={() => handleShowModal(acc)}
+                      className="me-1"
+                    >
+                      {t('common.edit')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => handleDelete(acc.id)}
+                    >
+                      {t('common.delete')}
                     </Button>
                   </td>
                 </tr>
@@ -205,58 +222,83 @@ const AccountComponent = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Header closeButton>
             <Modal.Title>
-              {editingAccount ? 'Edit Account' : 'Create Account'}
+              {editingAccount ? t('accounts.editAccount') : t('accounts.createAccount')}
             </Modal.Title>
           </Modal.Header>
 
           <Modal.Body>
             <Form.Group className="mb-2">
-              <Form.Label>Username</Form.Label>
-              <Form.Control name="username" value={formData.username} onChange={handleChange} required />
+              <Form.Label>{t('accounts.username')}</Form.Label>
+              <Form.Control
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                placeholder={language === 'fr' ? "Entrez le nom d'utilisateur" : "Enter username"}
+              />
             </Form.Group>
 
             {!editingAccount && (
               <Form.Group className="mb-2">
-                <Form.Label>Password</Form.Label>
+                <Form.Label>{t('accounts.password')}</Form.Label>
                 <Form.Control
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
+                  placeholder={language === 'fr' ? "Entrez le mot de passe" : "Enter password"}
                 />
               </Form.Group>
             )}
 
             <Form.Group className="mb-2">
-              <Form.Label>Full Name</Form.Label>
-              <Form.Control name="fullName" value={formData.fullName} onChange={handleChange} required />
+              <Form.Label>{t('accounts.fullName')}</Form.Label>
+              <Form.Control
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+                placeholder={language === 'fr' ? "Entrez le nom complet" : "Enter full name"}
+              />
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+              <Form.Label>{t('accounts.email')}</Form.Label>
+              <Form.Control
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder={language === 'fr' ? "Entrez l'adresse email" : "Enter email address"}
+              />
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label>Phone</Form.Label>
-              <Form.Control name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
+              <Form.Label>{t('accounts.phone')}</Form.Label>
+              <Form.Control
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                placeholder={language === 'fr' ? "Entrez le numéro de téléphone" : "Enter phone number"}
+              />
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label>Gender</Form.Label>
+              <Form.Label>{t('accounts.gender')}</Form.Label>
               <Form.Select name="gender" value={formData.gender} onChange={handleChange}>
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="not specified">Not specified</option>
+                <option value="">{t('common.select')}</option>
+                <option value="male">{t('accounts.male')}</option>
+                <option value="female">{t('accounts.female')}</option>
+                <option value="not specified">{t('accounts.notSpecified')}</option>
               </Form.Select>
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Category</Form.Label>
+              <Form.Label>{t('accounts.category')}</Form.Label>
               <Form.Select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
-                <option value="">Select category</option>
+                <option value="">{t('accounts.selectCategory')}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -265,8 +307,12 @@ const AccountComponent = () => {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>Cancel</Button>
-            <Button type="submit">Save</Button>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit">
+              {t('common.save')}
+            </Button>
           </Modal.Footer>
         </Form>
       </Modal>

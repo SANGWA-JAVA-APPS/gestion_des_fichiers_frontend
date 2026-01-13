@@ -191,6 +191,7 @@ const loadData = async () => {
     }
   };
 
+  console.log("current    loffdeg in use  id is ",CurrentUserId)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -204,7 +205,6 @@ const loadData = async () => {
       if (selectedFile) {
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
-
         // Build permiConstruction object as JSON
         const permiConstructionData = {
           numeroPermis: formData.numeroPermis,
@@ -217,7 +217,7 @@ const loadData = async () => {
           dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
           dateValidation: formData.dateValidation ? new Date(formData.dateValidation).toISOString() : null,
           dateEstimeeTravaux: formData.dateEstimeeTravaux ? new Date(formData.dateEstimeeTravaux).toISOString() : null,
-          doneBy: { id: CurrentUserId },
+          doneBy: { id:CurrentUserId },
           sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };

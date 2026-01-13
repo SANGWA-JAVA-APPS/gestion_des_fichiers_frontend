@@ -11,6 +11,7 @@ import {
   Alert,
   Spinner
 } from 'react-bootstrap'
+
 import {
   getAllLocationEntities,
   getAllCountries
@@ -21,8 +22,12 @@ import {
   deleteLocationEntity
 } from '../../services/UpdRequests'
 import { getFlagUrl } from '../../services/commonUtils'
+import { useLanguage } from '../../i18n/LanguageContext'
 
 const EntityComponent = () => {
+  const { t, language } = useLanguage() // Get translation function and current language
+
+  // Entity types with translations
   const entityTypes = [
     'PROVINCE',
     'STATE',
@@ -32,13 +37,13 @@ const EntityComponent = () => {
     'TOWN',
     'VILLAGE'
   ]
+
   const [entities, setEntities] = useState([])
   const [countries, setCountries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editingEntity, setEditingEntity] = useState(null)
-  const [editingLocation, setEditingLocation] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -48,6 +53,7 @@ const EntityComponent = () => {
     entityType: 'CITY',
     countryId: ''
   })
+
   useEffect(() => {
     loadData()
   }, [])
@@ -58,10 +64,15 @@ const EntityComponent = () => {
       // Load entities and countries
       const entitiesData = await getAllLocationEntities()
       const countriesData = await getAllCountries()
-      setEntities(entitiesData)
-      setCountries(countriesData)
+      // Handle different response structures
+      const entitiesArray =
+        entitiesData.content || entitiesData.data || entitiesData
+      const countriesArray =
+        countriesData.content || countriesData.data || countriesData
+      setEntities(Array.isArray(entitiesArray) ? entitiesArray : [])
+      setCountries(Array.isArray(countriesArray) ? countriesArray : [])
     } catch (err) {
-      setError('Failed to load entities: ' + err.message)
+      setError(t('entities.errorLoading') + err.message)
     } finally {
       setLoading(false)
     }
@@ -70,7 +81,6 @@ const EntityComponent = () => {
   const handleShowModal = (location = null) => {
     setEditingEntity(location)
     if (location) {
-      setEditingLocation(location)
       setFormData({
         name: location.name || '',
         address: location.address || '',
@@ -81,7 +91,6 @@ const EntityComponent = () => {
         countryId: location.countryId || ''
       })
     } else {
-      setEditingLocation(null)
       setFormData({
         name: '',
         address: '',
@@ -98,8 +107,6 @@ const EntityComponent = () => {
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingEntity(null)
-
-    setEditingLocation(null)
     setFormData({
       name: '',
       address: '',
@@ -110,6 +117,7 @@ const EntityComponent = () => {
       countryId: ''
     })
   }
+
   const handleChange = e => {
     const value =
       e.target.type === 'checkbox' ? e.target.checked : e.target.value
@@ -135,17 +143,17 @@ const EntityComponent = () => {
       handleCloseModal()
       loadData()
     } catch (err) {
-      setError('Failed to save entity: ' + err.message)
+      setError(t('entities.errorSaving') + err.message)
     }
   }
 
   const handleDelete = async entityId => {
-    if (window.confirm('Are you sure you want to delete this entity?')) {
+    if (window.confirm(t('entities.deleteConfirm'))) {
       try {
         await deleteLocationEntity(entityId)
         loadData()
       } catch (err) {
-        setError('Failed to delete entity: ' + err.message)
+        setError(t('entities.errorDeleting') + err.message)
       }
     }
   }
@@ -160,9 +168,12 @@ const EntityComponent = () => {
       TOWN: 'dark',
       VILLAGE: 'light'
     }
+
+    const translatedType = t(`entities.types.${type}`) || type
+
     return (
       <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
-        {type}
+        {translatedType}
       </span>
     )
   }
@@ -173,7 +184,9 @@ const EntityComponent = () => {
         <Row>
           <Col xs={12} className='text-center'>
             <Spinner animation='border' role='status'>
-              <span className='visually-hidden'>Loading...</span>
+              <span className='visually-hidden'>
+                {t('common.loading')}
+              </span>
             </Spinner>
           </Col>
         </Row>
@@ -185,16 +198,17 @@ const EntityComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h4>Location Entity Management</h4>
+          <h4>
+            {t('entities.management')}
+          </h4>
           <p className='text-muted'>
-            Manage provinces, states, regions, districts, cities, towns, and
-            villages
+            {t('entities.subtitle')}
           </p>
         </Col>
         <Col xs='auto'>
           <Button variant='primary' onClick={() => handleShowModal()}>
             <i className='fas fa-plus me-2' />
-            Add New Entity
+            {t('entities.addEntity')}
           </Button>
         </Col>
       </Row>
@@ -216,20 +230,34 @@ const EntityComponent = () => {
                 ? <Row>
                   <Col xs={12} className='text-center py-4'>
                     <p className='text-muted'>
-                        No entities found. Add your first entity!
-                      </p>
+                      {t('entities.noEntities')}
+                    </p>
                   </Col>
                 </Row>
                 : <Table responsive striped hover>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Type</th>
-                      <th>Code</th>
-                      <th>Country</th>
-                      <th>Postal Code</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                      <th>
+                        {t('entities.name')}
+                      </th>
+                      <th>
+                        {t('entities.type')}
+                      </th>
+                      <th>
+                        {t('entities.code')}
+                      </th>
+                      <th>
+                        {t('entities.country')}
+                      </th>
+                      <th>
+                        {t('entities.postalCode')}
+                      </th>
+                      <th>
+                        {t('common.status')}
+                      </th>
+                      <th>
+                        {t('entities.actions')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -243,14 +271,18 @@ const EntityComponent = () => {
                         <td>
                           {entity.entityType
                               ? getEntityTypeBadge(entity.entityType)
-                              : 'N/A'}
+                              : <span className='text-muted'>
+                                {t('entities.notAvailable')}
+                              </span>}
                         </td>
                         <td>
                           {entity.code
                               ? <code className='text-primary'>
                                 {entity.code}
                               </code>
-                              : <span className='text-muted'>N/A</span>}
+                              : <span className='text-muted'>
+                                {t('entities.notAvailable')}
+                              </span>}
                         </td>
                         <td>
                           {entity.countryId
@@ -264,11 +296,16 @@ const EntityComponent = () => {
                                     />}
                                 {entity.countryName}
                               </span>
-                              : 'N/A'}
+                              : <span className='text-muted'>
+                                {t('entities.notAvailable')}
+                              </span>}
                         </td>
 
                         <td>
-                          {entity.postalCode || 'N/A'}
+                          {entity.postalCode ||
+                          <span className='text-muted'>
+                            {t('entities.notAvailable')}
+                          </span>}
                         </td>
                         <td>
                           <span
@@ -276,7 +313,9 @@ const EntityComponent = () => {
                                 ? 'bg-success'
                                 : 'bg-secondary'}`}
                             >
-                            {entity.active ? 'Active' : 'Inactive'}
+                            {entity.active
+                                ? t('common.active')
+                                : t('common.inactive')}
                           </span>
                         </td>
                         <td>
@@ -286,15 +325,16 @@ const EntityComponent = () => {
                             className='me-2'
                             onClick={() => handleShowModal(entity)}
                             >
-                            <i className='fas fa-edit' /> Edit
-                            </Button>
+                            <i className='fas fa-edit' /> {t('common.edit')}
+                          </Button>
                           <Button
                             variant='outline-danger'
                             size='sm'
                             onClick={() => handleDelete(entity.id)}
                             >
-                            <i className='fas fa-trash' /> Delete
-                            </Button>
+                            <i className='fas fa-trash' />{' '}
+                            {t('common.delete')}
+                          </Button>
                         </td>
                       </tr>
                       )}
@@ -309,7 +349,7 @@ const EntityComponent = () => {
       <Modal show={showModal} onHide={handleCloseModal} size='lg'>
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingEntity ? 'Edit Location Entity' : 'Add New Location Entity'}
+            {editingEntity ? t('entities.editEntity') : t('entities.addEntity')}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
@@ -318,27 +358,37 @@ const EntityComponent = () => {
               <Row>
                 <Col md={6}>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Entity Name *</Form.Label>
+                    <Form.Label>
+                      {t('entities.name')} *
+                    </Form.Label>
                     <Form.Control
                       type='text'
                       name='name'
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      placeholder='Enter entity name'
+                      placeholder={
+                        language === 'fr'
+                          ? "Entrez le nom de l'entité"
+                          : 'Enter entity name'
+                      }
                     />
                   </Form.Group>
                 </Col>
                 <Col md={6}>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Country *</Form.Label>
+                    <Form.Label>
+                      {t('entities.country')} *
+                    </Form.Label>
                     <Form.Select
                       name='countryId'
                       value={formData.countryId}
                       onChange={handleChange}
                       required
                     >
-                      <option value=''>Select country</option>
+                      <option value=''>
+                        {t('entities.selectCountry')}
+                      </option>
                       {countries.map(c =>
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -352,7 +402,9 @@ const EntityComponent = () => {
               <Row>
                 <Col md={4}>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Entity Type *</Form.Label>
+                    <Form.Label>
+                      {t('entities.type')} *
+                    </Form.Label>
                     <Form.Select
                       name='entityType'
                       value={formData.entityType}
@@ -361,7 +413,7 @@ const EntityComponent = () => {
                     >
                       {entityTypes.map(type =>
                         <option key={type} value={type}>
-                          {type}
+                          {t(`entities.types.${type}`)}
                         </option>
                       )}
                     </Form.Select>
@@ -369,25 +421,35 @@ const EntityComponent = () => {
                 </Col>
                 <Col md={4}>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Code</Form.Label>
+                    <Form.Label>
+                      {t('entities.code')}
+                    </Form.Label>
                     <Form.Control
                       type='text'
                       name='code'
                       value={formData.code}
                       onChange={handleChange}
-                      placeholder='Enter code'
+                      placeholder={
+                        language === 'fr' ? 'Entrez le code' : 'Enter code'
+                      }
                     />
                   </Form.Group>
                 </Col>
                 <Col md={4}>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Postal Code</Form.Label>
+                    <Form.Label>
+                      {t('entities.postalCode')}
+                    </Form.Label>
                     <Form.Control
                       type='text'
                       name='postalCode'
                       value={formData.postalCode}
                       onChange={handleChange}
-                      placeholder='Enter postal code'
+                      placeholder={
+                        language === 'fr'
+                          ? 'Entrez le code postal'
+                          : 'Enter postal code'
+                      }
                     />
                   </Form.Group>
                 </Col>
@@ -396,14 +458,20 @@ const EntityComponent = () => {
               <Row>
                 <Col>
                   <Form.Group className='mb-3'>
-                    <Form.Label>Description</Form.Label>
+                    <Form.Label>
+                      {t('entities.description')}
+                    </Form.Label>
                     <Form.Control
                       as='textarea'
                       rows={3}
                       name='description'
                       value={formData.description}
                       onChange={handleChange}
-                      placeholder='Enter description'
+                      placeholder={
+                        language === 'fr'
+                          ? 'Entrez la description'
+                          : 'Enter description'
+                      }
                     />
                   </Form.Group>
                 </Col>
@@ -413,10 +481,10 @@ const EntityComponent = () => {
 
           <Modal.Footer>
             <Button variant='secondary' onClick={handleCloseModal}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant='primary' type='submit'>
-              {editingEntity ? 'Update' : 'Create'} Entity
+              {editingEntity ? t('entities.update') : t('entities.create')}
             </Button>
           </Modal.Footer>
         </Form>

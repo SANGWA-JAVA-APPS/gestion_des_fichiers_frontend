@@ -2,13 +2,15 @@
 import { Row, Col, Form, Button } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useLanguage } from '../i18n/LanguageContext'
+
 
 const SimpleSearchComponent = ({
-  dropdownLabel = 'Filter',
+  dropdownLabel,
   dropdownItems = [],
 
-  textbox1Label = 'Search',
-  textbox1Placeholder = 'Enter search term...',
+  textbox1Label,
+  textbox1Placeholder,
 
   showDropdown = true,
   showTextbox1 = true,
@@ -25,8 +27,10 @@ const SimpleSearchComponent = ({
     dateEnd: 'end'
   },
 
-
+  searchButtonText,
+  clearButtonText
 }) => {
+  const { t, language } = useLanguage() // Get translation function and current language
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [values, setValues] = useState({
@@ -41,7 +45,6 @@ const SimpleSearchComponent = ({
   // 🔥 FIRST RENDER → clear params this component manages
   useEffect(() => {
     const params = new URLSearchParams(searchParams)
-
     setSearchParams(params)
   }, [])
 
@@ -81,7 +84,9 @@ const SimpleSearchComponent = ({
       <Row className="g-2 align-items-end">
         {showDropdown && (
           <Col lg={2}>
-            <Form.Label className="small">{dropdownLabel}</Form.Label>
+            <Form.Label className="small">
+              {dropdownLabel || t('simpleSearch.dropdownLabel')}
+            </Form.Label>
             <Form.Select
               size="sm"
               value={values.dropdown}
@@ -89,7 +94,7 @@ const SimpleSearchComponent = ({
                 setValues(v => ({ ...v, dropdown: e.target.value }))
               }
             >
-              <option value="">All</option>
+              <option value="">{t('simpleSearch.allOption')}</option>
               {dropdownItems.map(i => (
                 <option key={i.value || i} value={i.value || i}>
                   {i.label || i}
@@ -101,10 +106,12 @@ const SimpleSearchComponent = ({
 
         {showTextbox1 && (
           <Col lg={2}>
-            <Form.Label className="small">{textbox1Label}</Form.Label>
+            <Form.Label className="small">
+              {textbox1Label || t('simpleSearch.textbox1Label')}
+            </Form.Label>
             <Form.Control
               size="sm"
-              placeholder={textbox1Placeholder}
+              placeholder={textbox1Placeholder || t('simpleSearch.textbox1Placeholder')}
               value={values.textbox1}
               onChange={e =>
                 setValues(v => ({ ...v, textbox1: e.target.value }))
@@ -116,7 +123,7 @@ const SimpleSearchComponent = ({
         {showDateRange && (
           <>
             <Col lg={2}>
-              <Form.Label className="small">Start</Form.Label>
+              <Form.Label className="small">{t('simpleSearch.startDate')}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -128,7 +135,7 @@ const SimpleSearchComponent = ({
             </Col>
 
             <Col lg={2}>
-              <Form.Label className="small">End</Form.Label>
+              <Form.Label className="small">{t('simpleSearch.endDate')}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -143,7 +150,7 @@ const SimpleSearchComponent = ({
 
         <Col lg={2} className="d-flex gap-2">
           <Button size="sm" className="w-100" onClick={handleSearch}>
-            Search
+            {searchButtonText || t('simpleSearch.searchButton')}
           </Button>
           <Button
             size="sm"
@@ -151,7 +158,7 @@ const SimpleSearchComponent = ({
             className="w-100"
             onClick={handleClear}
           >
-            Clear
+            {clearButtonText || t('simpleSearch.clearButton')}
           </Button>
         </Col>
       </Row>

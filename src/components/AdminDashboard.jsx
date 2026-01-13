@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import {
   Container,
   Row,
@@ -7,10 +7,8 @@ import {
   Nav,
   Button,
   NavDropdown,
-  Navbar,
-  Offcanvas,
+  
 } from "react-bootstrap";
-import { getUserInfo } from "../services/authUtils";
 import DashboardBg from "../assets/AdminDashBg.png";
 
 // Dashboard Stats
@@ -31,22 +29,11 @@ import DocumentComponent from "./DocumentComponent";
 
 // Navigation Menu Component
 import MenuBox from "./MenuBox";
-import { FaLifeRing } from "react-icons/fa";
-import { FaArtstation } from "react-icons/fa";
 import { useEffect } from "react";
 const AdminDashboard = ({ onLogout }) => {
   console.log("AdminDashboard component mounting...");
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const userInfo = getUserInfo();
-
-  console.log("AdminDashboard Background Image:", DashboardBg);
-
-  const handleMenuItemClick = (tab) => {
-    setActiveTab(tab);
-    setShowMobileMenu(false); // Close menu after selection on mobile
-  };
 
   const renderContent = () => {
     switch (activeTab) {

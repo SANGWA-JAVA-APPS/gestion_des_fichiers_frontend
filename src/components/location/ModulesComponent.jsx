@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+
 import { getAllModules, getAllLocationEntities } from '../../services/GetRequests';
 import { createModule } from '../../services/Inserts';
 import { updateModule, deleteModule } from '../../services/UpdRequests';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const moduleTypes = [
   'ADMINISTRATIVE', 'COMMERCIAL', 'RESIDENTIAL', 'INDUSTRIAL',
@@ -11,6 +14,7 @@ const moduleTypes = [
 ];
 
 const ModulesComponent = () => {
+  const { t, language } = useLanguage(); // Get translation function and current language
   const [modules, setModules] = useState([]);
   const [locationEntities, setLocationEntities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,7 +50,7 @@ const ModulesComponent = () => {
       setModules(modulesArray);
       setLocationEntities(entitiesArray);
     } catch (err) {
-      setError('Failed to load modules: ' + (err.message || 'Unknown error'));
+      setError(t('modules.errorLoading') + (err.message || t('common.unknownError')));
       setModules([]);
       setLocationEntities([]);
     } finally {
@@ -111,17 +115,17 @@ const ModulesComponent = () => {
       handleCloseModal();
       loadData();
     } catch (err) {
-      setError('Failed to save module: ' + err.message);
+      setError(t('modules.errorSaving') + err.message);
     }
   };
 
   const handleDelete = async (moduleId) => {
-    if (window.confirm('Are you sure you want to delete this module?')) {
+    if (window.confirm(t('modules.deleteConfirm'))) {
       try {
         await deleteModule(moduleId);
         loadData();
       } catch (err) {
-        setError('Failed to delete module: ' + err.message);
+        setError(t('modules.errorDeleting') + err.message);
       }
     }
   };
@@ -139,81 +143,141 @@ const ModulesComponent = () => {
       TRANSPORT: 'secondary',
       OTHER: 'secondary'
     };
-    return <span className={`badge bg-${typeColors[type] || 'secondary'}`}>{type?.replace(/_/g, ' ')}</span>;
+    
+    const translatedType = t(`modules.types.${type}`) || type?.replace(/_/g, ' ');
+    
+    return (
+      <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
+        {translatedType}
+      </span>
+    );
   };
 
-  if (loading) return <Spinner animation="border" />;
+  if (loading) {
+    return (
+      <Container className="text-center py-5">
+        <Spinner animation="border" />
+        <p className="mt-2">{t('common.loading')}</p>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid>
       <Row className="mb-4">
-        <Col><h4>Module Management</h4></Col>
+        <Col>
+          <h4>{t('modules.management')}</h4>
+        </Col>
         <Col xs="auto">
-          <Button variant="primary" onClick={() => handleShowModal()}>Add New Module</Button>
+          <Button variant="primary" onClick={() => handleShowModal()}>
+            {t('modules.addModule')}
+          </Button>
         </Col>
       </Row>
 
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && (
+        <Alert variant="danger" dismissible onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
 
       <Card>
         <Card.Body>
-          <Table responsive striped hover>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Code</th>
-                <th>Type</th>
-                <th>Location Entity</th>
-                <th>Area</th>
-                <th>Coordinates</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {modules.length === 0 ? (
-                <tr><td colSpan="8" className="text-center">No modules found</td></tr>
-              ) : (
-                modules.map(module => (
+          {modules.length === 0 ? (
+            <div className="text-center py-5">
+              <p className="text-muted">{t('modules.noModules')}</p>
+            </div>
+          ) : (
+            <Table responsive striped hover>
+              <thead>
+                <tr>
+                  <th>{t('modules.name')}</th>
+                  <th>{t('modules.code')}</th>
+                  <th>{t('modules.type')}</th>
+                  <th>{t('modules.locationEntity')}</th>
+                  <th>{t('modules.area')}</th>
+                  <th>{t('modules.coordinates')}</th>
+                  <th>{t('common.status')}</th>
+                  <th>{t('modules.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {modules.map(module => (
                   <tr key={module.id}>
                     <td>{module.name}</td>
-                    <td>{module.moduleCode || 'N/A'}</td>
-                    <td>{module.moduleType ? getModuleTypeBadge(module.moduleType) : 'N/A'}</td>
-                    <td>{module.locationEntityName || 'N/A'}</td>
-                    <td>{module.areaSize && module.areaUnit ? `${module.areaSize} ${module.areaUnit}` : 'N/A'}</td>
-                    <td>{module.coordinates || 'N/A'}</td>
-                    <td><span className={`badge ${module.active ? 'bg-success' : 'bg-secondary'}`}>{module.active ? 'Active' : 'Inactive'}</span></td>
+                    <td>{module.moduleCode || <span className="text-muted">{t('modules.notAvailable')}</span>}</td>
+                    <td>{module.moduleType ? getModuleTypeBadge(module.moduleType) : <span className="text-muted">{t('modules.notAvailable')}</span>}</td>
+                    <td>{module.locationEntityName || <span className="text-muted">{t('modules.notAvailable')}</span>}</td>
                     <td>
-                      <Button size="sm" variant="outline-primary" onClick={() => handleShowModal(module)}>Edit</Button>
-                      <Button size="sm" variant="outline-danger" onClick={() => handleDelete(module.id)}>Delete</Button>
+                      {module.areaSize && module.areaUnit 
+                        ? `${module.areaSize} ${module.areaUnit}` 
+                        : <span className="text-muted">{t('modules.notAvailable')}</span>
+                      }
+                    </td>
+                    <td>{module.coordinates || <span className="text-muted">{t('modules.notAvailable')}</span>}</td>
+                    <td>
+                      <span className={`badge ${module.active ? 'bg-success' : 'bg-secondary'}`}>
+                        {module.active ? t('common.active') : t('common.inactive')}
+                      </span>
+                    </td>
+                    <td>
+                      <Button 
+                        size="sm" 
+                        variant="outline-primary" 
+                        onClick={() => handleShowModal(module)}
+                        className="me-2"
+                      >
+                        {t('common.edit')}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline-danger" 
+                        onClick={() => handleDelete(module.id)}
+                      >
+                        {t('common.delete')}
+                      </Button>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ))}
+              </tbody>
+            </Table>
+          )}
         </Card.Body>
       </Card>
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>{editingModule ? 'Edit Module' : 'Add Module'}</Modal.Title>
+          <Modal.Title>{editingModule ? t('modules.editModule') : t('modules.addModule')}</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Module Name *</Form.Label>
-                  <Form.Control type="text" name="name" value={formData.name} onChange={handleChange} required />
+                  <Form.Label>{t('modules.name')} *</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="name" 
+                    value={formData.name} 
+                    onChange={handleChange} 
+                    required 
+                    placeholder={language === 'fr' ? "Entrez le nom du module" : "Enter module name"}
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Entity *</Form.Label>
-                  <Form.Select name="locationEntityId" value={formData.locationEntityId} onChange={handleChange} required>
-                    <option value="">Select entity</option>
-                    {locationEntities.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  <Form.Label>{t('modules.locationEntity')} *</Form.Label>
+                  <Form.Select 
+                    name="locationEntityId" 
+                    value={formData.locationEntityId} 
+                    onChange={handleChange} 
+                    required
+                  >
+                    <option value="">{t('modules.selectEntity')}</option>
+                    {locationEntities.map(e => (
+                      <option key={e.id} value={e.id}>{e.name}</option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -222,23 +286,44 @@ const ModulesComponent = () => {
             <Row>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Module Code</Form.Label>
-                  <Form.Control type="text" name="moduleCode" value={formData.moduleCode} onChange={handleChange} />
+                  <Form.Label>{t('modules.code')}</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="moduleCode" 
+                    value={formData.moduleCode} 
+                    onChange={handleChange} 
+                    placeholder={language === 'fr' ? "Entrez le code du module" : "Enter module code"}
+                  />
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Module Type</Form.Label>
-                  <Form.Select name="moduleType" value={formData.moduleType} onChange={handleChange}>
-                    <option value="">Select type</option>
-                    {moduleTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                  <Form.Label>{t('modules.type')}</Form.Label>
+                  <Form.Select 
+                    name="moduleType" 
+                    value={formData.moduleType} 
+                    onChange={handleChange}
+                  >
+                    <option value="">{t('modules.selectType')}</option>
+                    {moduleTypes.map(t => (
+                      <option key={t} value={t}>
+                     
+                        t(`modules.types.${t}`)
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Coordinates</Form.Label>
-                  <Form.Control type="text" name="coordinates" value={formData.coordinates} onChange={handleChange} />
+                  <Form.Label>{t('modules.coordinates')}</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="coordinates" 
+                    value={formData.coordinates} 
+                    onChange={handleChange} 
+                    placeholder={language === 'fr' ? "ex: 40.7128, -74.0060" : "e.g., 40.7128, -74.0060"}
+                  />
                 </Form.Group>
               </Col>
             </Row>
@@ -246,21 +331,37 @@ const ModulesComponent = () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Area Size</Form.Label>
-                  <Form.Control type="number" name="areaSize" value={formData.areaSize} onChange={handleChange} />
+                  <Form.Label>{t('modules.areaSize')}</Form.Label>
+                  <Form.Control 
+                    type="number" 
+                    name="areaSize" 
+                    value={formData.areaSize} 
+                    onChange={handleChange} 
+                    placeholder={language === 'fr' ? "Taille de la zone" : "Area size"}
+                  />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Area Unit</Form.Label>
-                  <Form.Control type="text" name="areaUnit" value={formData.areaUnit} onChange={handleChange} />
+                  <Form.Label>{t('modules.areaUnit')}</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="areaUnit" 
+                    value={formData.areaUnit} 
+                    onChange={handleChange} 
+                    placeholder={language === 'fr' ? "ex: m², ha, acre" : "e.g., m², ha, acre"}
+                  />
                 </Form.Group>
               </Col>
             </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>Cancel</Button>
-            <Button variant="primary" type="submit">{editingModule ? 'Update' : 'Create'}</Button>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              {t('common.cancel')}
+            </Button>
+            <Button variant="primary" type="submit">
+              {editingModule ? t('modules.update') : t('modules.create')}
+            </Button>
           </Modal.Footer>
         </Form>
       </Modal>
