@@ -1980,7 +1980,7 @@ export const texts = {
 }
 
 // Language context and utilities
-export const defaultLanguage = 'fr'
+export const defaultLanguage = 'en'
 
 export const getText = (path, language = defaultLanguage) => {
   const keys = path.split('.')
