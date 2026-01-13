@@ -1260,6 +1260,20 @@ export const texts = {
       fr: 'Filtrer',
       en: 'Filter'
     },
+    cardsView: {
+      fr: 'Vue Cartes',
+      en: 'Cards View'
+    },
+    view: {
+      fr: 'Voir',
+      en: 'View'
+    },
+    tableView: {
+      fr: 'Vue Tableau',
+      en: 'Table View'
+    },
+    cards: { fr: 'Cartes', en: 'Cards' },
+    table: { fr: 'Tableau', en: 'Table' },
     confirmDelete: {
       fr: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
       en: 'Are you sure you want to delete this item?'
@@ -1659,6 +1673,7 @@ export const texts = {
       }
     },
     placeholders: {
+      dureeCertificat: { fr: 'Ex: 2 ans', en: 'Ex: 2 years' },
       projet: {
         fr: 'Entrez le nom du projet',
         en: 'Enter project name'

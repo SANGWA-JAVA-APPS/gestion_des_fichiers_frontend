@@ -2,21 +2,24 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCertLicenses } from '../../services/GetRequests';
-import {  createCertLicensesWithFile } from '../../services/Inserts';
+import { createCertLicensesWithFile } from '../../services/Inserts';
 import { updateCertLicenses, updateCertLicensesWithFile, deleteCertLicenses } from '../../services/UpdRequests';
-import { getAllDocStatuses} from '../../services/GetRequests';
-import { getText } from '../../data/texts';
+import { getAllDocStatuses } from '../../services/GetRequests';
 import SearchComponent from '../SearchComponent';
 import HeaderTitle from '../HeaderTitle';
 import DocumentCard from '../DocumentCard';
 import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal';
-
 import { CurrentUserId } from '../../services/authUtils';
 import { useSearchParams } from 'react-router-dom';
 import SimpleSearchComponent from '../SimpleSearchComponent';
 import PaginationControl from '../PaginationControl';
+import { useLanguage } from '../../i18n/LanguageContext';
+
 
 const CertLicensesComponent = () => {
+  // Use your existing language context
+  const { language, t } = useLanguage();
+  
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,7 +28,6 @@ const CertLicensesComponent = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
-
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     description: '',
@@ -37,26 +39,20 @@ const CertLicensesComponent = () => {
     document: { id: '' },
     status: { id: '' }
   });
-  const [language] = useState('fr');
 
   const [totalPages, setTotalPages] = useState(0);
-
-
-  // New state for details modal
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [activeView, setActiveView] = useState('table'); // 'table' or 'cards'
-  
-  const [totalElements, setTotalElements] = useState(0)
+  const [totalElements, setTotalElements] = useState(0);
 
-  const [searchParams] = useSearchParams()
-
-const page = parseInt(searchParams.get('page') || '0', 10)
-const size = parseInt(searchParams.get('size') || '20', 10)
-const search = searchParams.get('search') || undefined
-const statusId = searchParams.get('statusId')
-  ? parseInt(searchParams.get('statusId'), 10)
-  : undefined
+  const [searchParams] = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '0', 10);
+  const size = parseInt(searchParams.get('size') || '20', 10);
+  const search = searchParams.get('search') || undefined;
+  const statusId = searchParams.get('statusId')
+    ? parseInt(searchParams.get('statusId'), 10)
+    : undefined;
 
   useEffect(() => {
     loadData();
@@ -67,18 +63,17 @@ const statusId = searchParams.get('statusId')
     try {
       setLoading(true);
       setError('');
-   const response = await getAllCertLicenses({
-  page,
-  size,
-  search,
-  statusId
-})
-
-   setData(response.content || [])
-setTotalPages(response.totalPages || 0)
-setTotalElements(response.totalElements || 0)
+      const response = await getAllCertLicenses({
+        page,
+        size,
+        search,
+        statusId
+      });
+      setData(response.content || []);
+      setTotalPages(response.totalPages || 0);
+      setTotalElements(response.totalElements || 0);
     } catch (err) {
-      setError(getText('document.messages.loadError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.loadError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Load error:', err);
     } finally {
       setLoading(false);
@@ -89,15 +84,12 @@ setTotalElements(response.totalElements || 0)
     try {
       const [statusesData] = await Promise.all([
         getAllDocStatuses(),
-   
       ]);
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-
     } catch (err) {
       console.error('Load dropdown data error:', err);
     }
   };
-
 
   const handleShowModal = (item = null) => {
     if (item) {
@@ -121,7 +113,6 @@ setTotalElements(response.totalElements || 0)
         numeroAgent: '',
         dateCertificate: '',
         dureeCertificat: '',
-
         document: { id: '' },
         status: { id: '' }
       });
@@ -166,7 +157,7 @@ setTotalElements(response.totalElements || 0)
       setError('');
 
       if (!editingItem && !selectedFile) {
-        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        setError(t('document.messages.fileRequired'));
         return;
       }
 
@@ -174,7 +165,6 @@ setTotalElements(response.totalElements || 0)
         const formDataToSend = new FormData();
         formDataToSend.append('file', selectedFile);
 
-        // Build certLicense object as JSON
         const certLicenseData = {
           description: formData.description || null,
           agentCertifica: formData.agentCertifica || null,
@@ -185,7 +175,6 @@ setTotalElements(response.totalElements || 0)
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
-        // Add certLicense as JSON blob
         formDataToSend.append('certLicense', new Blob([JSON.stringify(certLicenseData)], {
           type: 'application/json'
         }));
@@ -199,7 +188,7 @@ setTotalElements(response.totalElements || 0)
         const dataToSubmit = {
           ...formData,
           dateCertificate: formData.dateCertificate ? new Date(formData.dateCertificate).toISOString() : null,
-          doneBy:  { id: CurrentUserId } ,
+          doneBy: { id: CurrentUserId },
           document: formData.document.id ? { id: parseInt(formData.document.id) } : null
         };
 
@@ -212,7 +201,7 @@ setTotalElements(response.totalElements || 0)
       handleCloseModal();
       loadData();
     } catch (err) {
-      setError(getText('document.messages.saveError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.saveError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Save error:', err);
     }
   };
@@ -232,7 +221,7 @@ setTotalElements(response.totalElements || 0)
       setShowDeleteModal(false);
       setItemToDelete(null);
     } catch (err) {
-      setError(getText('document.messages.deleteError', language) + ': ' + (err.message || 'Unknown error'));
+      setError(t('document.messages.deleteError') + ': ' + (err.message || t('common.unknownError')));
       console.error('Delete error:', err);
     }
   };
@@ -242,21 +231,15 @@ setTotalElements(response.totalElements || 0)
     setItemToDelete(null);
   };
 
-  // Helper function to show details modal
   const handleShowDetails = (certLicense) => {
     setSelectedDocument(certLicense);
     setShowDetailsModal(true);
   };
 
-  // Helper function to close details modal
   const handleCloseDetails = () => {
     setShowDetailsModal(false);
     setSelectedDocument(null);
   };
-
-
-
-
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -267,7 +250,7 @@ setTotalElements(response.totalElements || 0)
     return (
       <div className="text-center my-5">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">{getText('common.loading', language)}</span>
+          <span className="visually-hidden">{t('common.loading')}</span>
         </Spinner>
       </div>
     );
@@ -314,14 +297,14 @@ setTotalElements(response.totalElements || 0)
             <Card.Header>
               <Row className="align-items-center">
                 <Col xs={12} md={6} lg={3}>
-                  <HeaderTitle>{getText('document.certLicenses', language)}</HeaderTitle>
+                  <HeaderTitle>{t('sidebar.certLicenses')}</HeaderTitle>
                 </Col>
                 <Col xs={12} md={6} lg={9} className="text-end">
                   <Button variant="primary" size="sm" className="me-2" onClick={() => handleShowModal()}>
-                    <i className="bi bi-plus-circle me-1"></i>{getText('common.add', language)}
+                    <i className="bi bi-plus-circle me-1"></i>{t('common.add')}
                   </Button>
                   <Button variant="outline-secondary" size="sm" onClick={loadData}>
-                    <i className="bi bi-arrow-clockwise me-1"></i>{getText('document.actions.refresh', language)}
+                    <i className="bi bi-arrow-clockwise me-1"></i>{t('document.actions.refresh')}
                   </Button>
                 </Col>
               </Row>
@@ -333,13 +316,13 @@ setTotalElements(response.totalElements || 0)
                     <Nav.Item>
                       <Nav.Link eventKey="cards">
                         <i className="bi bi-grid-3x3-gap me-1"></i>
-                        {language === 'fr' ? 'Cartes' : 'Cards'}
+                        {t('common.cardsView') || t('common.cards') || 'Cards'}
                       </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>
                       <Nav.Link eventKey="table">
                         <i className="bi bi-table me-1"></i>
-                        {language === 'fr' ? 'Tableau' : 'Table'}
+                        {t('common.tableView') || t('common.table') || 'Table'}
                       </Nav.Link>
                     </Nav.Item>
                   </Nav>
@@ -347,8 +330,7 @@ setTotalElements(response.totalElements || 0)
               </Row>
             </Card.Header>
             <Card.Body>
-    
-<SimpleSearchComponent/>
+              <SimpleSearchComponent />
               {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
               {/* Table View */}
@@ -357,20 +339,20 @@ setTotalElements(response.totalElements || 0)
                 <Table striped bordered hover>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>{getText('document.fields.description', language)}</th>
-                      <th>{getText('document.fields.agentCertifica', language)}</th>
-                      <th>{getText('document.fields.numeroAgent', language)}</th>
-                      <th>{getText('document.fields.dateCertificate', language)}</th>
-                      <th>{getText('document.fields.dureeCertificat', language)}</th>
-                      <th className="text-center" style={{ width: '200px' }}>Actions</th>
+                      <th>{t('document.fields.id')}</th>
+                      <th>{t('document.fields.description')}</th>
+                      <th>{t('document.fields.agentCertifica')}</th>
+                      <th>{t('document.fields.numeroAgent')}</th>
+                      <th>{t('document.fields.dateCertificate')}</th>
+                      <th>{t('document.fields.dureeCertificat')}</th>
+                      <th className="text-center" style={{ width: '200px' }}>{t('common.actions') || 'Actions'}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.length === 0 ? (
                       <tr>
                         <td colSpan="7" className="text-center text-muted">
-                          {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                          {t('common.noData')}
                         </td>
                       </tr>
                     ) : (
@@ -384,47 +366,42 @@ setTotalElements(response.totalElements || 0)
                           <td>{item.dureeCertificat}</td>
                           <td className="text-center">
                             <div className="d-flex gap-1 justify-content-center action-buttons">
-                              {/* View Details Button */}
                               {item.document?.id && (
                                 <Button
                                   variant="outline-primary"
                                   size="sm"
                                   onClick={() => handleShowDetails(item)}
                                   className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir les détails' : 'View Details'}
+                                  title={t('document.messages.viewDocument')}
                                 >
                                   <i className="bi bi-eye me-1"></i>
                                   <span className="d-none d-sm-inline">
-                                    {language === 'fr' ? 'Voir' : 'View'}
+                                    {t('common.view') || 'View'}
                                   </span>
                                 </Button>
                               )}
-
-                              {/* Edit Button */}
                               <Button
                                 variant="outline-warning"
                                 size="sm"
                                 onClick={() => handleShowModal(item)}
                                 className="d-flex align-items-center"
-                                title={getText('common.edit', language)}
+                                title={t('common.edit')}
                               >
                                 <i className="bi bi-pencil me-1"></i>
                                 <span className="d-none d-sm-inline">
-                                  {getText('common.edit', language)}
+                                  {t('common.edit')}
                                 </span>
                               </Button>
-
-                              {/* Delete Button */}
                               <Button
                                 variant="outline-danger"
                                 size="sm"
                                 onClick={() => handleDeleteClick(item)}
                                 className="d-flex align-items-center"
-                                title={getText('common.delete', language)}
+                                title={t('common.delete')}
                               >
                                 <i className="bi bi-trash me-1"></i>
                                 <span className="d-none d-sm-inline">
-                                  {getText('common.delete', language)}
+                                  {t('common.delete')}
                                 </span>
                               </Button>
                             </div>
@@ -444,7 +421,7 @@ setTotalElements(response.totalElements || 0)
                     <Col xs={12}>
                       <Alert variant="info" className="text-center">
                         <i className="bi bi-info-circle me-2"></i>
-                        {language === 'fr' ? 'Aucun document disponible' : 'No data available'}
+                        {t('common.noData')}
                       </Alert>
                     </Col>
                   ) : (
@@ -464,7 +441,7 @@ setTotalElements(response.totalElements || 0)
                 </Row>
               )} 
 
-    <PaginationControl totalElements={totalElements} totalPages={totalPages}/>
+              <PaginationControl totalElements={totalElements} totalPages={totalPages}/>
             </Card.Body>
           </Card>
         </Col>
@@ -473,7 +450,9 @@ setTotalElements(response.totalElements || 0)
       <Modal show={showModal} onHide={handleCloseModal} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingItem ? `${getText('common.edit', language)} ${getText('document.certLicenses', language)}` : `${getText('common.add', language)} ${getText('document.certLicenses', language)}`}
+            {editingItem 
+              ? `${t('common.edit')} ${t('sidebar.certLicenses')}`
+              : `${t('common.add')} ${t('sidebar.certLicenses')}`}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
@@ -481,20 +460,20 @@ setTotalElements(response.totalElements || 0)
             {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
             <Form.Group className="mb-3">
-              <Form.Label>{getText('document.fields.description', language)} *</Form.Label>
+              <Form.Label>{t('document.fields.description')} *</Form.Label>
               <Form.Control as="textarea" rows={2} name="description" value={formData.description} onChange={handleChange} required />
             </Form.Group>
 
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.agentCertifica', language)} *</Form.Label>
+                  <Form.Label>{t('document.fields.agentCertifica')} *</Form.Label>
                   <Form.Control type="text" name="agentCertifica" value={formData.agentCertifica} onChange={handleChange} required />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.numeroAgent', language)}</Form.Label>
+                  <Form.Label>{t('document.fields.numeroAgent')}</Form.Label>
                   <Form.Control type="text" name="numeroAgent" value={formData.numeroAgent} onChange={handleChange} />
                 </Form.Group>
               </Col>
@@ -503,57 +482,66 @@ setTotalElements(response.totalElements || 0)
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateCertificate', language)}</Form.Label>
+                  <Form.Label>{t('document.fields.dateCertificate')}</Form.Label>
                   <Form.Control type="date" name="dateCertificate" value={formData.dateCertificate} onChange={handleChange} />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dureeCertificat', language)}</Form.Label>
-                  <Form.Control type="text" name="dureeCertificat" value={formData.dureeCertificat} onChange={handleChange} placeholder={language === 'fr' ? 'Ex: 2 ans' : 'Ex: 2 years'} />
+                  <Form.Label>{t('document.fields.dureeCertificat')}</Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="dureeCertificat" 
+                    value={formData.dureeCertificat} 
+                    onChange={handleChange} 
+                    placeholder={t('document.placeholders.dureeCertificat') || (language === 'fr' ? 'Ex: 2 ans' : 'Ex: 2 years')} 
+                  />
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-        {!editingItem&&(    <Col md={4}>
-                <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
-                  <Form.Control
-                    type="file"
-                    onChange={handleFileChange}
-                    required={!editingItem}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
-                  />
-                  {selectedFile && (
-                    <Form.Text className="text-success">
-                      <i className="bi bi-check-circle me-1"></i>
-                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
-                    </Form.Text>
-                  )}
-                  {editingItem && formData.document?.id && !selectedFile && (
-                    <Form.Text className="text-muted">
-                      <i className="bi bi-file-earmark me-1"></i>
-                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
-                    </Form.Text>
-                  )}
-                </Form.Group>
-              </Col>)}
-          
+              {!editingItem && (
+                <Col md={4}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>{t('document.fields.docId')} *</Form.Label>
+                    <Form.Control
+                      type="file"
+                      onChange={handleFileChange}
+                      required={!editingItem}
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                    />
+                    {selectedFile && (
+                      <Form.Text className="text-success">
+                        <i className="bi bi-check-circle me-1"></i>
+                        {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                      </Form.Text>
+                    )}
+                    {editingItem && formData.document?.id && !selectedFile && (
+                      <Form.Text className="text-muted">
+                        <i className="bi bi-file-earmark me-1"></i>
+                        {t('document.messages.documentRetained')}
+                      </Form.Text>
+                    )}
+                  </Form.Group>
+                </Col>
+              )}
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
+                  <Form.Label>{t('document.fields.status')} *</Form.Label>
                   <Form.Select name="status.id" value={formData.status.id} onChange={handleChange} required>
-                    <option value="">{getText('common.select', language)}</option>
-                    {docStatuses.map(status => <option key={status.id} value={status.id}>{status.name}</option>)}
+                    <option value="">{t('common.select')}</option>
+                    {docStatuses.map(status => (
+                      <option key={status.id} value={status.id}>{status.name}</option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>{getText('common.cancel', language)}</Button>
-            <Button variant="primary" type="submit">{getText('common.save', language)}</Button>
+            <Button variant="secondary" onClick={handleCloseModal}>{t('common.cancel')}</Button>
+            <Button variant="primary" type="submit">{t('common.save')}</Button>
           </Modal.Footer>
         </Form>
       </Modal>
@@ -563,29 +551,29 @@ setTotalElements(response.totalElements || 0)
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title className="d-flex align-items-center">
             <i className="bi bi-exclamation-triangle me-2"></i>
-            {getText('common.confirmDelete', language)}
+            {t('common.confirmDelete')}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="text-center">
             <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
             <h5 className="mt-3 mb-3">
-              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+              {t('document.messages.confirmDelete')}
             </h5>
             {itemToDelete && (
               <div className="bg-light p-3 rounded">
-                <strong>{getText('document.fields.agentCertifica', language)}:</strong> {itemToDelete.agentCertifica}
+                <strong>{t('document.fields.agentCertifica')}:</strong> {itemToDelete.agentCertifica}
                 {itemToDelete.description && (
                   <>
                     <br />
-                    <strong>{getText('document.fields.description', language)}:</strong> {itemToDelete.description}
+                    <strong>{t('document.fields.description')}:</strong> {itemToDelete.description}
                   </>
                 )}
               </div>
             )}
             <p className="text-muted mt-3 mb-0">
               <i className="bi bi-info-circle me-1"></i>
-              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+              {t('common.deleteWarning')}
             </p>
           </div>
         </Modal.Body>
@@ -593,11 +581,11 @@ setTotalElements(response.totalElements || 0)
           <div className="d-flex gap-2 w-100 justify-content-end">
             <Button variant="outline-secondary" onClick={handleDeleteCancel}>
               <i className="bi bi-x-circle me-2"></i>
-              {getText('common.cancel', language)}
+              {t('common.cancel')}
             </Button>
             <Button variant="danger" onClick={handleDeleteConfirm}>
               <i className="bi bi-trash me-2"></i>
-              {getText('common.delete', language)}
+              {t('common.delete')}
             </Button>
           </div>
         </Modal.Footer>
@@ -607,14 +595,12 @@ setTotalElements(response.totalElements || 0)
       <GenericDocumentDetailsModal
         show={showDetailsModal}
         onHide={handleCloseDetails}
-        title={selectedDocument?.document?.originalFileName || 'Document Details'}
+        title={selectedDocument?.document?.originalFileName || t('document.documentDetails')}
         document={selectedDocument}
         language={language}
         onEdit={(doc) => { handleCloseDetails(); handleShowModal(doc); }}
         showEditButton={true}
       />
-
-
     </div>
   );
 };

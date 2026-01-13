@@ -14,6 +14,7 @@ import { CurrentUserId } from '../../services/authUtils';
 import { useSearchParams } from 'react-router-dom';
 import PaginationControl from '../PaginationControl';
 import SimpleSearchComponent from '../SimpleSearchComponent';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const EstateComponent = () => {
   const [data, setData] = useState([]);
@@ -37,8 +38,8 @@ const EstateComponent = () => {
     document: { id: '' },
     status: { id: '' }
   });
-    const [searchParams, setSearchParams] = useSearchParams();
-  const [language] = useState('fr');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const {language} = useLanguage();
 
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);

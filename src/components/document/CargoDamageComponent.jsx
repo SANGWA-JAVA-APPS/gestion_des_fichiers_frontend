@@ -17,6 +17,7 @@ import { CurrentUserId } from '../../services/authUtils';
 import SimpleSearchComponent from '../SimpleSearchComponent';
 import PaginationControl from '../PaginationControl';
 import { useSearchParams } from 'react-router-dom';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const CargoDamageComponent = () => {
   const [data, setData] = useState([]);
@@ -39,7 +40,7 @@ const CargoDamageComponent = () => {
     document: { id: '' },
     status: { id: '' }
   });
-  const [language] = useState('fr');
+  const {language} = useLanguage();
 
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
