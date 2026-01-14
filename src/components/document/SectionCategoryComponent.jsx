@@ -20,6 +20,7 @@ import { getText } from '../../data/texts'
 import SearchComponent from '../SearchComponent'
 import HeaderTitle from '../HeaderTitle'
 import { useLanguage } from '../../i18n/LanguageContext'
+import SimpleSearchComponent from '../SimpleSearchComponent'
 
 const SectionCategoryComponent = () => {
   const [data, setData] = useState([])
@@ -241,30 +242,7 @@ const SectionCategoryComponent = () => {
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-              <SearchComponent
-                dropdownLabel='Category'
-                dropdownItems={[]}
-                dropdownValue={searchFilters.statusFilter}
-                onDropdownChange={value =>
-                  setSearchFilters({ ...searchFilters, statusFilter: value })}
-                textbox1Label='Search Name'
-                textbox1Placeholder='Enter category name...'
-                textbox1Value={searchFilters.searchText}
-                onTextbox1Change={value =>
-                  setSearchFilters({ ...searchFilters, searchText: value })}
-                dateStartLabel='From Date'
-                dateStartValue={searchFilters.dateStart}
-                onDateStartChange={value =>
-                  setSearchFilters({ ...searchFilters, dateStart: value })}
-                dateEndLabel='To Date'
-                dateEndValue={searchFilters.dateEnd}
-                onDateEndChange={value =>
-                  setSearchFilters({ ...searchFilters, dateEnd: value })}
-                onSearch={handleSearch}
-                searchButtonText='Search'
-                showTextbox2={false}
-                showTextbox3={false}
-              />
+              <SimpleSearchComponent />
 
               {error &&
                 <Alert
