@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import {
   Container,
@@ -11,12 +12,16 @@ import {
   Alert,
   Spinner
 } from 'react-bootstrap'
+
 import { getAllCountries } from '../../services/GetRequests'
 import { createCountry } from '../../services/Inserts'
 import { updateCountry, deleteCountry } from '../../services/UpdRequests'
 import CountryInput from '../CountryInput'
-import { getFlagUrl } from '../../services/commonUtils'
+// import { getFlagUrl } from '../../services/commonUtils'
 import { useLanguage } from '../../i18n/LanguageContext'
+import SimpleSearchComponent from '../SimpleSearchComponent'
+import PaginationControl from '../PaginationControl'
+import { useSearchParams } from 'react-router-dom'
 
 const CountryComponent = () => {
   const [countries, setCountries] = useState([])
@@ -24,6 +29,10 @@ const CountryComponent = () => {
   const [error, setError] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [editingCountry, setEditingCountry] = useState(null)
+  const [searchParams] = useSearchParams()
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
+
   const [formData, setFormData] = useState({
     countryName: '',
     countryIso2: '',
@@ -35,18 +44,36 @@ const CountryComponent = () => {
   const { t, language } = useLanguage()
 
   // Load countries on mount
-  useEffect(() => {
-    loadCountries()
-  }, [])
+  useEffect(
+    () => {
+      loadCountries()
+    },
+    [searchParams]
+  )
 
   const loadCountries = async () => {
     try {
       setLoading(true)
-      const data = await getAllCountries()
+      const page = parseInt(searchParams.get('page') || '0', 10)
+      const size = parseInt(searchParams.get('size') || '20', 10)
+      const search = searchParams.get('search') || ''
+
+      const data = await getAllCountries({
+        page,
+        size,
+        search
+      })
+      console.log(' the data  we are receiving', data.pagination)
+
       // Handle different response structures
-      const countriesArray = data.content || data.data || data
+      const countriesArray = data.data || data
+
       setCountries(Array.isArray(countriesArray) ? countriesArray : [])
+      console.log('thw total pages we have  ', data.pagination.totalPages)
+      setTotalElements(data.pagination.totalElements || 0)
+      setTotalPages(data.pagination.totalPages || 0)
     } catch (err) {
+      console.log(t('countries.errorLoading') + err)
       setError(t('countries.errorLoading') + err.message)
       setCountries([])
     } finally {
@@ -157,11 +184,11 @@ const CountryComponent = () => {
             {t('countries.subtitle')}
           </p>
         </Col>
-        <Col xs='auto'>
+        {/* <Col xs='auto'>
           <Button variant='primary' onClick={() => handleShowModal()}>
             <i className='fas fa-plus me-2' /> {t('countries.addCountry')}
           </Button>
-        </Col>
+        </Col> */}
       </Row>
 
       {error &&
@@ -177,6 +204,7 @@ const CountryComponent = () => {
         <Col xs={12}>
           <Card>
             <Card.Body>
+              <SimpleSearchComponent />
               {countries.length === 0
                 ? <Row>
                   <Col xs={12} className='text-center py-4'>
@@ -218,7 +246,7 @@ const CountryComponent = () => {
                         <td className='text-center'>
                           {country.isoCode
                               ? <img
-                                src={getFlagUrl(country.isoCode)}
+                                src={country.flagUrl}
                                 alt={`${country.name} flag`}
                                 width={30}
                                 height='auto'
@@ -274,19 +302,23 @@ const CountryComponent = () => {
                             >
                             <i className='fas fa-edit' /> {t('common.edit')}
                           </Button>
-                          <Button
+                          {/* <Button
                             variant='outline-danger'
                             size='sm'
                             onClick={() => handleDelete(country.id)}
                             >
                             <i className='fas fa-trash' />{' '}
                             {t('common.delete')}
-                          </Button>
+                          </Button> */}
                         </td>
                       </tr>
                       )}
                   </tbody>
                 </Table>}
+              <PaginationControl
+                totalElements={totalElements}
+                totalPages={totalPages}
+              />
             </Card.Body>
           </Card>
         </Col>

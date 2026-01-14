@@ -109,10 +109,10 @@ const loadData = async () => {
       ]);
       
       setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-      console.log(" categories dta are ", categoriesData)
+
  
       setSectionCategories(categoriesData) ;
-      console.log(" usestet iscategories dta are***** ", sectionCategories)
+
       
     } catch (err) {
       console.error('Load dropdown data error:', err);

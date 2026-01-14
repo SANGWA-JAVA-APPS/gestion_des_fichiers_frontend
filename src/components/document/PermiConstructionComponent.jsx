@@ -191,7 +191,7 @@ const loadData = async () => {
     }
   };
 
-  console.log("current    loffdeg in use  id is ",CurrentUserId)
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

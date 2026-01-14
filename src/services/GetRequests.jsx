@@ -184,11 +184,29 @@ export const getRoleById = async (roleId) => {
 // ======================
 
 // Get all countries
-export const getAllCountries = async () => {
+export const getAllCountries = async ({
+  page = 0,
+  size = 100,
+  sort = 'name',
+  direction = 'asc',
+  statusId,
+  documentId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get('/location/countries');
+    const response = await apiClient.get('/location/countries',{
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        documentId,
+        search
+      }
+    });
     if (isSuccessResponse(response)) {
-      return extractResponseData(response);
+      return response.data;
     }
     throw new Error(response.data?.message || 'Failed to get countries');
   } catch (error) {
