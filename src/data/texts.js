@@ -874,6 +874,14 @@ export const texts = {
   },
   // Add this to your texts object in texts.js
   accounts: {
+    country: {
+      fr: 'Pays',
+      en: 'Country'
+    },
+    locationEntity: {
+      fr: 'Entité',
+      en: 'Location Entity'
+    },
     management: {
       fr: 'Gestion des Comptes',
       en: 'Account Management'

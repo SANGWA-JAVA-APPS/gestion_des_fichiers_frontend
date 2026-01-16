@@ -4,16 +4,23 @@ import { apiClient } from './apiConfig';
 export const loginUser = async (credentials) => {
   try {
     const response = await apiClient.post('/auth/login', credentials);
-
-    if (response.data.success) {
+    const data = response.data
+    console.log(data.account)
+    if (data.success) {
+      const account = data.account
+      
+      
       // Store tokens and user info in localStorage
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
       localStorage.setItem('userInfo', JSON.stringify({
-        userId:response.data.userId,
-        username: response.data.username,
-        fullName: response.data.fullName,
-        role: response.data.role
+        userId: account.id,
+        username: account.username,
+        fullName: account.fullName,
+        role: account.categoryName,
+                  locationEntityId: account.locationEntityId,
+          locationEntityName: account.locationEntityName,
+          countryName: account.countryName
       }));
     }
 

@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap';
 
 
-import { getAllAccounts, getAllAccountCategories } from '../../services/GetRequests';
+import { getAllAccounts, getAllAccountCategories, getAllCountries, getLocationEntitiesByCountry, getModulesByLocationEntity, getSectionsByModule } from '../../services/GetRequests';
 import { createAccount } from '../../services/Inserts';
 import { updateAccount, deleteAccount } from '../../services/UpdRequests';
 import { useLanguage } from '../../i18n/LanguageContext';
@@ -27,6 +27,10 @@ const AccountComponent = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
+  const [countries, setCountries] = useState([]);
+const [locationEntities, setLocationEntities] = useState([]);
+const [modules, setModules] = useState([]);
+const [sections, setSections] = useState([]);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -35,8 +39,81 @@ const AccountComponent = () => {
     fullName: '',
     phoneNumber: '',
     gender: '',
-    categoryId: ''
+    categoryId: '',
+      countryId: '',        // NEW
+  locationEntityId: '', // NEW
+  moduleId: '',         // NEW
+  sectionId: '' 
   });
+
+  useEffect(() => {
+  const loadCountries = async () => {
+    try {
+      const res = await getAllCountries({ page: 0, size: 200 }); // adjust size/page
+      setCountries(res.data || res); // handle pageable response
+    } catch (err) {
+      console.error('Failed to load countries', err);
+    }
+  };
+  loadCountries();
+  }, []);
+  
+  
+  // When country changes → load entities
+useEffect(() => {
+  if (!formData.countryId) {
+    setLocationEntities([]);
+    setFormData(prev => ({ ...prev, locationEntityId: '', moduleId: '', sectionId: '' }));
+    return;
+  }
+  const loadEntities = async () => {
+    try {
+      const res = await getLocationEntitiesByCountry(formData.countryId);
+      setLocationEntities(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  loadEntities();
+}, [formData.countryId]);
+
+// When entity changes → load modules
+useEffect(() => {
+  if (!formData.locationEntityId) {
+    setModules([]);
+    setFormData(prev => ({ ...prev, moduleId: '', sectionId: '' }));
+    return;
+  }
+  const loadModules = async () => {
+    try {
+      const res = await getModulesByLocationEntity
+        (formData.locationEntityId);
+      setModules(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  loadModules();
+}, [formData.locationEntityId]);
+
+// When module changes → load sections
+useEffect(() => {
+  if (!formData.moduleId) {
+    setSections([]);
+    setFormData(prev => ({ ...prev, sectionId: '' }));
+    return;
+  }
+  const loadSections = async () => {
+    try {
+      const res = await getSectionsByModule(formData.moduleId);
+      setSections(res);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  loadSections();
+}, [formData.moduleId]);
+
 
   useEffect(() => {
     loadData();
@@ -50,7 +127,8 @@ const AccountComponent = () => {
         getAllAccountCategories()
       ]);
       console.log("the accountsRes ", accountsRes);
-      setAccounts(accountsRes);
+    setAccounts(accountsRes|| []);
+
       setCategories(categoriesRes);
     } catch (err) {
       console.log("Failed to load data", err);
@@ -59,33 +137,43 @@ const AccountComponent = () => {
       setLoading(false);
     }
   };
+const handleShowModal = (account = null) => {
+  if (account) {
+    setEditingAccount(account);
 
-  const handleShowModal = (account = null) => {
-    if (account) {
-      setEditingAccount(account);
-      setFormData({
-        username: account.username,
-        password: '',
-        email: account.email,
-        fullName: account.fullName,
-        phoneNumber: account.phoneNumber,
-        gender: account.gender || '',
-        categoryId: account.accountCategory.id
-      });
-    } else {
-      setEditingAccount(null);
-      setFormData({
-        username: '',
-        password: '',
-        email: '',
-        fullName: '',
-        phoneNumber: '',
-        gender: '',
-        categoryId: ''
-      });
-    }
-    setShowModal(true);
-  };
+    setFormData({
+      username: account.username ?? '',
+      password: '',
+      email: account.email ?? '',
+      fullName: account.fullName ?? '',
+      phoneNumber: account.phoneNumber ?? '',
+      gender: account.gender ?? '',
+      categoryId: account.categoryId ?? '',
+      countryId: account.countryId ?? '',
+      locationEntityId: account.locationEntityId ?? '',
+      moduleId: '',
+      sectionId: ''
+    });
+  } else {
+    setEditingAccount(null);
+    setFormData({
+      username: '',
+      password: '',
+      email: '',
+      fullName: '',
+      phoneNumber: '',
+      gender: '',
+      categoryId: '',
+      countryId: '',
+      locationEntityId: '',
+      moduleId: '',
+      sectionId: ''
+    });
+  }
+
+  setShowModal(true);
+};
+
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -106,7 +194,9 @@ const AccountComponent = () => {
       fullName: formData.fullName,
       phoneNumber: formData.phoneNumber,
       gender: formData.gender,
-      categoryId: Number(formData.categoryId)
+      categoryId: Number(formData.categoryId),
+        countryId: Number(formData.countryId),            // NEW
+  locationEntityId: Number(formData.locationEntityId),
     };
 
     if (!editingAccount) {
@@ -174,6 +264,8 @@ const AccountComponent = () => {
                 <th>{t('accounts.email')}</th>
                 <th>{t('accounts.phone')}</th>
                 <th>{t('accounts.category')}</th>
+                <th>{t('accounts.country')}</th> 
+                    <th>{t('accounts.locationEntity')}</th>
                 <th>{t('common.status')}</th>
                 <th width="140">{t('accounts.actions')}</th>
               </tr>
@@ -186,9 +278,22 @@ const AccountComponent = () => {
                   <td>{acc.phoneNumber}</td>
                   <td>
                     <span className="badge bg-info">
-                      {acc.accountCategory?.name}
+                {acc.categoryName}
                     </span>
                   </td>
+                  
+                   <td>
+        <span className="badge bg-secondary">
+          {acc.countryName || '-'}
+        </span>
+                  </td>
+                  
+                  
+      <td>
+        <span className="badge bg-warning text-dark">
+          {acc.locationEntityName || '-'}
+        </span>
+      </td>
                   <td>
                     <span className={`badge ${acc.active ? 'bg-success' : 'bg-secondary'}`}>
                       {acc.active ? t('common.active') : t('common.inactive')}
@@ -304,6 +409,68 @@ const AccountComponent = () => {
                 ))}
               </Form.Select>
             </Form.Group>
+            
+            <Form.Group className="mb-2">
+  <Form.Label>{t('accounts.country')}</Form.Label>
+  <Form.Select
+    name="countryId"
+    value={formData.countryId}
+    onChange={handleChange}
+    required
+  >
+    <option value="">{t('common.select')}</option>
+    {countries.map(c => (
+      <option key={c.id} value={c.id}>{c.name}</option>
+    ))}
+  </Form.Select>
+</Form.Group>
+
+<Form.Group className="mb-2">
+  <Form.Label>{t('accounts.locationEntity')}</Form.Label>
+  <Form.Select
+    name="locationEntityId"
+    value={formData.locationEntityId}
+    onChange={handleChange}
+    required
+    disabled={!locationEntities.length}
+  >
+    <option value="">{t('common.select')}</option>
+    {locationEntities.map(e => (
+      <option key={e.id} value={e.id}>{e.name}</option>
+    ))}
+  </Form.Select>
+</Form.Group>
+
+{/* <Form.Group className="mb-2">
+  <Form.Label>{t('accounts.module')}</Form.Label>
+  <Form.Select
+    name="moduleId"
+    value={formData.moduleId}
+    onChange={handleChange}
+    disabled={!modules.length}
+  >
+    <option value="">{t('common.select')}</option>
+    {modules.map(m => (
+      <option key={m.id} value={m.id}>{m.name}</option>
+    ))}
+  </Form.Select>
+</Form.Group> */}
+
+{/* <Form.Group className="mb-2">
+  <Form.Label>{t('accounts.section')}</Form.Label>
+  <Form.Select
+    name="sectionId"
+    value={formData.sectionId}
+    onChange={handleChange}
+    disabled={!sections.length}
+  >
+    <option value="">{t('common.select')}</option>
+    {sections.map(s => (
+      <option key={s.id} value={s.id}>{s.name}</option>
+    ))}
+  </Form.Select>
+</Form.Group> */}
+
           </Modal.Body>
 
           <Modal.Footer>

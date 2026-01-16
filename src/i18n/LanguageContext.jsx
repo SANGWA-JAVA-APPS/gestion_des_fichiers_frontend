@@ -6,7 +6,7 @@ const LANGUAGE_STORAGE_KEY = 'app_language'
 const LanguageContext = createContext(null)
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguageState] = useState(defaultLanguage || 'fr')
+  const [language, setLanguageState] = useState(defaultLanguage || 'en')
 
   // Load language from localStorage ONCE
   useEffect(() => {

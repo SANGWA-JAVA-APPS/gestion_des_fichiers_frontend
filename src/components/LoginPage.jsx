@@ -35,7 +35,7 @@ const LoginPage = () => {
       const response = await loginUser(formData);
 
       if (response.success) {
-        setUserInfo(response);
+        // setUserInfo(response);
 
         navigate('/dashboard/docstatus', { replace: true });
       } else {

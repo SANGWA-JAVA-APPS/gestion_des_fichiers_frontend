@@ -130,28 +130,32 @@ const ModulesComponent = () => {
     }
   };
 
-  const getModuleTypeBadge = (type) => {
-    const typeColors = {
-      ADMINISTRATIVE: 'primary',
-      COMMERCIAL: 'success',
-      RESIDENTIAL: 'info',
-      INDUSTRIAL: 'warning',
-      AGRICULTURAL: 'secondary',
-      RECREATIONAL: 'light',
-      EDUCATIONAL: 'dark',
-      HEALTHCARE: 'danger',
-      TRANSPORT: 'secondary',
-      OTHER: 'secondary'
-    };
-    
-    const translatedType = t(`modules.types.${type}`) || type?.replace(/_/g, ' ');
-    
-    return (
-      <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
-        {translatedType}
-      </span>
-    );
+const getModuleTypeBadge = (type) => {
+  const typeColors = {
+    ADMINISTRATIVE: 'primary',
+    COMMERCIAL: 'success',
+    RESIDENTIAL: 'info',
+    INDUSTRIAL: 'warning',
+    AGRICULTURAL: 'secondary',
+    RECREATIONAL: 'light',
+    EDUCATIONAL: 'dark',
+    HEALTHCARE: 'danger',
+    TRANSPORT: 'secondary',
+    OTHER: 'secondary'
   };
+
+  // Build translation key first
+  const translationKey = `modules.types.${type}`;
+  // Get translated label or fallback to type with underscores replaced
+  const translatedType = t(translationKey) || type?.replace(/_/g, ' ');
+
+  return (
+    <span className={`badge bg-${typeColors[type] || 'secondary'}`}>
+      {translatedType}
+    </span>
+  );
+};
+
 
   if (loading) {
     return (
@@ -305,12 +309,15 @@ const ModulesComponent = () => {
                     onChange={handleChange}
                   >
                     <option value="">{t('modules.selectType')}</option>
-                    {moduleTypes.map(t => (
-                      <option key={t} value={t}>
-                     
-                        t(`modules.types.${t}`)
-                      </option>
-                    ))}
+           {moduleTypes.map(tt => {
+  const translationKey = `modules.types.${tt}`; // build the key first
+  const label = t(translationKey);               // get translated label
+  return (
+    <option key={tt} value={tt}>
+      {label}
+    </option>
+  );
+})}
                   </Form.Select>
                 </Form.Group>
               </Col>

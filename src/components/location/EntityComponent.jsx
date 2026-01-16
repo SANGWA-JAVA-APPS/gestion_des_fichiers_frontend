@@ -63,7 +63,7 @@ const EntityComponent = () => {
       setLoading(true)
       // Load entities and countries
       const entitiesData = await getAllLocationEntities()
-      const countriesData = await getAllCountries()
+      const countriesData = await getAllCountries({ size: 197 })
       // Handle different response structures
       const entitiesArray =
         entitiesData.content || entitiesData.data || entitiesData
@@ -289,7 +289,7 @@ const EntityComponent = () => {
                               ? <span className=' d-flex items-center gap-1'>
                                 {entity.countryFlag &&
                                 <img
-                                  src={getFlagUrl(entity.countryFlag)}
+                                  src={entity.countryFlag}
                                   alt={entity.countryName}
                                   width={40}
                                   height='auto'
