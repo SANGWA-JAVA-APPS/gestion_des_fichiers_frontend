@@ -16,6 +16,57 @@ export const getCurrentUser = async () => {
   }
 };
 
+
+
+// Get all common doc details
+// Get all common doc details
+export const getAllCommonDocDetails = async ({
+  page = 0,
+  size = 20,
+  sort = 'reference',
+  direction = 'asc',
+  status,
+  sectionId,
+  sectionCode,
+  search
+} = {}) => {
+  try {
+    const response = await apiClient.get('/common-docs', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        status,
+        sectionId,
+        sectionCode,
+     reference: search
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Get common doc details error:', error);
+    throw error.response?.data || { message: 'Failed to get common doc details' };
+  }
+};
+
+
+
+
+// Get common doc details by ID
+export const getCommonDocDetailsById = async (id) => {
+  try {
+    const response = await apiClient.get(`/common-docs/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Get common doc details by ID error:', error);
+    throw error.response?.data || { message: 'Failed to get common doc details' };
+  }
+};
+
+
+
 // Get all files with pagination
 export const getAllFiles = async (page = 0, size = 20, sort = 'fileName', direction = 'asc') => {
   try {

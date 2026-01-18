@@ -1,5 +1,186 @@
 // Global text translations for French and English
 export const texts = {
+  // Add this to your texts object in texts.js
+  commonDocDetails: {
+    title: {
+      fr: 'Détails des Documents Communs',
+      en: 'Common Document Details'
+    },
+    subtitle: {
+      fr: 'Gérer tous les documents communs du système',
+      en: 'Manage all common system documents'
+    },
+    addDocument: {
+      fr: 'Ajouter un Document',
+      en: 'Add Document'
+    },
+    editDocument: {
+      fr: 'Modifier le Document',
+      en: 'Edit Document'
+    },
+    reference: {
+      fr: 'Référence',
+      en: 'Reference'
+    },
+    description: {
+      fr: 'Description',
+      en: 'Description'
+    },
+    status: {
+      fr: 'Statut',
+      en: 'Status'
+    },
+    version: {
+      fr: 'Version',
+      en: 'Version'
+    },
+    dateTime: {
+      fr: 'Date',
+      en: 'Date'
+    },
+    expirationDate: {
+      fr: "Date d'Expiration",
+      en: 'Expiration Date'
+    },
+    section: {
+      fr: 'Section',
+      en: 'Section'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
+    },
+    tableView: {
+      fr: 'Tableau',
+      en: 'Table'
+    },
+    cardView: {
+      fr: 'Cartes',
+      en: 'Cards'
+    },
+    selectSection: {
+      fr: 'Sélectionner une section',
+      en: 'Select Section'
+    },
+    noData: {
+      fr: 'Aucune donnée disponible',
+      en: 'No data available'
+    },
+    save: {
+      fr: 'Enregistrer',
+      en: 'Save'
+    },
+    edit: {
+      fr: 'Modifier',
+      en: 'Edit'
+    },
+    delete: {
+      fr: 'Supprimer',
+      en: 'Delete'
+    },
+    cancel: {
+      fr: 'Annuler',
+      en: 'Cancel'
+    },
+    confirmDeleteTitle: {
+      fr: 'Confirmer la suppression',
+      en: 'Confirm Deletion'
+    },
+    confirmDeleteMessage: {
+      fr:
+        'Êtes-vous sûr de vouloir supprimer ce document ? Cette action est irréversible.',
+      en:
+        'Are you sure you want to delete this document? This action cannot be undone.'
+    },
+    deleteSuccess: {
+      fr: 'Document supprimé avec succès',
+      en: 'Document deleted successfully'
+    },
+    deleteError: {
+      fr: 'Échec de la suppression du document',
+      en: 'Failed to delete document'
+    },
+    saveSuccess: {
+      fr: 'Document enregistré avec succès',
+      en: 'Document saved successfully'
+    },
+    saveError: {
+      fr: "Échec de l'enregistrement du document",
+      en: 'Failed to save document'
+    },
+    fetchError: {
+      fr: 'Échec du chargement des documents',
+      en: 'Failed to fetch documents'
+    },
+    validation: {
+      referenceRequired: {
+        fr: 'La référence est requise',
+        en: 'Reference is required'
+      },
+      descriptionRequired: {
+        fr: 'La description est requise',
+        en: 'Description is required'
+      },
+      sectionRequired: {
+        fr: 'La section est requise',
+        en: 'Section is required'
+      }
+    },
+    // Status options
+    statusOptions: {
+      DRAFT: {
+        fr: 'Brouillon',
+        en: 'Draft'
+      },
+      ACTIVE: {
+        fr: 'Actif',
+        en: 'Active'
+      },
+      INACTIVE: {
+        fr: 'Inactif',
+        en: 'Inactive'
+      },
+      ARCHIVED: {
+        fr: 'Archivé',
+        en: 'Archived'
+      },
+      EXPIRED: {
+        fr: 'Expiré',
+        en: 'Expired'
+      },
+      UNDER_REVIEW: {
+        fr: 'En révision',
+        en: 'Under Review'
+      }
+    },
+    // Document types
+    documentTypes: {
+      COMMON: {
+        fr: 'Commun',
+        en: 'Common'
+      },
+      ADMINISTRATIVE: {
+        fr: 'Administratif',
+        en: 'Administrative'
+      },
+      LEGAL: {
+        fr: 'Juridique',
+        en: 'Legal'
+      },
+      FINANCIAL: {
+        fr: 'Financier',
+        en: 'Financial'
+      },
+      TECHNICAL: {
+        fr: 'Technique',
+        en: 'Technical'
+      },
+      HR: {
+        fr: 'Ressources Humaines',
+        en: 'HR'
+      }
+    }
+  },
   pagination: {
     page: {
       fr: 'Page',
@@ -102,6 +283,10 @@ export const texts = {
   },
   // Add this to your texts object in texts.js
   sidebar: {
+    commonDocDetails: {
+      fr: 'Détails des Documents',
+      en: 'Common Doc Details'
+    },
     docstatus: {
       fr: 'Statut du Document',
       en: 'Docstatus'

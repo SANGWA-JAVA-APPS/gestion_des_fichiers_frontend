@@ -31,6 +31,17 @@ export const loginUser = async (credentials) => {
   }
 };
 
+// Create a new common doc detail
+export const createCommonDocDetails = async (data) => {
+  try {
+    const response = await apiClient.post('/common-docs', data);
+    return response.data;
+  } catch (error) {
+    console.error('Create common doc details error:', error);
+    throw error.response?.data || { message: 'Failed to create common doc details' };
+  }
+};
+
 // User Registration (if needed later)
 export const registerUser = async (userData) => {
   try {

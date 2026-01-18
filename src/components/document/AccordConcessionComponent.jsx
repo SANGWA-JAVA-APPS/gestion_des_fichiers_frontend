@@ -8,7 +8,7 @@ import {  createAccordConcessionWithFile } from '../../services/Inserts';
 import { updateAccordConcession, updateAccordConcessionWithFile, deleteAccordConcession } from '../../services/UpdRequests';
 import { getAllDocStatuses} from '../../services/GetRequests';
 import { getText } from '../../data/texts';
-import SearchComponent from '../SearchComponent';
+
 import HeaderTitle from '../HeaderTitle';
 import DownloadConfirmationModal from './DownloadConfirmationModal';
 import DocumentCard from '../DocumentCard';

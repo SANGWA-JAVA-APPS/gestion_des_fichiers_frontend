@@ -1,5 +1,27 @@
 import { apiClient } from './apiConfig';
 
+// Update an existing common doc detail
+export const updateCommonDocDetails = async (id, data) => {
+  try {
+    const response = await apiClient.put(`/common-docs/${id}`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Update common doc details error:', error);
+    throw error.response?.data || { message: 'Failed to update common doc details' };
+  }
+};
+
+// Delete a common doc detail
+export const deleteCommonDocDetails = async (id) => {
+  try {
+    const response = await apiClient.delete(`/common-docs/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Delete common doc details error:', error);
+    throw error.response?.data || { message: 'Failed to delete common doc details' };
+  }
+};
+
 // Update user profile
 export const updateUserProfile = async (userId, userData) => {
   try {
