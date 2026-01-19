@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 import {
   Table,
   Card,
@@ -13,583 +13,488 @@ import {
   Nav,
   Toast,
   ToastContainer
-} from 'react-bootstrap';
-import { useSearchParams } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaFileAlt } from 'react-icons/fa';
+} from 'react-bootstrap'
+import { useSearchParams, useParams } from 'react-router-dom'
+import { FaEdit, FaTrash, FaEye, FaFileAlt } from 'react-icons/fa'
 
 import {
   getAllCommonDocDetails,
-  getAllSections
-} from '../../services/GetRequests';
-
+  getAllSections,
+  getSectionByCode
+} from '../../services/GetRequests'
 import {
   deleteCommonDocDetails,
   updateCommonDocDetails
-} from '../../services/UpdRequests';
+} from '../../services/UpdRequests'
+import { createCommonDocDetails } from '../../services/Inserts'
+import { useLanguage } from '../../i18n/LanguageContext'
+import SimpleSearchComponent from '../SimpleSearchComponent'
+import PaginationControl from '../PaginationControl'
 
-import { createCommonDocDetails } from '../../services/Inserts';
-import { useLanguage } from '../../i18n/LanguageContext';
-import { useParams } from 'react-router-dom';
-import SimpleSearchComponent from '../SimpleSearchComponent';
-import PaginationControl from '../PaginationControl';
+import {
+  DollarSign,
+  ShoppingCart,
+  UsersIcon,
+  Settings,
+  Network,
+  BuildingIcon,
+  PieChart,
+  ScaleIcon,
+  BadgeCheckIcon,
+  ShieldCheck,
+  ToolCase,
+  Pill,
+  AlertCircle,
+  FileTextIcon
+} from 'lucide-react'
+
+const sectionIcons = {
+  ORG_FIN: DollarSign,
+  ORG_PROC: ShoppingCart,
+  ORG_HR: UsersIcon,
+  ORG_TECH: Settings,
+  ORG_IT: Network,
+  ORG_RE: BuildingIcon,
+  ORG_SH: PieChart,
+  ORG_LEGAL: ScaleIcon,
+  ORG_QUAL: BadgeCheckIcon,
+  ORG_HSE: ShieldCheck,
+  ORG_EQUIP: ToolCase,
+  ORG_DA: Pill,
+  ORG_INC: AlertCircle,
+  ORG_SOP: FileTextIcon
+}
+
 /* -------------------- DATE HELPERS -------------------- */
-const toDateOnly = (value) => (value ? value.split('T')[0] : '');
-const toLocalDateTime = (value) => (value ? `${value}T00:00:00` : null);
+const toDateOnly = (value) => (value ? value.split('T')[0] : '')
+const toLocalDateTime = (value) => (value ? `${value}T00:00:00` : null)
 
 /* -------------------- COMPONENT -------------------- */
 const CommonDocDetailsComponent = () => {
-  const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
-  const { sectionCode } = useParams(); 
-  
-    console.log('Current sectionCode from URL:', sectionCode);
+  const { t } = useLanguage()
+  const [searchParams] = useSearchParams()
+  const { sectionCode } = useParams()
 
-  const page = Number(searchParams.get('page') || 0);
-  const size = Number(searchParams.get('size') || 5);
-  const search = searchParams.get('search') || '';
+  const page = Number(searchParams.get('page') || 0)
+  const size = Number(searchParams.get('size') || 5)
+  const search = searchParams.get('search') || ''
 
-  const [docs, setDocs] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: '', variant: 'success' });
+  const [docsPage, setDocsPage] = useState({ content: [], totalPages: 0, totalElements: 0 })
+  const [sections, setSections] = useState([])
+  const [currentSection, setCurrentSection] = useState(null)
 
-  const [activeView, setActiveView] = useState('table');
-  const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [docToDelete, setDocToDelete] = useState(null);
-  const [editingDoc, setEditingDoc] = useState(null);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  const [toast, setToast] = useState({ show: false, message: '', variant: 'success' })
+
+  const [activeView, setActiveView] = useState('table')
+  const [showModal, setShowModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  const [editingDoc, setEditingDoc] = useState(null)
+  const [docToDelete, setDocToDelete] = useState(null)
 
   const [formData, setFormData] = useState({
     reference: '',
     description: '',
     status: 'DRAFT',
-    version: '',
     dateTime: '',
     expirationDate: '',
     sectionId: ''
-  });
-
-  const [formErrors, setFormErrors] = useState({});
+  })
 
   /* -------------------- FETCH -------------------- */
-  const fetchDocs = async () => {
-    setLoading(true);
-    try {
-      
- 
-      const res = await getAllCommonDocDetails({    page: page,
-      size: size,
-      search: search,
-      sectionCode});
-      setDocs(res.content || []);
-    } catch (err) {
-      setError(t('commonDocDetails.fetchError'));
-      showToast(t('commonDocDetails.fetchError'), 'danger');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchSections = async () => {
+    const res = await getAllSections()
+    setSections(res || [])
+  }
+
+  const fetchSection = async () => {
+    const section = await getSectionByCode(sectionCode)
+    setCurrentSection(section)
+    setFormData(prev => ({ ...prev, sectionId: String(section.id) }))
+  }
+
+  const fetchDocs = async () => {
+    setLoading(true)
     try {
-      const data = await getAllSections();
-      setSections(data || []);
-            // Preselect section in form if sectionCode exists in URL
-      if (sectionCode) {
-        const selectedSection = data.find(s => s.code === sectionCode);
-        if (selectedSection) {
-          setFormData(prev => ({ ...prev, sectionId: String(selectedSection.id) }));
-        }
-      }
-    } catch (err) {
-      showToast('Failed to load sections', 'danger');
+      const res = await getAllCommonDocDetails({
+        page,
+        size,
+        search,
+        sectionCode
+      })
+      setDocsPage(res)
+    } catch {
+      setError(t('commonDocDetails.fetchError'))
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchSections();
-    fetchDocs();
-  }, [searchParams]);
-  
-  // Fetch docs after sections are loaded or search params change
+    fetchSections()
+    fetchSection()
+  }, [sectionCode])
+
   useEffect(() => {
-    if (sections.length) fetchDocs();
-  }, [sections, searchParams, sectionCode])
-  
-  
+    fetchDocs()
+  }, [searchParams, sectionCode])
 
   /* -------------------- TOAST -------------------- */
   const showToast = (message, variant = 'success') => {
-    setToast({ show: true, message, variant });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
-  };
-
+    setToast({ show: true, message, variant })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000)
+  }
 
   /* -------------------- ACTIONS -------------------- */
   const handleEdit = (doc) => {
-    setEditingDoc(doc);
+    setEditingDoc(doc)
     setFormData({
       reference: doc.reference ?? '',
       description: doc.description ?? '',
       status: doc.status ?? 'DRAFT',
-      version: doc.version ?? '',
-      dateTime: toDateOnly(doc.dateTime) || '',
-      expirationDate: toDateOnly(doc.expirationDate) || '',
-      sectionId: doc.sectionId ? String(doc.sectionId) : ''
-    });
-    setFormErrors({});
-    setShowModal(true);
-  };
-
-  const handleDeleteClick = (doc) => {
-    setDocToDelete(doc);
-    setShowDeleteModal(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!docToDelete) return;
-    
-    try {
-      await deleteCommonDocDetails(docToDelete.id);
-      showToast(t('commonDocDetails.deleteSuccess'), 'success');
-      fetchDocs();
-    } catch (err) {
-      showToast(t('commonDocDetails.deleteError'), 'danger');
-    } finally {
-      setShowDeleteModal(false);
-      setDocToDelete(null);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when field is edited
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
+      dateTime: toDateOnly(doc.dateTime),
+      expirationDate: toDateOnly(doc.expirationDate),
+      sectionId: String(doc.sectionId ?? '')
+    })
+    setShowModal(true)
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-
-
+    e.preventDefault()
     const payload = {
       reference: formData.reference.trim(),
       description: formData.description.trim(),
       status: formData.status,
-  
       sectionId: Number(formData.sectionId),
-      dateTime: toLocalDateTime(formData.dateTime) || null,
-      expirationDate: toLocalDateTime(formData.expirationDate) || null
-    };
+      dateTime: toLocalDateTime(formData.dateTime),
+      expirationDate: toLocalDateTime(formData.expirationDate)
+    }
 
     try {
       if (editingDoc) {
-        await updateCommonDocDetails(editingDoc.id, payload);
-        showToast(t('commonDocDetails.saveSuccess'), 'success');
+        await updateCommonDocDetails(editingDoc.id, payload)
       } else {
-        await createCommonDocDetails(payload);
-        showToast(t('commonDocDetails.saveSuccess'), 'success');
+        await createCommonDocDetails(payload)
       }
-      
-      setShowModal(false);
-      setEditingDoc(null);
-      setFormData({
-        reference: '',
-        description: '',
-        status: 'DRAFT',
 
-        dateTime: '',
-        expirationDate: '',
-        sectionId: ''
-      });
-      fetchDocs();
-    } catch (err) {
-      showToast(t('commonDocDetails.saveError'), 'danger');
+      showToast(t('commonDocDetails.saveSuccess'))
+      setShowModal(false)
+      setEditingDoc(null)
+      fetchDocs()
+    } catch {
+      showToast(t('commonDocDetails.saveError'), 'danger')
     }
-  };
+  }
+
+  const handleDeleteConfirm = async () => {
+    await deleteCommonDocDetails(docToDelete.id)
+    showToast(t('commonDocDetails.deleteSuccess'))
+    setShowDeleteModal(false)
+    fetchDocs()
+  }
 
   const handleResetForm = () => {
-  setFormData(prev => ({
-    ...prev, // keep sectionId as is
-    reference: '',
-    description: '',
-    status: 'DRAFT',
-    version: '',
-    dateTime: '',
-    expirationDate: ''
-  }));
-    setFormErrors({});
-    setEditingDoc(null);
-  };
+    setFormData(prev => ({
+      ...prev,
+      reference: '',
+      description: '',
+      status: 'DRAFT',
+      dateTime: '',
+      expirationDate: ''
+    }))
+    setEditingDoc(null)
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const getStatusBadgeColor = (status) => {
+    switch(status) {
+      case 'ACTIVE': return 'success'
+      case 'INACTIVE': return 'secondary'
+      case 'DRAFT': return 'info'
+      case 'EXPIRED': return 'danger'
+      case 'UNDER_REVIEW': return 'warning'
+      case 'ARCHIVED': return 'dark'
+      default: return 'secondary'
+    }
+  }
+
+  const getStatusTranslation = (status) => {
+    return t(`commonDocDetails.statusOptions.${status}`) || status
+  }
+
+  const SectionIcon = currentSection ? sectionIcons[currentSection.sectionCode] : FaFileAlt
 
   /* -------------------- RENDER -------------------- */
   return (
     <>
-      <ToastContainer position="top-end" className="p-3" style={{ zIndex: 9999 }}>
-        <Toast 
-          show={toast.show} 
-          onClose={() => setToast(prev => ({ ...prev, show: false }))}
-          bg={toast.variant}
-          autohide
-          delay={3000}
-        >
-          <Toast.Body className="text-white">
-            <strong>{toast.variant === 'success' ? '✓' : '⚠'}</strong> {toast.message}
-          </Toast.Body>
+      <ToastContainer position="top-end" className="p-3">
+        <Toast show={toast.show} bg={toast.variant}>
+          <Toast.Body className="text-white">{toast.message}</Toast.Body>
         </Toast>
       </ToastContainer>
 
-      <Card>
+      <Card className="mb-3">
         <Card.Header>
-          <Row className="align-items-center mb-3">
+          <Row className="align-items-center">
             <Col>
-              <h5>{t('commonDocDetails.title')}</h5>
-              <p className="text-muted mb-0">{t('commonDocDetails.subtitle')}</p>
+              <h5>
+                {SectionIcon && <SectionIcon className="me-2" />}
+                {currentSection?.name || t('commonDocDetails.title')}
+              </h5>
+              <small className="text-muted">{currentSection?.description}</small>
             </Col>
             <Col className="text-end">
-              <Button 
-                size="sm" 
-                onClick={() => {
-                  handleResetForm();
-                  setShowModal(true);
-                }}
-                variant="primary"
-              >
+              <Button size="sm" onClick={() => { handleResetForm(); setShowModal(true) }}>
                 <FaFileAlt className="me-2" />
                 {t('commonDocDetails.addDocument')}
               </Button>
             </Col>
           </Row>
 
-          <Nav variant="tabs" activeKey={activeView} onSelect={setActiveView}>
+          <Nav variant="tabs" activeKey={activeView} onSelect={setActiveView} className="mt-2">
             <Nav.Item>
               <Nav.Link eventKey="table">
-                <FaEdit className="me-2" />
-                {t('commonDocDetails.tableView')}
+                <FaEdit /> {t('common.tableView')}
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="cards">
-                <FaEye className="me-2" />
-                {t('commonDocDetails.cardView')}
+                <FaEye /> {t('common.cardsView')}
               </Nav.Link>
             </Nav.Item>
           </Nav>
         </Card.Header>
 
         <Card.Body>
-          {loading && (
-            <div className="text-center py-5">
-              <Spinner animation="border" variant="primary" />
-              <p className="mt-2">{t('common.loading')}</p>
-            </div>
-          )}
-          <SimpleSearchComponent/>
+          <SimpleSearchComponent />
+
+          {loading && <Spinner animation="border" />}
           {error && <Alert variant="danger">{error}</Alert>}
 
-          {/* ---------------- TABLE VIEW ---------------- */}
-          {!loading && activeView === 'table' && (
-            <Table bordered hover responsive>
-              <thead className="bg-light">
-                <tr>
-                  <th>{t('commonDocDetails.reference')}</th>
-                  <th>{t('commonDocDetails.description')}</th>
-                  <th>{t('commonDocDetails.dateTime')}</th>
-                  <th>{t('commonDocDetails.expirationDate')}</th>
-                  <th>{t('commonDocDetails.section')}</th>
-         
-                  <th>{t('commonDocDetails.actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {docs.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center text-muted py-4">
-                      {t('commonDocDetails.noData')}
-                    </td>
-                  </tr>
-                ) : (
-                  docs.map(d => {
-                    const section = sections.find(s => s.id === d.sectionId);
-            
-                    return (
+          {activeView === 'table' && (
+            <>
+              {docsPage.content.length === 0 ? (
+                <Alert variant="info">{t('commonDocDetails.noData')}</Alert>
+              ) : (
+                <Table bordered hover responsive>
+                  <thead>
+                    <tr>
+                      <th>{t('commonDocDetails.reference')}</th>
+                      <th>{t('commonDocDetails.description')}</th>
+                      <th>{t('commonDocDetails.dateTime')}</th>
+                      <th>{t('commonDocDetails.expirationDate')}</th>
+                      <th>{t('commonDocDetails.status')}</th>
+                      <th>{t('commonDocDetails.actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {docsPage.content.map(d => (
                       <tr key={d.id}>
-                      
                         <td>{d.reference}</td>
-                            <td>{d.description}</td>
+                        <td>{d.description}</td>
                         <td>{toDateOnly(d.dateTime)}</td>
                         <td>
                           {d.expirationDate ? (
                             <span className={new Date(d.expirationDate) < new Date() ? 'text-danger' : ''}>
                               {toDateOnly(d.expirationDate)}
                             </span>
-                          ) : (
-                            <span className="text-muted">-</span>
-                          )}
+                          ) : '-'}
                         </td>
-                        <td>{section?.name || '-'}</td>
                         <td>
                           <span className={`badge bg-${getStatusBadgeColor(d.status)}`}>
-                                    {d.status}
+                            {getStatusTranslation(d.status)}
                           </span>
                         </td>
                         <td>
                           <Button 
                             size="sm" 
                             variant="outline-primary" 
-                            className="me-2"
                             onClick={() => handleEdit(d)}
+                            title={t('common.edit')}
                           >
                             <FaEdit />
-                          </Button>
+                          </Button>{' '}
                           <Button 
                             size="sm" 
-                            variant="outline-danger"
-                            onClick={() => handleDeleteClick(d)}
+                            variant="outline-danger" 
+                            onClick={() => { setDocToDelete(d); setShowDeleteModal(true) }}
+                            title={t('common.delete')}
                           >
                             <FaTrash />
                           </Button>
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </Table>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </>
           )}
 
-          {/* ---------------- CARD VIEW ---------------- */}
-          {!loading && activeView === 'cards' && (
-            <Row xs={1} md={2} lg={3} className="g-4">
-              {docs.map(d => {
-                const section = sections.find(s => s.id === d.sectionId);
-       
-                
-                return (
-                  <Col key={d.id}>
-                    <Card className="h-100 shadow-sm">
-                      <Card.Header className="bg-light">
-                        <div className="d-flex justify-content-between align-items-center">
+          {activeView === 'cards' && (
+            <Row>
+              {docsPage.content.length === 0 ? (
+                <Col>
+                  <Alert variant="info">{t('commonDocDetails.noData')}</Alert>
+                </Col>
+              ) : (
+                docsPage.content.map(d => (
+                  <Col md={4} className="mb-3" key={d.id}>
+                    <Card>
+                      <Card.Body>
+                        <div className="d-flex align-items-center mb-2">
+                          <SectionIcon className="me-2" size={24} />
                           <strong>{d.reference}</strong>
+                        </div>
+                        <p>{d.description}</p>
+                        <small className="text-muted d-block">
+                          {toDateOnly(d.dateTime)} - {d.expirationDate ? toDateOnly(d.expirationDate) : '-'}
+                        </small>
+                        <div className="mt-2">
                           <span className={`badge bg-${getStatusBadgeColor(d.status)}`}>
-                            {d.status}
+                            {getStatusTranslation(d.status)}
                           </span>
                         </div>
-          
-                      </Card.Header>
-                      <Card.Body>
-                        <p className="card-text">{d.description}</p>
-                        <div className="small text-muted">
-                          <div>
-                            <strong>{t('commonDocDetails.dateTime')}:</strong> {toDateOnly(d.dateTime) || '-'}
-                          </div>
-                          <div>
-                            <strong>{t('commonDocDetails.expirationDate')}:</strong> 
-                            {d.expirationDate ? (
-                              <span className={new Date(d.expirationDate) < new Date() ? 'text-danger' : ''}>
-                                {' '}{toDateOnly(d.expirationDate)}
-                              </span>
-                            ) : ' -'}
-                          </div>
-                          <div>
-                            <strong>{t('commonDocDetails.section')}:</strong> {section?.name || '-'}
-                          </div>
+                        <div className="mt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline-primary" 
+                            className="me-2"
+                            onClick={() => handleEdit(d)}
+                          >
+                            <FaEdit /> {t('common.edit')}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline-danger"
+                            onClick={() => { setDocToDelete(d); setShowDeleteModal(true) }}
+                          >
+                            <FaTrash /> {t('common.delete')}
+                          </Button>
                         </div>
                       </Card.Body>
-                      <Card.Footer className="text-end">
-                        <Button 
-                          size="sm" 
-                          variant="outline-primary" 
-                          className="me-2"
-                          onClick={() => handleEdit(d)}
-                        >
-                          <FaEdit className="me-1" />
-                          {t('commonDocDetails.edit')}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline-danger"
-                          onClick={() => handleDeleteClick(d)}
-                        >
-                          <FaTrash className="me-1" />
-                          {t('commonDocDetails.delete')}
-                        </Button>
-                      </Card.Footer>
                     </Card>
                   </Col>
-                );
-              })}
+                ))
+              )}
             </Row>
           )}
+
           <PaginationControl
-  totalPages={docs.totalPages || 0}
-  totalElements={docs.totalElements || 0}
-  pageParam="page"
-  sizeParam="size"
-/>
+            totalPages={docsPage.totalPages}
+            totalElements={docsPage.totalElements}
+            pageParam="page"
+            sizeParam="size"
+          />
         </Card.Body>
+      </Card>
 
-        {/* ---------------- ADD/EDIT MODAL ---------------- */}
-{/* ---------------- ADD/EDIT MODAL ---------------- */}
-<Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-  <Form onSubmit={handleSubmit}>
-    <Modal.Header closeButton>
-      <Modal.Title>
-        {editingDoc
-          ? t('commonDocDetails.editDocument')
-          : t('commonDocDetails.addDocument')}
-      </Modal.Title>
-    </Modal.Header>
-
-    <Modal.Body>
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.reference')} *</Form.Label>
-            <Form.Control
-              name="reference"
-              value={formData.reference}
-              onChange={handleChange}
-              isInvalid={!!formErrors.reference}
-              placeholder="DOC-001"
-            />
-            <Form.Control.Feedback type="invalid">
-              {formErrors.reference}
-            </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.description')} *</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              isInvalid={!!formErrors.description}
-              placeholder={t('commonDocDetails.description')}
-            />
-            <Form.Control.Feedback type="invalid">
-              {formErrors.description}
-            </Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.status')}</Form.Label>
-            <Form.Control
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              placeholder={t('commonDocDetails.status')}
-            />
-            <Form.Control.Feedback type="invalid">
-              {formErrors.status}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-
-        <Col md={6}>
-   
-
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.dateTime')}</Form.Label>
-            <Form.Control
-              type="date"
-              name="dateTime"
-              value={formData.dateTime}
-              onChange={handleChange}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.expirationDate')}</Form.Label>
-            <Form.Control
-              type="date"
-              name="expirationDate"
-              value={formData.expirationDate}
-              onChange={handleChange}
-              min={formData.dateTime}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3">
-            <Form.Label>{t('commonDocDetails.section')} *</Form.Label>
-            <Form.Select
-              name="sectionId"
-              value={formData.sectionId}
-              onChange={handleChange}
-              isInvalid={!!formErrors.sectionId}
-            >
-              <option value="">-- {t('commonDocDetails.selectSection')} --</option>
-              {sections.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.name} ({s.code || s.id})
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">
-              {formErrors.sectionId}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-      </Row>
-    </Modal.Body>
-
-    <Modal.Footer>
-      <Button variant="secondary" onClick={() => setShowModal(false)}>
-        {t('commonDocDetails.cancel')}
-      </Button>
-      <Button type="submit" variant="primary">
-        {t('commonDocDetails.save')}
-      </Button>
-    </Modal.Footer>
-  </Form>
-</Modal>
-
-
-        {/* ---------------- DELETE CONFIRMATION MODAL ---------------- */}
-        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+      {/* ---------------- MODAL ---------------- */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Form onSubmit={handleSubmit}>
           <Modal.Header closeButton>
-            <Modal.Title className="text-danger">
-              {t('commonDocDetails.confirmDeleteTitle')}
+            <Modal.Title>
+              {editingDoc ? t('commonDocDetails.editDocument') : t('commonDocDetails.addDocument')}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <div className="text-center">
-              <FaTrash className="text-danger mb-3" size={40} />
-              <h5>{docToDelete?.reference || 'Document'}</h5>
-              <p>{t('commonDocDetails.confirmDeleteMessage')}</p>
-            </div>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.reference')} *</Form.Label>
+                  <Form.Control 
+                    name="reference" 
+                    value={formData.reference} 
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.description')} *</Form.Label>
+                  <Form.Control 
+                    as="textarea" 
+                    rows={3} 
+                    name="description" 
+                    value={formData.description} 
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.status')}</Form.Label>
+                  <Form.Select name="status" value={formData.status} onChange={handleChange}>
+                    <option value="DRAFT">{t('commonDocDetails.statusOptions.DRAFT')}</option>
+                    <option value="ACTIVE">{t('commonDocDetails.statusOptions.ACTIVE')}</option>
+                    <option value="INACTIVE">{t('commonDocDetails.statusOptions.INACTIVE')}</option>
+                    <option value="ARCHIVED">{t('commonDocDetails.statusOptions.ARCHIVED')}</option>
+                    <option value="EXPIRED">{t('commonDocDetails.statusOptions.EXPIRED')}</option>
+                    <option value="UNDER_REVIEW">{t('commonDocDetails.statusOptions.UNDER_REVIEW')}</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.dateTime')}</Form.Label>
+                  <Form.Control type="date" name="dateTime" value={formData.dateTime} onChange={handleChange} />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.expirationDate')}</Form.Label>
+                  <Form.Control 
+                    type="date" 
+                    name="expirationDate" 
+                    value={formData.expirationDate} 
+                    onChange={handleChange} 
+                    min={formData.dateTime || undefined} 
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('commonDocDetails.section')}</Form.Label>
+                  <Form.Control type="text" value={currentSection?.name || ''} disabled />
+                </Form.Group>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
               {t('commonDocDetails.cancel')}
             </Button>
-            <Button variant="danger" onClick={handleDeleteConfirm}>
-              {t('commonDocDetails.delete')}
+            <Button type="submit" variant="primary">
+              {t('commonDocDetails.save')}
             </Button>
           </Modal.Footer>
-        </Modal>
-      </Card>
+        </Form>
+      </Modal>
+
+      {/* ---------------- DELETE MODAL ---------------- */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{t('commonDocDetails.confirmDeleteTitle')}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>{t('commonDocDetails.confirmDeleteMessage')}</p>
+          <p className="text-muted">{t('common.deleteWarning')}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="danger" onClick={handleDeleteConfirm}>
+            {t('common.delete')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
-  );
-};
+  )
+}
 
-// Helper function for status badge colors
-const getStatusBadgeColor = (status) => {
-  switch(status) {
-    case 'ACTIVE': return 'success';
-    case 'INACTIVE': return 'secondary';
-    case 'DRAFT': return 'info';
-    case 'EXPIRED': return 'danger';
-    case 'UNDER_REVIEW': return 'warning';
-    case 'ARCHIVED': return 'dark';
-    default: return 'secondary';
-  }
-};
-
-export default CommonDocDetailsComponent;
+export default CommonDocDetailsComponent

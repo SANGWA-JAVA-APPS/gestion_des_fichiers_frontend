@@ -790,4 +790,26 @@ export const getAllThirdPartyClaims = async (page = 0, size = 20, sort = 'refere
     console.error('Get third party claims error:', error);
     throw error.response?.data || { message: 'Failed to get third party claims' };
   }
+  
+  
+  
+  
 };
+
+// Get section by code
+export const getSectionByCode = async (sectionCode) => {
+  try {
+    const response = await apiClient.get(
+      `/location/sections/code/${sectionCode}`
+    )
+
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response)
+    }
+
+    return response.data
+  } catch (error) {
+    console.error('Get section by code error:', error)
+    throw error.response?.data || { message: 'Failed to get section by code' }
+  }
+}
