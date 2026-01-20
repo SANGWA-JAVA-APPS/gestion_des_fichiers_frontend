@@ -75,8 +75,8 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
           <div key={groupIdx} className='mb-3'>
             {!isIconOnly && !isHidden && (
               <div
-                className='px-3 py-2 text-muted text-uppercase small fw-bold'
-                style={{ fontSize: '0.7rem' }}
+                className='px-3 py-1 text-muted text-uppercase small fw-bold'
+                style={{ fontSize: '0.2rem' }}
               >
                 {group.title}
               </div>

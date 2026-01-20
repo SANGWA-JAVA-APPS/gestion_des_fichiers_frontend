@@ -332,8 +332,8 @@ export const texts = {
       en: 'Country Management'
     },
     locationEntities: {
-      fr: 'Entités de Localisation',
-      en: 'Location Entities'
+      fr: 'Entreprises de Localisation',
+      en: 'Location companies'
     },
     moduleManagement: {
       fr: 'Gestion des Modules',
@@ -1446,6 +1446,35 @@ export const texts = {
       en: 'System Config'
     }
   },
+  plans: {
+    vite: {
+      fr: 'Vite',
+      en: 'Vite'
+    },
+    enterprise: {
+      fr: 'Entreprise',
+      en: 'Enterprise'
+    },
+    startup: {
+      fr: 'Startup',
+      en: 'Startup'
+    }
+  },
+
+  teams: {
+    shadcnAdmin: {
+      fr: 'Administrateur Shadcn',
+      en: 'Shadcn Admin'
+    },
+    acmeInc: {
+      fr: 'Acme Inc',
+      en: 'Acme Inc'
+    },
+    acmeCorp: {
+      fr: 'Acme Corp',
+      en: 'Acme Corp'
+    }
+  },
 
   // Common UI elements
   common: {
@@ -2044,6 +2073,22 @@ export const texts = {
 
     // Section Category Values
     categoryValues: {
+      suppliersContracts: {
+        fr: 'Contrats Fournisseurs',
+        en: 'Suppliers Contracts'
+      },
+      rentalAssetsContracts: {
+        fr: "Contrats de Location d'Actifs",
+        en: 'Rental Assets Contracts'
+      },
+      clientCommercial: {
+        fr: 'Client Commercial',
+        en: 'Client Commercial'
+      },
+      rentalAssets: {
+        fr: 'Actifs de Location',
+        en: 'Rental Assets'
+      },
       financial: {
         fr: 'Financier',
         en: 'Financial'

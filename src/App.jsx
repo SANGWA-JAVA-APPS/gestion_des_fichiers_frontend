@@ -22,6 +22,7 @@ import {
   CargoDamageComponent
 } from './components/document'
 import CommonDocDetailsComponent from './components/document/CommonDocDetailsComponent'
+import CommThirdPartyComponent from './components/document/CommThirdPartyComponent'
 
 // Pages
 export function Users () {
@@ -75,25 +76,14 @@ export default function App () {
             path='accordConcession'
             element={<AccordConcessionComponent />}
           />
-          {/* <Route path='common-doc-details'>
-            <Route path='ORG_FIN' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_PROC' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_HR' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_TECH' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_IT' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_RE' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_SH' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_LEGAL' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_QUAL' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_HSE' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_EQUIP' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_DA' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_INC' element={<CommonDocDetailsComponent />} />
-            <Route path='ORG_SOP' element={<CommonDocDetailsComponent />} />
-          </Route> */}
+
           <Route
             path='common-doc-details/:sectionCode'
             element={<CommonDocDetailsComponent />}
+          />
+          <Route
+            path='common_third_party/:sectionCode'
+            element={<CommThirdPartyComponent />}
           />
 
           <Route path='estate' element={<EstateComponent />} />

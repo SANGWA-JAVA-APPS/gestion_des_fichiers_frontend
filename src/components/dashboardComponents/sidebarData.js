@@ -24,13 +24,9 @@ import {
 import { ROLES } from '../../services/permissions'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { DollarSign } from 'lucide-react'
-import { BiLogoMicrosoft } from 'react-icons/bi'
-import { StarOff } from 'lucide-react'
-import { SiBmcsoftware, SiTechcrunch } from 'react-icons/si'
+
 import { Network } from 'lucide-react'
-import { Group } from 'react-aria-components'
-import { GroupIcon } from 'lucide-react'
-import { FaTeamspeak } from 'react-icons/fa6'
+
 import { ShoppingCart } from 'lucide-react'
 import { Settings } from 'lucide-react'
 import { PieChart } from 'lucide-react'
@@ -128,110 +124,19 @@ export const useSidebarData = () => {
                 url: '/dashboard/locations/entities',
                 icon: Building2Icon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: t('sidebar.moduleManagement'),
-                url: '/dashboard/locations/modules',
-                icon: BoxesIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: t('sidebar.sectionManagement'),
-                url: '/dashboard/locations/sections',
-                icon: ListTreeIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
               }
-            ]
-          },
-          {
-            title: 'vsections',
-            icon: ListTreeIcon,
-            roles: [ROLES.ADMIN, ROLES.MANAGER],
-            items: [
-              {
-                title: 'financial',
-                url: '/dashboard/common-doc-details/ORG_FIN',
-                icon: DollarSign,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'procurement',
-                url: '/dashboard/common-doc-details/ORG_PROC',
-                icon: ShoppingCart,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'hr',
-                url: '/dashboard/common-doc-details/ORG_HR',
-                icon: UsersIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'technical',
-                url: '/dashboard/common-doc-details/ORG_TECH',
-                icon: Settings,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'it',
-                url: '/dashboard/common-doc-details/ORG_IT',
-                icon: Network,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'real estate',
-                url: '/dashboard/common-doc-details/ORG_RE',
-                icon: BuildingIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'shareholders',
-                url: '/dashboard/common-doc-details/ORG_SH',
-                icon: PieChart,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'legal',
-                url: '/dashboard/common-doc-details/ORG_LEGAL',
-                icon: ScaleIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'quality',
-                url: '/dashboard/common-doc-details/ORG_QUAL',
-                icon: BadgeCheckIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'hse',
-                url: '/dashboard/common-doc-details/ORG_HSE',
-                icon: ShieldCheck,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'equipment',
-                url: '/dashboard/common-doc-details/ORG_EQUIP',
-                icon: ToolCase,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'drug & alcohol',
-                url: '/dashboard/common-doc-details/ORG_DA',
-                icon: Pill,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'incident & news',
-                url: '/dashboard/common-doc-details/ORG_INC',
-                icon: AlertCircle,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
-              {
-                title: 'sop',
-                url: '/dashboard/common-doc-details/ORG_SOP',
-                icon: FileTextIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              }
+              // {
+              //   title: t('sidebar.moduleManagement'),
+              //   url: '/dashboard/locations/modules',
+              //   icon: BoxesIcon,
+              //   roles: [ROLES.ADMIN, ROLES.MANAGER]
+              // }
+              // {
+              //   title: t('sidebar.sectionManagement'),
+              //   url: '/dashboard/locations/sections',
+              //   icon: ListTreeIcon,
+              //   roles: [ROLES.ADMIN, ROLES.MANAGER]
+              // }
             ]
           },
 
@@ -246,12 +151,12 @@ export const useSidebarData = () => {
                 icon: FileTextIcon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
               },
-              {
-                title: t('sidebar.sectionCategory'),
-                url: '/dashboard/sectionCategory',
-                icon: ListIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
-              },
+              // {
+              //   title: t('sidebar.sectionCategory'),
+              //   url: '/dashboard/sectionCategory',
+              //   icon: ListIcon,
+              //   roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              // },
               {
                 title: t('sidebar.normeLoi'),
                 url: '/dashboard/NormeLoi',
@@ -292,6 +197,116 @@ export const useSidebarData = () => {
                 title: t('sidebar.cargoDamage'),
                 url: '/dashboard/cargoDamage',
                 icon: PackageXIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+
+              {
+                title: t('document.categoryValues.financial'),
+                url: '/dashboard/common-doc-details/ORG_FIN',
+                icon: DollarSign,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.procurement'),
+                url: '/dashboard/common-doc-details/ORG_PROC',
+                icon: ShoppingCart,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.hr'),
+                url: '/dashboard/common-doc-details/ORG_HR',
+                icon: UsersIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.technical'),
+                url: '/dashboard/common-doc-details/ORG_TECH',
+                icon: Settings,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.it'),
+                url: '/dashboard/common-doc-details/ORG_IT',
+                icon: Network,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.realEstate'),
+                url: '/dashboard/common-doc-details/ORG_RE',
+                icon: BuildingIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.shareholders'),
+                url: '/dashboard/common-doc-details/ORG_SH',
+                icon: PieChart,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.legal'),
+                url: '/dashboard/common-doc-details/ORG_LEGAL',
+                icon: ScaleIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.quality'),
+                url: '/dashboard/common-doc-details/ORG_QUAL',
+                icon: BadgeCheckIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.hse'),
+                url: '/dashboard/common-doc-details/ORG_HSE',
+                icon: ShieldCheck,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.equipment'),
+                url: '/dashboard/common-doc-details/ORG_EQUIP',
+                icon: ToolCase,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.drugAlcohol'),
+                url: '/dashboard/common-doc-details/ORG_DA',
+                icon: Pill,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.incident'),
+                url: '/dashboard/common-doc-details/ORG_INC',
+                icon: AlertCircle,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: t('document.categoryValues.sop'),
+                url: '/dashboard/common-doc-details/ORG_SOP',
+                icon: FileTextIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+
+              {
+                title: 'Suppliers Contracts',
+                url: '/dashboard/common_third_party/ORG_SUPP',
+                icon: HandshakeIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: 'Rental Assets Contracts',
+                url: '/dashboard/common-doc-details/ORG_RENT_CON',
+                icon: PackageXIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: 'Client Commercial',
+                url: '/dashboard/common_third_party/ORG_CLIENT',
+                icon: LandmarkIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
+              {
+                title: 'Rental Assets',
+                url: '/dashboard/common_third_party/ORG_RENT_ASSET',
+                icon: HomeIcon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
               }
             ]

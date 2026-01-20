@@ -19,8 +19,8 @@ import { FaEdit, FaTrash, FaEye, FaFileAlt } from 'react-icons/fa'
 
 import {
   getAllCommonDocDetails,
-  getAllSections,
-  getSectionByCode
+
+  getSectionCategoryByCode 
 } from '../../services/GetRequests'
 import {
   deleteCommonDocDetails,
@@ -45,8 +45,13 @@ import {
   ToolCase,
   Pill,
   AlertCircle,
-  FileTextIcon
+  FileTextIcon,
+  HandshakeIcon,
+  Package,
+  HomeIcon,
+  Building2Icon
 } from 'lucide-react'
+import { FaPlus } from 'react-icons/fa6'
 
 const sectionIcons = {
   ORG_FIN: DollarSign,
@@ -62,7 +67,11 @@ const sectionIcons = {
   ORG_EQUIP: ToolCase,
   ORG_DA: Pill,
   ORG_INC: AlertCircle,
-  ORG_SOP: FileTextIcon
+  ORG_SOP: FileTextIcon,
+  ORG_SUPP: HandshakeIcon,
+  ORG_RENT_CON: Package,
+  ORG_CLIENT: Building2Icon,
+  ORG_RENT_ASSET: HomeIcon
 }
 
 /* -------------------- DATE HELPERS -------------------- */
@@ -80,7 +89,7 @@ const CommonDocDetailsComponent = () => {
   const search = searchParams.get('search') || ''
 
   const [docsPage, setDocsPage] = useState({ content: [], totalPages: 0, totalElements: 0 })
-  const [sections, setSections] = useState([])
+
   const [currentSection, setCurrentSection] = useState(null)
 
   const [loading, setLoading] = useState(true)
@@ -104,14 +113,9 @@ const CommonDocDetailsComponent = () => {
     sectionId: ''
   })
 
-  /* -------------------- FETCH -------------------- */
-  const fetchSections = async () => {
-    const res = await getAllSections()
-    setSections(res || [])
-  }
 
-  const fetchSection = async () => {
-    const section = await getSectionByCode(sectionCode)
+  const fetchSectionCategory = async () => {
+    const section = await getSectionCategoryByCode(sectionCode)
     setCurrentSection(section)
     setFormData(prev => ({ ...prev, sectionId: String(section.id) }))
   }
@@ -134,8 +138,8 @@ const CommonDocDetailsComponent = () => {
   }
 
   useEffect(() => {
-    fetchSections()
-    fetchSection()
+    fetchSectionCategory()
+ 
   }, [sectionCode])
 
   useEffect(() => {
@@ -168,7 +172,7 @@ const CommonDocDetailsComponent = () => {
       reference: formData.reference.trim(),
       description: formData.description.trim(),
       status: formData.status,
-      sectionId: Number(formData.sectionId),
+      sectionCategoryId: Number(formData.sectionId),
       dateTime: toLocalDateTime(formData.dateTime),
       expirationDate: toLocalDateTime(formData.expirationDate)
     }
@@ -229,7 +233,7 @@ const CommonDocDetailsComponent = () => {
     return t(`commonDocDetails.statusOptions.${status}`) || status
   }
 
-  const SectionIcon = currentSection ? sectionIcons[currentSection.sectionCode] : FaFileAlt
+const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
 
   /* -------------------- RENDER -------------------- */
   return (
@@ -245,14 +249,15 @@ const CommonDocDetailsComponent = () => {
           <Row className="align-items-center">
             <Col>
               <h5>
-                {SectionIcon && <SectionIcon className="me-2" />}
+                { <SectionIcon />}
                 {currentSection?.name || t('commonDocDetails.title')}
               </h5>
               <small className="text-muted">{currentSection?.description}</small>
             </Col>
             <Col className="text-end">
               <Button size="sm" onClick={() => { handleResetForm(); setShowModal(true) }}>
-                <FaFileAlt className="me-2" />
+                <FaPlus className="me-2" />
+                <SectionIcon/>
                 {t('commonDocDetails.addDocument')}
               </Button>
             </Col>
@@ -290,7 +295,8 @@ const CommonDocDetailsComponent = () => {
                       <th>{t('commonDocDetails.description')}</th>
                       <th>{t('commonDocDetails.dateTime')}</th>
                       <th>{t('commonDocDetails.expirationDate')}</th>
-                      <th>{t('commonDocDetails.status')}</th>
+                        <th>{t('commonDocDetails.status')}</th>
+                           <th>{t('commonDocDetails.section')}</th>  
                       <th>{t('commonDocDetails.actions')}</th>
                     </tr>
                   </thead>
@@ -307,10 +313,14 @@ const CommonDocDetailsComponent = () => {
                             </span>
                           ) : '-'}
                         </td>
+                       
                         <td>
                           <span className={`badge bg-${getStatusBadgeColor(d.status)}`}>
                             {getStatusTranslation(d.status)}
                           </span>
+                        </td>
+                               <td>
+                      {d.sectionCategoryName}
                         </td>
                         <td>
                           <Button 

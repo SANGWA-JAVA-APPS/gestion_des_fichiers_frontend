@@ -192,7 +192,20 @@ export const createNormeLoi = async (data) => {
     throw error.response?.data || { message: 'Failed to create norme loi' };
   }
 };
-
+// Create comm third party with file upload
+export const createCommThirdPartyWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/comm-third-party', formData, {
+          headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create comm third party with file error:', error);
+    throw error.response?.data || { message: 'Failed to create comm third party with file' };
+  }
+};
 // Create norme loi with file upload
 export const createNormeLoiWithFile = async (formData) => {
   try {

@@ -11,6 +11,19 @@ export const updateCommonDocDetails = async (id, data) => {
   }
 };
 
+// Update comm third party with file
+export const updateCommThirdPartyWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/comm-third-party/${id}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update comm third party with file error:', error);
+    throw error.response?.data || { message: 'Failed to update comm third party with file' };
+  }
+};
+
 // Delete a common doc detail
 export const deleteCommonDocDetails = async (id) => {
   try {
@@ -598,7 +611,11 @@ export const deleteDueDiligence = async (id) => {
 // Update/Delete comm third party
 export const updateCommThirdParty = async (id, data) => {
   try {
-    const response = await apiClient.put(`/document/comm-third-party/${id}`, data);
+    const response = await apiClient.put(`/document/comm-third-party/${id}`, data, {
+          headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Update comm third party error:', error);

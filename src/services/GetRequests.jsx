@@ -717,14 +717,34 @@ export const getAllDueDiligence = async (page = 0, size = 20, sort = 'reference'
   }
 };
 
-// Get all comm third party
-export const getAllCommThirdParty = async (page = 0, size = 20, sort = 'name', direction = 'asc') => {
+// services/GetRequests.ts
+
+export const getAllCommThirdParty = async ({
+  page = 0,
+  size = 20,
+  sort = 'name',
+  direction = 'asc',
+  statusId,
+  sectionId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/comm-third-party?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/comm-third-party', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        statusId,
+        sectionId,
+        search
+      }
+    });
+
     return response.data;
   } catch (error) {
     console.error('Get comm third party error:', error);
-    throw error.response?.data || { message: 'Failed to get comm third party' };
+    throw error.response?.data || { message: 'Failed to get commercial third parties' };
   }
 };
 
@@ -796,6 +816,23 @@ export const getAllThirdPartyClaims = async (page = 0, size = 20, sort = 'refere
   
 };
 
+// Get section category by code
+export const getSectionCategoryByCode = async (sectionCategoryCode) => {
+  try {
+    const response = await apiClient.get(
+      `/document/section-category/code/${sectionCategoryCode}`
+    );
+
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Get section category by code error:', error);
+    throw error.response?.data || { message: 'Failed to get section category by code' };
+  }
+};
 // Get section by code
 export const getSectionByCode = async (sectionCode) => {
   try {
