@@ -10,11 +10,15 @@ import {
 } from 'lucide-react'
 import { clearAuthData, getUserInfo } from '../../services/authUtils'
 import LanguageSwitcher from '../../i18n/LanguageSwitcher'
+import { useState } from 'react'
+import { Modal } from 'react-bootstrap'
+import UserProfile from '../user/UserProfile'
+
 
 export function TopNavbar({ onSidebarToggle }) {
   const navigate = useNavigate()
   const user = getUserInfo()
-
+  const [showProfileModal, setShowProfileModal] = useState(false)
   const initials =
     user?.fullName
       ?.split(' ')
@@ -74,12 +78,16 @@ export function TopNavbar({ onSidebarToggle }) {
             <li><hr className="dropdown-divider" /></li>
 
             {/* Actions */}
-            <li>
-              <button className="dropdown-item d-flex align-items-center gap-2">
-                <User size={16} />
-                Profile
-              </button>
-            </li>
+   <li>
+  <button
+    className="dropdown-item d-flex align-items-center gap-2"
+    onClick={() => setShowProfileModal(true)}
+  >
+    <User size={16} />
+    Profile
+  </button>
+</li>
+
 
             <li>
               <button className="dropdown-item d-flex align-items-center gap-2">
@@ -105,6 +113,23 @@ export function TopNavbar({ onSidebarToggle }) {
           </ul>
         </div>
       </div>
+      
+      <Modal
+  show={showProfileModal}
+  onHide={() => setShowProfileModal(false)}
+  size="lg"
+  backdrop="static"
+  centered
+>
+  <Modal.Header closeButton>
+    <Modal.Title>My Profile</Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body>
+    <UserProfile />
+  </Modal.Body>
+</Modal>
+
     </nav>
   )
 }

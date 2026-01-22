@@ -31,6 +31,17 @@ export const loginUser = async (credentials) => {
   }
 };
 
+// Get user's section categories
+export const getUserSections = async (userId) => {
+  try {
+    const response = await apiClient.get(`/accounts/${userId}/sections`);
+    return response.data;
+  } catch (error) {
+    console.error('Get user sections error:', error);
+    throw error.response?.data || { message: 'Failed to get user sections' };
+  }
+};
+
 // Create a new common doc detail
 export const createCommonDocDetails = async (data) => {
   try {

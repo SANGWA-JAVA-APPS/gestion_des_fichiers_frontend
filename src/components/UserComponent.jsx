@@ -1,126 +1,121 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
-import { getCurrentUser, getAllUsers } from '../services/GetRequests';
-import { updateUserProfile } from '../services/UpdRequests';
-import { getUserInfo, isAdmin } from '../services/authUtils';
+import React, { useEffect, useState } from 'react'
+import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap'
+import {  getAllUsers,  getAccountById } from '../services/GetRequests'
 
-const UserComponent = () => {
-  const [users, setUsers] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+import { updateUserProfile } from '../services/UpdRequests'
+import { CurrentUserId, getUserInfo, isAdmin } from '../services/authUtils'
+
+const UserComponent = ({ userId = null }) => {
+  const [users, setUsers] = useState([])
+  const [profileUser, setProfileUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [editingUser, setEditingUser] = useState(null)
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phoneNumber: '',
     gender: ''
-  });
+  })
 
-  const userInfo = getUserInfo();
-  const isUserAdmin = isAdmin();
+  const authUser = getUserInfo()
+  const admin = isAdmin()
+
+const loadProfileUser = async () => {
+  try {
+    setLoading(true)
+    setError('')
+
+    let userData
+
+    if (userId) {
+      const response = await getAccountById(userId)
+      userData = response.data || response
+    } else {
+      const response = await getAccountById(CurrentUserId)
+      userData = response.data || response
+    }
+
+    setProfileUser(userData)
+
+    if (admin) {
+      const allUsers = await getAllUsers()
+      setUsers(allUsers.data || allUsers)
+    }
+  } catch (err) {
+    setError(err.message || 'Failed to load user profile')
+  } finally {
+    setLoading(false)
+  }
+}
+
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        
-        // Get current user details
-        const currentUserData = await getCurrentUser();
-        setCurrentUser(currentUserData);
-        
-        // If admin, get all users
-        if (isUserAdmin) {
-          const allUsersData = await getAllUsers();
-          setUsers(allUsersData);
-        }
-      } catch (err) {
-        setError('Failed to load user data: ' + err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadData();
-  }, [isUserAdmin]);
-
-  const loadUserData = async () => {
-    try {
-      setLoading(true);
-      
-      // Get current user details
-      const currentUserData = await getCurrentUser();
-      setCurrentUser(currentUserData);
-      
-      // If admin, get all users
-      if (isUserAdmin) {
-        const allUsersData = await getAllUsers();
-        setUsers(allUsersData);
-      }
-    } catch (err) {
-      setError('Failed to load user data: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadProfileUser()
+  }, [userId, admin])
 
   const handleShowModal = (user = null) => {
-    const targetUser = user || currentUser || userInfo;
-    setEditingUser(targetUser);
+    const target = user || profileUser
+
+    if (!target) return
+
+    setEditingUser(target)
     setFormData({
-      fullName: targetUser.fullName || '',
-      email: targetUser.email || '',
-      phoneNumber: targetUser.phoneNumber || '',
-      gender: targetUser.gender || ''
-    });
-    setShowModal(true);
-  };
+      fullName: target.fullName || '',
+      email: target.email || '',
+      phoneNumber: target.phoneNumber || '',
+      gender: target.gender || ''
+    })
+    setShowModal(true)
+  }
 
   const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingUser(null);
+    setShowModal(false)
+    setEditingUser(null)
     setFormData({
       fullName: '',
       email: '',
       phoneNumber: '',
       gender: ''
-    });
-  };
+    })
+  }
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+
+    if (!editingUser?.id) return
+
     try {
-      await updateUserProfile(editingUser.id || editingUser.userId, formData);
-      handleCloseModal();
-      loadUserData();
+      await updateUserProfile(editingUser.id, formData)
+      handleCloseModal()
+      await loadProfileUser()
     } catch (err) {
-      setError('Failed to update user profile: ' + err.message);
+      setError(err.message || 'Failed to update user profile')
     }
-  };
+  }
 
   if (loading) {
     return (
-      <div className="text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <Spinner animation="border" role="status" />
       </div>
-    );
+    )
   }
 
   return (
-    <div>
+    <div className="container-fluid">
       <Row className="mb-4">
         <Col>
-          <h3>User Management</h3>
+          <h3 className="fw-semibold">
+            {userId ? 'User Profile' : 'My Profile'}
+          </h3>
         </Col>
       </Row>
 
@@ -130,40 +125,71 @@ const UserComponent = () => {
         </Alert>
       )}
 
-      {/* Current User Profile */}
-      <Card className="mb-4">
-        <Card.Header>
-          <h5>My Profile</h5>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <p><strong>Username:</strong> {userInfo?.username}</p>
-              <p><strong>Full Name:</strong> {userInfo?.fullName}</p>
-              <p><strong>Role:</strong> {userInfo?.role}</p>
-            </Col>
-            <Col md={6} className="text-md-end">
-              <Button variant="primary" onClick={() => handleShowModal()}>
-                Edit Profile
-              </Button>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
-      {/* All Users (Admin only) */}
-      {isUserAdmin && (
-        <Card>
-          <Card.Header>
-            <h5>All Users</h5>
+      {profileUser && (
+        <Card className="mb-4 shadow-sm">
+          <Card.Header className="d-flex justify-content-between align-items-center">
+            <span className="fw-semibold">Profile Details</span>
+            <Button variant="primary" size="sm" onClick={() => handleShowModal()}>
+              Edit Profile
+            </Button>
           </Card.Header>
+
+          <Card.Body>
+            <Row>
+              <Col md={6}>
+                <p><strong>Username:</strong> {profileUser.username}</p>
+                <p><strong>Full Name:</strong> {profileUser.fullName}</p>
+                <p><strong>Email:</strong> {profileUser.email}</p>
+                <p><strong>Phone:</strong> {profileUser.phoneNumber || '-'}</p>
+                <p><strong>Gender:</strong> {profileUser.gender || '-'}</p>
+              </Col>
+
+              <Col md={6}>
+                <p>
+                  <strong>Role:</strong>{' '}
+                  <Badge bg={profileUser.categoryName === 'ADMIN' ? 'danger' : 'secondary'}>
+                    {profileUser.categoryName}
+                  </Badge>
+                </p>
+
+                <p>
+                  <strong>Status:</strong>{' '}
+                  <Badge bg={profileUser.active ? 'success' : 'warning'}>
+                    {profileUser.active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </p>
+
+                {profileUser.sectionCategories?.length > 0 && (
+                  <>
+                    <strong>Section Categories:</strong>
+                    <div className="mt-2 d-flex flex-wrap gap-2">
+                      {profileUser.sectionCategories.map(sc => (
+                        <Badge key={sc.id} bg="info">
+                          {sc.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
+      )}
+
+      {admin && !userId && (
+        <Card className="shadow-sm">
+          <Card.Header>
+            <span className="fw-semibold">All Users</span>
+          </Card.Header>
+
           <Card.Body>
             {users.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-muted">No users found.</p>
+              <div className="text-center py-4 text-muted">
+                No users found.
               </div>
             ) : (
-              <Table responsive striped hover>
+              <Table responsive hover>
                 <thead>
                   <tr>
                     <th>Username</th>
@@ -171,29 +197,29 @@ const UserComponent = () => {
                     <th>Email</th>
                     <th>Role</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user) => (
+                  {users.map(user => (
                     <tr key={user.id}>
                       <td>{user.username}</td>
                       <td>{user.fullName}</td>
                       <td>{user.email}</td>
                       <td>
-                        <span className={`badge ${user.role === 'ADMIN' ? 'bg-danger' : 'bg-secondary'}`}>
-                          {user.role}
-                        </span>
+                        <Badge bg={user.categoryName === 'ADMIN' ? 'danger' : 'secondary'}>
+                          {user.categoryName}
+                        </Badge>
                       </td>
                       <td>
-                        <span className={`badge ${user.active ? 'bg-success' : 'bg-warning'}`}>
+                        <Badge bg={user.active ? 'success' : 'warning'}>
                           {user.active ? 'Active' : 'Inactive'}
-                        </span>
+                        </Badge>
                       </td>
                       <td>
                         <Button
-                          variant="outline-primary"
                           size="sm"
+                          variant="outline-primary"
                           onClick={() => handleShowModal(user)}
                         >
                           Edit
@@ -208,22 +234,20 @@ const UserComponent = () => {
         </Card>
       )}
 
-      {/* Modal for Edit User */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      <Modal show={showModal} onHide={handleCloseModal} centered>
         <Modal.Header closeButton>
           <Modal.Title>Edit User Profile</Modal.Title>
         </Modal.Header>
+
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             <Form.Group className="mb-3">
               <Form.Label>Full Name</Form.Label>
               <Form.Control
-                type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                placeholder="Enter full name"
               />
             </Form.Group>
 
@@ -235,18 +259,16 @@ const UserComponent = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="Enter email address"
+                disabled={!admin && editingUser?.id !== authUser?.id}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Phone Number</Form.Label>
               <Form.Control
-                type="tel"
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                placeholder="Enter phone number"
               />
             </Form.Group>
 
@@ -264,18 +286,19 @@ const UserComponent = () => {
               </Form.Select>
             </Form.Group>
           </Modal.Body>
+
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
               Cancel
             </Button>
             <Button variant="primary" type="submit">
-              Update Profile
+              Save Changes
             </Button>
           </Modal.Footer>
         </Form>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
-export default UserComponent;
+export default UserComponent

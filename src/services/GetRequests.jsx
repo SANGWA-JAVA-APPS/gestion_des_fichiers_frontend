@@ -16,7 +16,19 @@ export const getCurrentUser = async () => {
   }
 };
 
-
+// Update user's section categories
+export const updateUserSections = async (userId, sectionIds) => {
+  try {
+    const response = await apiClient.put(
+      `/accounts/${userId}/sections`,
+      sectionIds
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Update user sections error:', error);
+    throw error.response?.data || { message: 'Failed to update user sections' };
+  }
+};
 
 // Get all common doc details
 // Get all common doc details
@@ -144,7 +156,7 @@ export const getLocationById = async (locationId) => {
 // Get all users (admin functionality)
 export const getAllUsers = async () => {
   try {
-    const response = await apiClient.get('/users');
+    const response = await apiClient.get('/accounts');
     return response.data;
   } catch (error) {
     console.error('Get users error:', error);

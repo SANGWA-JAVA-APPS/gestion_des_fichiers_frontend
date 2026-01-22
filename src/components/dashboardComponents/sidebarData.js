@@ -124,19 +124,19 @@ export const useSidebarData = () => {
                 url: '/dashboard/locations/entities',
                 icon: Building2Icon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER]
+              },
+              {
+                title: t('sidebar.moduleManagement'),
+                url: '/dashboard/locations/modules',
+                icon: BoxesIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER]
+              },
+              {
+                title: t('sidebar.sectionManagement'),
+                url: '/dashboard/locations/sections',
+                icon: ListTreeIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER]
               }
-              // {
-              //   title: t('sidebar.moduleManagement'),
-              //   url: '/dashboard/locations/modules',
-              //   icon: BoxesIcon,
-              //   roles: [ROLES.ADMIN, ROLES.MANAGER]
-              // }
-              // {
-              //   title: t('sidebar.sectionManagement'),
-              //   url: '/dashboard/locations/sections',
-              //   icon: ListTreeIcon,
-              //   roles: [ROLES.ADMIN, ROLES.MANAGER]
-              // }
             ]
           },
 
@@ -151,12 +151,12 @@ export const useSidebarData = () => {
                 icon: FileTextIcon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
               },
-              // {
-              //   title: t('sidebar.sectionCategory'),
-              //   url: '/dashboard/sectionCategory',
-              //   icon: ListIcon,
-              //   roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
-              // },
+              {
+                title: t('sidebar.sectionCategory'),
+                url: '/dashboard/sectionCategory',
+                icon: ListIcon,
+                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER]
+              },
               {
                 title: t('sidebar.normeLoi'),
                 url: '/dashboard/NormeLoi',

@@ -1,5 +1,150 @@
 // Global text translations for French and English
 export const texts = {
+  profile: {
+    userProfile: {
+      fr: 'Profil Utilisateur',
+      en: 'User Profile'
+    },
+    myProfile: {
+      fr: 'Mon Profil',
+      en: 'My Profile'
+    },
+    assignedSections: {
+      fr: 'Sections Assignées',
+      en: 'Assigned Sections'
+    },
+    manageSections: {
+      fr: 'Gérer les Sections',
+      en: 'Manage Sections'
+    },
+    status: {
+      fr: 'Statut',
+      en: 'Status'
+    },
+    title: {
+      fr: 'Profil Utilisateur',
+      en: 'User Profile'
+    },
+    subtitle: {
+      fr: 'Voir et gérer les informations de votre compte',
+      en: 'View and manage your account information'
+    },
+    saveSections: {
+      fr: 'Enregistrer la Section',
+      en: 'Save Sections'
+    },
+    personalInfo: {
+      fr: 'Informations Personnelles',
+      en: 'Personal Information'
+    },
+    accountInfo: {
+      fr: 'Informations du Compte',
+      en: 'Account Information'
+    },
+    username: {
+      fr: "Nom d'utilisateur",
+      en: 'Username'
+    },
+    fullName: {
+      fr: 'Nom Complet',
+      en: 'Full Name'
+    },
+    email: {
+      fr: 'Email',
+      en: 'Email'
+    },
+    phoneNumber: {
+      fr: 'Numéro de Téléphone',
+      en: 'Phone Number'
+    },
+    gender: {
+      fr: 'Genre',
+      en: 'Gender'
+    },
+    male: {
+      fr: 'Homme',
+      en: 'Male'
+    },
+    female: {
+      fr: 'Femme',
+      en: 'Female'
+    },
+    other: {
+      fr: 'Autre',
+      en: 'Other'
+    },
+    role: {
+      fr: 'Rôle',
+      en: 'Role'
+    },
+    active: {
+      fr: 'Actif',
+      en: 'Active'
+    },
+    inactive: {
+      fr: 'Inactif',
+      en: 'Inactive'
+    },
+    assignedSections: {
+      fr: 'Sections Assignées',
+      en: 'Assigned Sections'
+    },
+    createdAt: {
+      fr: 'Créé le',
+      en: 'Created At'
+    },
+    updatedAt: {
+      fr: 'Mis à jour le',
+      en: 'Updated At'
+    },
+    editProfile: {
+      fr: 'Modifier le Profil',
+      en: 'Edit Profile'
+    },
+    saveChanges: {
+      fr: 'Enregistrer les Modifications',
+      en: 'Save Changes'
+    },
+    cancel: {
+      fr: 'Annuler',
+      en: 'Cancel'
+    },
+    changePassword: {
+      fr: 'Changer le Mot de Passe',
+      en: 'Change Password'
+    },
+    password: {
+      fr: 'Mot de Passe',
+      en: 'Password'
+    },
+    confirmPassword: {
+      fr: 'Confirmer le Mot de Passe',
+      en: 'Confirm Password'
+    },
+    validation: {
+      required: {
+        fr: 'Ce champ est requis',
+        en: 'This field is required'
+      },
+      invalidEmail: {
+        fr: "L'email n'est pas valide",
+        en: 'Invalid email'
+      },
+      passwordMismatch: {
+        fr: 'Les mots de passe ne correspondent pas',
+        en: 'Passwords do not match'
+      }
+    },
+    successSave: {
+      fr: 'Profil mis à jour avec succès',
+      en: 'Profile updated successfully'
+    },
+    errorSave: {
+      fr: 'Échec de la mise à jour du profil',
+      en: 'Failed to update profile'
+    }
+  },
+
   // Add this to your texts object in texts.js
   commonDocDetails: {
     title: {
