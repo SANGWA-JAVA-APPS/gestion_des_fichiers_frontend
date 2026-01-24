@@ -60,7 +60,7 @@ export const deleteCountry = async (id) => {
 
 export const getAllLocationEntities = async () => {
   try {
-    const response = await apiClient.get('/api/location/entities');
+    const response = await apiClient.get('/location/entities');
     return response.data;
   } catch (error) {
     console.error('Get location entities error:', error);
@@ -71,7 +71,8 @@ export const getAllLocationEntities = async () => {
 export const getLocationEntitiesByCountry = async (countryId) => {
   try {
     const response = await apiClient.get(`/api/location/entities/country/${countryId}`);
-    return response.data;
+    // Backend returns paginated response with data.content
+    return response.data?.data?.content || response.data?.content || response.data?.data || [];
   } catch (error) {
     console.error('Get entities by country error:', error);
     throw error.response?.data || { message: 'Failed to get entities by country' };

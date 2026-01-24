@@ -8,13 +8,18 @@ import {
   Table,
   Modal,
   Alert,
-  Spinner
+  Spinner,
+  Badge,
+  Tabs,
+  Tab
 } from 'react-bootstrap'
+import { FaEdit, FaTrash, FaEye } from 'react-icons/fa'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { getAllAccounts } from '../../services/GetRequests'
 import { deleteAccount } from '../../services/UpdRequests'
 import AccountForm from './AccountForm'
-import UserProfile from './UserProfile' // <-- new component to display user profile
+import UserProfile from './UserProfile'
+import PermissionsAssignmentForm from './PermissionsAssignmentForm'
 
 const AccountComponent = () => {
   const { t } = useLanguage()
@@ -24,6 +29,7 @@ const AccountComponent = () => {
 
   const [showModal, setShowModal] = useState(false)
   const [editingUserId, setEditingUserId] = useState(null)
+  const [selectedPermissionsCount, setSelectedPermissionsCount] = useState(0)
 
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [profileUserId, setProfileUserId] = useState(null)
@@ -210,8 +216,8 @@ const AccountComponent = () => {
         </Card.Body>
       </Card>
 
-      {/* Account Form Modal */}
-      <Modal show={showModal} onHide={handleCloseModal}>
+      {/* Account Form Modal with Tabs */}
+      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {editingUserId
@@ -220,15 +226,32 @@ const AccountComponent = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <AccountForm
-            userId={editingUserId}
-            showModules={false}
-            showSections={false}
-            onSuccess={() => {
-              handleCloseModal()
-              loadData()
-            }}
-          />
+          <Tabs defaultActiveKey="account" id="account-modal-tabs" className="mb-3">
+            <Tab eventKey="account" title={t('accounts.accountInfo') || 'Account Info'}>
+              <AccountForm
+                userId={editingUserId}
+                showModules={false}
+                showSections={false}
+                onSuccess={() => {
+                  handleCloseModal()
+                  loadData()
+                }}
+              />
+            </Tab>
+            <Tab 
+              eventKey="permissions" 
+              title={
+                <span>
+                  {t('accounts.permissions') || 'Permissions'} 
+                  {selectedPermissionsCount > 0 && (
+                    <Badge bg="primary" className="ms-2">{selectedPermissionsCount}</Badge>
+                  )}
+                </span>
+              }
+            >
+              <PermissionsAssignmentForm onPermissionsChange={setSelectedPermissionsCount} />
+            </Tab>
+          </Tabs>
         </Modal.Body>
       </Modal>
 

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Spinner, Alert } from 'react-bootstrap';
+import { Form, Button, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import { useLanguage } from '../../i18n/LanguageContext';
 import {
   getAccountById,
   getAllAccountCategories,
   getAllCountries,
-  getLocationEntitiesByCountry,
   getModulesByLocationEntity,
   getSectionsByModule,
 } from '../../services/GetRequests';
+import { getAllLocationEntities } from '../../services/locationServices';
 import { createAccount } from '../../services/Inserts';
 import { updateAccount } from '../../services/UpdRequests';
 
@@ -45,13 +45,15 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
       try {
         setLoading(true);
 
-        // Fetch categories + countries in parallel
-        const [catRes, countryRes] = await Promise.all([
+        // Fetch categories + countries + entities in parallel
+        const [catRes, countryRes, entitiesRes] = await Promise.all([
           getAllAccountCategories(),
           getAllCountries({ page: 0, size: 200 }),
+          getAllLocationEntities(),
         ]);
         setCategories(catRes);
         setCountries(countryRes.data || countryRes);
+        setLocationEntities(entitiesRes.data?.content || entitiesRes.data?.data || entitiesRes.data || []);
 
         // If editing, fetch user details
         if (userId) {
@@ -73,11 +75,7 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
             sectionId: '',
           });
 
-          // Load dependent selects automatically
-          if (userData.countryId) {
-            const entities = await getLocationEntitiesByCountry(userData.countryId);
-            setLocationEntities(entities);
-          }
+          // Entities are already loaded above, no need to reload
           if (userData.locationEntityId && showModules) {
             const mods = await getModulesByLocationEntity(userData.locationEntityId);
             setModules(mods);
@@ -96,17 +94,9 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
     };
 
     loadData();
-  }, [userId, showModules, showSections, t]);
+  }, [userId, showModules, showSections]); // Removed t from dependencies
 
-  // Dependent selects on change
-  useEffect(() => {
-    const loadEntities = async () => {
-      if (!formData.countryId) return setLocationEntities([]);
-      const res = await getLocationEntitiesByCountry(formData.countryId);
-      setLocationEntities(res);
-    };
-    loadEntities();
-  }, [formData.countryId]);
+  // Entities are loaded on mount, no need to reload on country change
 
   useEffect(() => {
     const loadModules = async () => {
@@ -129,10 +119,14 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
   // Internal handleChange
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log('handleChange:', name, '=', value);
     setFormData(prev => ({ ...prev, [name]: value }));
 
     // Clear dependent fields
-    if (name === 'countryId') setFormData(prev => ({ ...prev, locationEntityId: '', moduleId: '', sectionId: '' }));
+    if (name === 'countryId') {
+      console.log('Country changed, clearing location entity');
+      setFormData(prev => ({ ...prev, locationEntityId: '' }));
+    }
     if (name === 'locationEntityId') setFormData(prev => ({ ...prev, moduleId: '', sectionId: '' }));
     if (name === 'moduleId') setFormData(prev => ({ ...prev, sectionId: '' }));
   };
@@ -175,58 +169,82 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
     <>
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.username')}</Form.Label>
-          <Form.Control name="username" value={formData.username} onChange={handleChange} required />
-        </Form.Group>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.username')}</Form.Label>
+              <Form.Control name="username" value={formData.username} onChange={handleChange} required />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            {!userId && (
+              <Form.Group className="mb-2">
+                <Form.Label>{t('accounts.password')}</Form.Label>
+                <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required />
+              </Form.Group>
+            )}
+          </Col>
+        </Row>
 
-        {!userId && (
-          <Form.Group className="mb-2">
-            <Form.Label>{t('accounts.password')}</Form.Label>
-            <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required />
-          </Form.Group>
-        )}
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.fullName')}</Form.Label>
+              <Form.Control name="fullName" value={formData.fullName} onChange={handleChange} required />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.email')}</Form.Label>
+              <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.fullName')}</Form.Label>
-          <Form.Control name="fullName" value={formData.fullName} onChange={handleChange} required />
-        </Form.Group>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.phone')}</Form.Label>
+              <Form.Control name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.gender')}</Form.Label>
+              <Form.Select name="gender" value={formData.gender} onChange={handleChange}>
+                <option value="">{t('common.select')}</option>
+                <option value="male">{t('accounts.male')}</option>
+                <option value="female">{t('accounts.female')}</option>
+                <option value="not specified">{t('accounts.notSpecified')}</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
 
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.email')}</Form.Label>
-          <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
-        </Form.Group>
-
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.phone')}</Form.Label>
-          <Form.Control name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
-        </Form.Group>
-
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.gender')}</Form.Label>
-          <Form.Select name="gender" value={formData.gender} onChange={handleChange}>
-            <option value="">{t('common.select')}</option>
-            <option value="male">{t('accounts.male')}</option>
-            <option value="female">{t('accounts.female')}</option>
-            <option value="not specified">{t('accounts.notSpecified')}</option>
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.category')}</Form.Label>
-          <Form.Select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
-            <option value="">{t('accounts.selectCategory')}</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-2">
-          <Form.Label>{t('accounts.country')}</Form.Label>
-          <Form.Select name="countryId" value={formData.countryId} onChange={handleChange} required>
-            <option value="">{t('common.select')}</option>
-            {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </Form.Select>
-        </Form.Group>
+        <Row>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.category')}</Form.Label>
+              <Form.Select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
+                <option value="">{t('accounts.selectCategory')}</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group className="mb-2">
+              <Form.Label>{t('accounts.country')}</Form.Label>
+              <Form.Select name="countryId" value={formData.countryId} onChange={handleChange} required>
+                <option value="">{t('common.select')}</option>
+                {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </Form.Select>
+              {/* Debug info */}
+              <small className="text-muted d-block mt-1">
+                Debug:  countries={countries.length}, selected={formData.countryId || 'none'}
+              </small>
+            </Form.Group>
+          </Col>
+        </Row>
 
         <Form.Group className="mb-2">
           <Form.Label>{t('accounts.locationEntity')}</Form.Label>
@@ -240,12 +258,16 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
             <option value="">{t('common.select')}</option>
             {locationEntities.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </Form.Select>
+          {/* Debug info */}
+          <small className="text-muted d-block mt-1">
+            Debug: entities={locationEntities.length}, disabled={!locationEntities.length ? 'true' : 'false'}
+          </small>
         </Form.Group>
 
         {showModules && (
           <Form.Group className="mb-2">
             <Form.Label>{t('accounts.module')}</Form.Label>
-            <Form.Select name="moduleId" value={formData.moduleId} onChange={handleChange} disabled={!modules.length}>
+            <Form.Select name="moduleId" value={formData.moduleId} onChange={handleChange}>
               <option value="">{t('common.select')}</option>
               {modules.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </Form.Select>

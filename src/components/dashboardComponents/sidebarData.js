@@ -89,26 +89,6 @@ export const useSidebarData = () => {
         roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.AGENT],
         items: [
           {
-            title: t('sidebar.accounts'),
-            icon: UserCogIcon,
-            roles: [ROLES.ADMIN],
-            items: [
-              {
-                title: t('sidebar.accountCategories'),
-                url: '/dashboard/AccountCategories',
-                icon: TagsIcon,
-                roles: [ROLES.ADMIN]
-              },
-              {
-                title: t('sidebar.accountsList'),
-                url: '/dashboard/Account',
-                icon: UsersIcon,
-                roles: [ROLES.ADMIN]
-              }
-            ]
-          },
-
-          {
             title: t('sidebar.locations'),
             icon: GlobeIcon,
             roles: [ROLES.ADMIN, ROLES.MANAGER],
@@ -125,17 +105,37 @@ export const useSidebarData = () => {
                 icon: Building2Icon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER]
               },
-              {
-                title: t('sidebar.moduleManagement'),
-                url: '/dashboard/locations/modules',
-                icon: BoxesIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
+              // {
+              //   title: t('sidebar.moduleManagement'),
+              //   url: '/dashboard/locations/modules',
+              //   icon: BoxesIcon,
+              //   roles: [ROLES.ADMIN, ROLES.MANAGER]
+              // },
               {
                 title: t('sidebar.sectionManagement'),
                 url: '/dashboard/locations/sections',
                 icon: ListTreeIcon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER]
+              }
+            ]
+          },
+
+          {
+            title: t('sidebar.accounts'),
+            icon: UserCogIcon,
+            roles: [ROLES.ADMIN],
+            items: [
+              {
+                title: t('sidebar.accountCategories'),
+                url: '/dashboard/AccountCategories',
+                icon: TagsIcon,
+                roles: [ROLES.ADMIN]
+              },
+              {
+                title: t('sidebar.accountsList'),
+                url: '/dashboard/Account',
+                icon: UsersIcon,
+                roles: [ROLES.ADMIN]
               }
             ]
           },

@@ -31,7 +31,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
     setExpandedGroups(prev =>
       prev.includes(groupTitle)
         ? prev.filter(g => g !== groupTitle)
-        : [...prev, groupTitle]
+        : [groupTitle]
     )
   }
 
@@ -76,7 +76,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
             {!isIconOnly && !isHidden && (
               <div
                 className='px-3 py-1 text-muted text-uppercase small fw-bold'
-                style={{ fontSize: '0.2rem' }}
+                style={{ fontSize: '10px' }}
               >
                 {group.title}
               </div>

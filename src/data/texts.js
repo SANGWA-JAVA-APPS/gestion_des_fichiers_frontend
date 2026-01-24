@@ -477,8 +477,8 @@ export const texts = {
       en: 'Country Management'
     },
     locationEntities: {
-      fr: 'Entreprises de Localisation',
-      en: 'Location companies'
+      fr: 'Compagnie',
+      en: 'Company'
     },
     moduleManagement: {
       fr: 'Gestion des Modules',
@@ -1279,6 +1279,26 @@ export const texts = {
     selectCategory: {
       fr: 'Sélectionner une catégorie',
       en: 'Select category'
+    },
+    selectCountryFirst: {
+      fr: 'Sélectionnez d\'abord un pays',
+      en: 'Select country first'
+    },
+    accountInfo: {
+      fr: 'Informations du Compte',
+      en: 'Account Info'
+    },
+    permissions: {
+      fr: 'Permissions',
+      en: 'Permissions'
+    },
+    selectUser: {
+      fr: 'Sélectionner un Utilisateur',
+      en: 'Select User'
+    },
+    noUserSelected: {
+      fr: 'Aucun utilisateur sélectionné',
+      en: 'No user selected'
     },
     errorLoading: {
       fr: 'Échec du chargement des données',
@@ -2358,6 +2378,20 @@ export const texts = {
         fr: 'Êtes-vous sûr de vouloir supprimer cet élément?',
         en: 'Are you sure you want to delete this item?'
       }
+    }
+  },
+  permissions: {
+    assignPermissions: {
+      fr: 'Assigner des Permissions',
+      en: 'Assign Permissions'
+    },
+    selected: {
+      fr: 'Sélectionnées',
+      en: 'Selected'
+    },
+    noPermissions: {
+      fr: 'Aucune permission disponible',
+      en: 'No permissions available'
     }
   }
 }

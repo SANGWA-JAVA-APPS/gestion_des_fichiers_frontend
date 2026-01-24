@@ -321,7 +321,7 @@ export const getLocationEntitiesByCountry = async (countryId) => {
     console.error('Get entities by country error:', error);
     throw error.response?.data || { message: 'Failed to get entities by country' };
   }
-};
+}; 
 
 // Get location entity by ID
 export const getLocationEntityById = async (id) => {

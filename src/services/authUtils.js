@@ -32,7 +32,10 @@ export const setUserInfo = (userData) => {
     username: userData.username,
     fullName: userData.fullName,
     email: userData.email,
-    role: userData.role
+    role: userData.role,
+    countryName: userData.countryName,
+    countryIsoCode: userData.countryIsoCode,
+    countryFlagUrl: userData.countryFlagUrl
   }));
 };
 

@@ -193,8 +193,8 @@ const UserProfile = ({ userId = null }) => {
           </Card.Body>
         </Card>
 
-        {/* Section management – ADMIN only */}
-        {admin && (
+        {/* Section management – HIDDEN */}
+        {/* {admin && (
           <Card className="shadow-sm">
             <Card.Header>
               <span className="fw-semibold">
@@ -239,7 +239,7 @@ const UserProfile = ({ userId = null }) => {
               )}
             </Card.Body>
           </Card>
-        )}
+        )} */}
       </div>
 
       {/* Edit profile modal */}

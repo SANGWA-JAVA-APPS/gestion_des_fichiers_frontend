@@ -18,9 +18,11 @@ export const loginUser = async (credentials) => {
         username: account.username,
         fullName: account.fullName,
         role: account.categoryName,
-                  locationEntityId: account.locationEntityId,
-          locationEntityName: account.locationEntityName,
-          countryName: account.countryName
+        locationEntityId: account.locationEntityId,
+        locationEntityName: account.locationEntityName,
+        countryName: account.countryName,
+        countryIsoCode: account.countryIsoCode,
+        countryFlagUrl: account.countryFlagUrl
       }));
     }
 
