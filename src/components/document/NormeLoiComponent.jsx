@@ -734,7 +734,7 @@ const loadData = async () => {
             </Form.Group>
 
             <Row>
-              {!editingItem && (
+              {/* {!editingItem && ( */}
                 
               <Col md={4}>
                 <Form.Group className="mb-3">
@@ -761,9 +761,9 @@ const loadData = async () => {
                   )}
                 </Form.Group>
               </Col>
-              )
+              {/* )
               
-              }
+              } */}
    
               <Col md={4}>
                 <Form.Group className="mb-3">

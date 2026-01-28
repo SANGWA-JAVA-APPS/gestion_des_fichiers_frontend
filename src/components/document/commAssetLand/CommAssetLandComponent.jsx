@@ -615,7 +615,8 @@ const handleCloseViewModal = () => {
             </Row>
 
             <Row>
-       {!editingItem&&(     <Col md={3}>
+              {/* {!editingItem && ( */}
+                <Col md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -637,7 +638,8 @@ const handleCloseViewModal = () => {
                     </Form.Text>
                   )}
                 </Form.Group>
-              </Col>)}
+                </Col>
+              {/* )} */}
          
               <Col md={3}>
                 <Form.Group className="mb-3">

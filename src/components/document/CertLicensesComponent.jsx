@@ -501,7 +501,7 @@ const CertLicensesComponent = () => {
             </Row>
 
             <Row>
-              {!editingItem && (
+              {/* {!editingItem && ( */}
                 <Col md={4}>
                   <Form.Group className="mb-3">
                     <Form.Label>{t('document.fields.docId')} *</Form.Label>
@@ -525,7 +525,7 @@ const CertLicensesComponent = () => {
                     )}
                   </Form.Group>
                 </Col>
-              )}
+              {/* )} */}
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{t('document.fields.status')} *</Form.Label>

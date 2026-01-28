@@ -503,7 +503,8 @@ const loadData = async () => {
             </Row>
 
             <Row>
-           {!editingItem&&(       <Col md={4}>
+              {/* {!editingItem && ( */}
+                <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
                   <Form.Control
@@ -525,7 +526,8 @@ const loadData = async () => {
                     </Form.Text>
                   )}
                 </Form.Group>
-              </Col>)}
+              </Col>
+              {/* )} */}
        
               <Col md={4}>
                 <Form.Group className="mb-3">
