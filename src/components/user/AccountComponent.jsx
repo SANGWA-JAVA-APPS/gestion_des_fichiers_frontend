@@ -17,6 +17,7 @@ import { FaEdit, FaTrash, FaEye } from 'react-icons/fa'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { getAllAccounts } from '../../services/GetRequests'
 import { deleteAccount } from '../../services/UpdRequests'
+import { updateAccountPermissions } from '../../services/Inserts'
 import AccountForm from './AccountForm'
 import UserProfile from './UserProfile'
 import PermissionsAssignmentForm from './PermissionsAssignmentForm'
@@ -30,6 +31,9 @@ const AccountComponent = () => {
   const [showModal, setShowModal] = useState(false)
   const [editingUserId, setEditingUserId] = useState(null)
   const [selectedPermissionsCount, setSelectedPermissionsCount] = useState(0)
+  const [selectedPermissionIds, setSelectedPermissionIds] = useState([])
+  const [selectedPermissionsUserId, setSelectedPermissionsUserId] = useState('')
+  const [activeTab, setActiveTab] = useState('account')
 
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [profileUserId, setProfileUserId] = useState(null)
@@ -65,12 +69,45 @@ const AccountComponent = () => {
 
   const handleShowModal = (userId = null) => {
     setEditingUserId(userId)
+    setSelectedPermissionIds([])
+    setSelectedPermissionsCount(0)
+    setSelectedPermissionsUserId('')
+    setActiveTab('account')
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setEditingUserId(null)
+    setSelectedPermissionIds([])
+    setSelectedPermissionsCount(0)
+    setSelectedPermissionsUserId('')
+    setActiveTab('account')
     setShowModal(false)
+  }
+
+  const handleSaveClick = async () => {
+    setError('')
+    if (activeTab === 'account') {
+      const form = document.getElementById('account-form')
+      if (form && form.requestSubmit) {
+        form.requestSubmit()
+      }
+      return
+    }
+
+    if (!selectedPermissionsUserId) {
+      setError(t('accounts.noUserSelected') || 'No user selected')
+      return
+    }
+
+    try {
+      await updateAccountPermissions(selectedPermissionsUserId, selectedPermissionIds)
+      handleCloseModal()
+      loadData()
+    } catch (err) {
+      console.error(err)
+      setError(t('accounts.errorSaving'))
+    }
   }
 
   const handleShowProfile = userId => {
@@ -226,12 +263,15 @@ const AccountComponent = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Tabs defaultActiveKey="account" id="account-modal-tabs" className="mb-3">
+          <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} id="account-modal-tabs" className="mb-3">
             <Tab eventKey="account" title={t('accounts.accountInfo') || 'Account Info'}>
               <AccountForm
                 userId={editingUserId}
                 showModules={false}
                 showSections={false}
+                showActions={false}
+                formId="account-form"
+                permissionIds={selectedPermissionIds}
                 onSuccess={() => {
                   handleCloseModal()
                   loadData()
@@ -249,10 +289,25 @@ const AccountComponent = () => {
                 </span>
               }
             >
-              <PermissionsAssignmentForm onPermissionsChange={setSelectedPermissionsCount} />
+              <PermissionsAssignmentForm
+                showUserSelect={true}
+                selectedPermissions={selectedPermissionIds}
+                onSelectedPermissionsChange={setSelectedPermissionIds}
+                onPermissionsChange={setSelectedPermissionsCount}
+                selectedUserId={selectedPermissionsUserId}
+                onSelectedUserChange={setSelectedPermissionsUserId}
+              />
             </Tab>
           </Tabs>
         </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant="primary" onClick={handleSaveClick}>
+            {t('common.save')}
+          </Button>
+        </Modal.Footer>
       </Modal>
 
       {/* User Profile Modal */}

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react'
 
 import { SidebarItem } from './SidebarItem'
-import {  hasAnyRole } from '../../services/authUtils'
+import { hasAnyRole, getUserInfo } from '../../services/authUtils'
 import { useSidebarData } from './sidebarData'
 
 
 export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
     const sidebarData = useSidebarData()
   const [expandedGroups, setExpandedGroups] = useState([])
+  const [permissionCodes, setPermissionCodes] = useState([])
+  const [permissionBlockMap, setPermissionBlockMap] = useState({})
+  const [permissionsLoading, setPermissionsLoading] = useState(true)
 
   const isIconOnly = sidebarState === 'icon-only'
   const isHidden = sidebarState === 'hidden'
@@ -27,6 +30,52 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
     setExpandedGroups(prev => [...new Set([...prev, ...groupsToExpand])])
   }, [activeUrl])
 
+  useEffect(() => {
+    let isMounted = true
+    let attempts = 0
+    const maxAttempts = 30
+
+    const loadPermissions = () => {
+      const userInfo = getUserInfo()
+      const permissions = userInfo?.permissions
+      if (Array.isArray(permissions)) {
+        const codes = permissions
+          .map(permission => permission?.code)
+          .filter(Boolean)
+        const blockMap = permissions.reduce((acc, permission) => {
+          if (permission?.code && permission?.blockName) {
+            acc[permission.code] = permission.blockName
+          }
+          return acc
+        }, {})
+        if (isMounted) {
+          setPermissionCodes(codes)
+          setPermissionBlockMap(blockMap)
+          setPermissionsLoading(false)
+        }
+        return true
+      }
+      return false
+    }
+
+    if (loadPermissions()) return () => { isMounted = false }
+
+    const interval = setInterval(() => {
+      attempts += 1
+      if (loadPermissions() || attempts >= maxAttempts) {
+        if (isMounted) {
+          setPermissionsLoading(false)
+        }
+        clearInterval(interval)
+      }
+    }, 200)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [])
+
   const toggleGroup = (groupTitle) => {
     setExpandedGroups(prev =>
       prev.includes(groupTitle)
@@ -43,12 +92,61 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
     ...group,
     items: group.items
       .filter(item => !item.roles || hasAnyRole(item.roles))
-      .map(item => ({
-        ...item,
-        items: item.items
-          ? item.items.filter(child => !child.roles || hasAnyRole(child.roles))
-          : undefined
-      }))
+      .map(item => {
+        if (item.permissionGroup === 'documents') {
+          if (permissionsLoading) {
+            return {
+              ...item,
+              items: [
+                {
+                  title: 'Initializing permissions...',
+                  isLoading: true
+                }
+              ]
+            }
+          }
+
+          const filteredChildren = item.items
+            ? item.items
+                .filter(child => !child.roles || hasAnyRole(child.roles))
+                .filter(child => !child.permissionCode || permissionCodes.includes(child.permissionCode))
+            : []
+
+          const groupedChildren = filteredChildren.reduce((acc, child) => {
+            const blockName = child.permissionCode
+              ? permissionBlockMap[child.permissionCode]
+              : null
+            const groupKey = blockName || 'Other'
+            acc[groupKey] = acc[groupKey] || []
+            acc[groupKey].push(child)
+            return acc
+          }, {})
+
+          const groupedItems = Object.entries(groupedChildren).map(([blockName, children]) => ({
+            title: blockName,
+            icon: children[0]?.icon,
+            items: children
+          }))
+
+          return {
+            ...item,
+            items: groupedItems
+          }
+        }
+
+        return {
+          ...item,
+          items: item.items
+            ? item.items.filter(child => !child.roles || hasAnyRole(child.roles))
+            : undefined
+        }
+      })
+      .filter(item => {
+        if (item.permissionGroup === 'documents' && !permissionsLoading) {
+          return item.items && item.items.length > 0
+        }
+        return true
+      })
   }))
     const visibleStandaloneItems = sidebarData.standaloneItems.filter(
     item => !item.roles || hasAnyRole(item.roles)

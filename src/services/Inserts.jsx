@@ -22,7 +22,8 @@ export const loginUser = async (credentials) => {
         locationEntityName: account.locationEntityName,
         countryName: account.countryName,
         countryIsoCode: account.countryIsoCode,
-        countryFlagUrl: account.countryFlagUrl
+        countryFlagUrl: account.countryFlagUrl,
+        permissions: Array.isArray(account.permissions) ? account.permissions : []
       }));
     }
 
@@ -107,6 +108,21 @@ export const createAccount = async (accountData) => {
   } catch (error) {
     console.error('Account creation error:', error);
     throw error.response?.data || { message: 'Account creation failed' };
+  }
+};
+
+// Update account permissions (replace all permissions)
+export const updateAccountPermissions = async (accountId, permissionIds) => {
+  try {
+    const payload = {
+      accountId: Number(accountId),
+      permissionIds: Array.isArray(permissionIds) ? permissionIds : []
+    };
+    const response = await apiClient.put(`/accounts/${accountId}/permissions`, payload);
+    return response.data;
+  } catch (error) {
+    console.error('Update account permissions error:', error);
+    throw error.response?.data || { message: 'Failed to update account permissions' };
   }
 };
 

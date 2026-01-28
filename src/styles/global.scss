@@ -240,6 +240,32 @@ $transition-slow: 0.5s ease-in-out;
   }
 }
 
+// Form select with small font size
+.form-select-sm-font {
+  font-size: $font-size-sm !important; // 0.875rem
+}
+
+// Sidebar permissions initialization loader
+.sidebar-permissions-loader {
+  color: #cbd5e1;
+  letter-spacing: 0.2px;
+}
+
+.sidebar-permissions-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.9);
+  animation: sidebar-spin 0.8s linear infinite;
+}
+
+@keyframes sidebar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // Responsive mixins
 @mixin mobile-only {
   @media (max-width: 767.98px) {

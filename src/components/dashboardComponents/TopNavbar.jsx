@@ -135,12 +135,6 @@ export function TopNavbar({ onSidebarToggle }) {
               </div>
             )}
             <span className="small fw-semibold">{user?.countryName}</span>
-            <div
-              className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-semibold"
-              style={{ width: 32, height: 32 }}
-            >
-              {initials}
-            </div>
             <span className="small">{user?.role}</span>
           </button>
 

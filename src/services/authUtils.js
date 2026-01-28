@@ -25,17 +25,25 @@ export const getRefreshToken = () => {
 
 // Store user information after login
 export const setUserInfo = (userData) => {
+  const account = userData?.account || {};
+  const permissions = Array.isArray(userData?.permissions)
+    ? userData.permissions
+    : Array.isArray(account.permissions)
+      ? account.permissions
+      : [];
+
   localStorage.setItem('authToken', userData.token);
   localStorage.setItem('refreshToken', userData.refreshToken);
   localStorage.setItem('userInfo', JSON.stringify({
-    userId: userData.userId,
-    username: userData.username,
-    fullName: userData.fullName,
-    email: userData.email,
-    role: userData.role,
-    countryName: userData.countryName,
-    countryIsoCode: userData.countryIsoCode,
-    countryFlagUrl: userData.countryFlagUrl
+    userId: userData.userId || account.id,
+    username: userData.username || account.username,
+    fullName: userData.fullName || account.fullName,
+    email: userData.email || account.email,
+    role: userData.role || account.categoryName,
+    countryName: userData.countryName || account.countryName,
+    countryIsoCode: userData.countryIsoCode || account.countryIsoCode,
+    countryFlagUrl: userData.countryFlagUrl || account.countryFlagUrl,
+    permissions
   }));
 };
 

@@ -254,9 +254,6 @@ const RolesComponent = () => {
                       <th>
                         {t('roles.description')}
                       </th>
-                      <th>
-                        {t('roles.actions')}
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -297,27 +294,6 @@ const RolesComponent = () => {
                               <small className='text-muted'>
                                 {role.description}
                               </small>
-                            </td>
-                            <td>
-                              {/* <Button
-                                variant='outline-primary'
-                                size='sm'
-                                className='me-2'
-                                onClick={() => handleShowModal(role)}
-                                disabled
-                              >
-                                <i className='fas fa-edit' /> {t('common.edit')}
-                              </Button> */}
-                              <Button
-                                variant='outline-danger'
-                                size='sm'
-                                onClick={() =>
-                                  handleDelete(role.id, role.isSystemRole)}
-                                disabled={role.isSystemRole}
-                              >
-                                <i className='fas fa-trash' />{' '}
-                                {t('common.delete')}
-                              </Button>
                             </td>
                           </tr>
                         )}

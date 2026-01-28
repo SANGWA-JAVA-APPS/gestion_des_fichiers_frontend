@@ -433,8 +433,8 @@ export const texts = {
       en: 'Common Doc Details'
     },
     docstatus: {
-      fr: 'Statut du Document',
-      en: 'Docstatus'
+      fr: 'Statuts du Document',
+      en: 'Document Statuses'
     },
     helpCenter: {
       fr: "Centre d'Aide",
@@ -477,17 +477,17 @@ export const texts = {
       en: 'Country Management'
     },
     locationEntities: {
-      fr: 'Compagnie',
-      en: 'Company'
+      fr: 'Compagnies',
+      en: 'Companies'
     },
     moduleManagement: {
       fr: 'Gestion des Modules',
       en: 'Module Management'
     },
-    sectionManagement: {
-      fr: 'Gestion des Sections',
-      en: 'Section Management'
-    },
+    // sectionManagement: {
+    //   fr: 'Gestion des Sections',
+    //   en: 'Section Management'
+    // },
     documents: {
       fr: 'Documents',
       en: 'Documents'
@@ -505,8 +505,8 @@ export const texts = {
       en: 'NormeLoi'
     },
     commAssetLand: {
-      fr: 'Actif Commercial - Terrain',
-      en: 'Comm Asset Land'
+      fr: 'Titre foncier',
+      en: 'Asset Land'
     },
     permiConstruction: {
       fr: 'Permis de Construction',
@@ -1721,6 +1721,10 @@ export const texts = {
     search: {
       fr: 'Rechercher',
       en: 'Search'
+    },
+    selectAll: {
+      fr: 'Tout Sélectionner',
+      en: 'Select All'
     },
 
     error: {

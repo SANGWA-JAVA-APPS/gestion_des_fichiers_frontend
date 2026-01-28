@@ -41,16 +41,46 @@ export function SidebarItem({ item, isActive, onClick, sidebarState, expandedGro
           }}
         >
           {item.items.map((child, idx) => (
-            <div
-              key={idx}
-              className={`sidebar-menu-child d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === child.url ? 'bg-primary text-white' : 'text-white'}`}
-              onClick={() => onClick(child.url)}
-              role="button"
-            >
-              {child.icon && <child.icon size={14} strokeWidth={2} />}
-              <span className="sidebar-menu-child-text " style={{fontSize:'13px'}}>{child.title}</span>
-              {child.badge && <span className="badge bg-primary rounded-pill ms-4">{child.badge}</span>}
-            </div>
+            child.isLoading ? (
+              <div key={idx} className="sidebar-permissions-loader d-flex align-items-center py-2 ps-1 text-white-50">
+                <span className="sidebar-permissions-spinner me-2" />
+                <span className="sidebar-menu-child-text" style={{ fontSize: '13px' }}>
+                  {child.title}
+                </span>
+              </div>
+            ) : child.items ? (
+              <div key={idx} className="sidebar-menu-child-group">
+                <div className="sidebar-menu-child d-flex align-items-center py-2  ps-1 border-2 gap-2 text-white" style={{fontWeight:'bold'  }}>
+                  {child.icon && <child.icon size={14} strokeWidth={2} />}
+                  <span className="sidebar-menu-child-text" style={{ fontSize: '13px' }}>{child.title}</span>
+                </div>
+                <div className="ps-4" style={{fontSize:'12px'}}>
+                  {child.items.map((grandchild, gIdx) => (
+                    <div  
+                      key={`${idx}-${gIdx}`}
+                      className={`sidebar-menu-child d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === grandchild.url ? 'bg-primary text-white' : 'text-white'}`}
+                      onClick={() => onClick(grandchild.url)}
+                      role="button"
+                    >
+                      {grandchild.icon && <grandchild.icon size={14} strokeWidth={2} />}
+                      <span className="sidebar-menu-child-text" style={{ fontSize: '12px' }}>{grandchild.title}</span>
+                      {grandchild.badge && <span className="badge bg-primary rounded-pill ms-4">{grandchild.badge}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div
+                key={idx}
+                className={`sidebar-menu-child d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === child.url ? 'bg-primary text-white' : 'text-white'}`}
+                onClick={() => onClick(child.url)}
+                role="button"
+              >
+                {child.icon && <child.icon size={14} strokeWidth={2} />}
+                <span className="sidebar-menu-child-text " style={{fontSize:'13px'}}>{child.title}</span>
+                {child.badge && <span className="badge bg-primary rounded-pill ms-4">{child.badge}</span>}
+              </div>
+            )
           ))}
         </div>
       </div>

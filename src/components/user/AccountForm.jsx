@@ -8,11 +8,19 @@ import {
   getModulesByLocationEntity,
   getSectionsByModule,
 } from '../../services/GetRequests';
-import { getAllLocationEntities } from '../../services/locationServices';
-import { createAccount } from '../../services/Inserts';
+import { getAllLocationEntities, getLocationEntitiesByCountry } from '../../services/locationServices';
+import { createAccount, updateAccountPermissions } from '../../services/Inserts';
 import { updateAccount } from '../../services/UpdRequests';
 
-const AccountForm = ({ userId = null, showModules = false, showSections = false, onSuccess }) => {
+const AccountForm = ({
+  userId = null,
+  showModules = false,
+  showSections = false,
+  showActions = true,
+  formId = 'account-form',
+  permissionIds = [],
+  onSuccess
+}) => {
   const { t } = useLanguage();
 
   const [loading, setLoading] = useState(true);
@@ -39,6 +47,15 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
   const [modules, setModules] = useState([]);
   const [sections, setSections] = useState([]);
 
+  const normalizeList = (res) => {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.content)) return res.content;
+    if (Array.isArray(res.data?.content)) return res.data.content;
+    return [];
+  };
+
   // Load base data + user data if editing
   useEffect(() => {
     const loadData = async () => {
@@ -53,7 +70,7 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
         ]);
         setCategories(catRes);
         setCountries(countryRes.data || countryRes);
-        setLocationEntities(entitiesRes.data?.content || entitiesRes.data?.data || entitiesRes.data || []);
+        setLocationEntities(normalizeList(entitiesRes));
 
         // If editing, fetch user details
         if (userId) {
@@ -96,7 +113,23 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
     loadData();
   }, [userId, showModules, showSections]); // Removed t from dependencies
 
-  // Entities are loaded on mount, no need to reload on country change
+  // Reload location entities when country changes (filter by country when possible)
+  useEffect(() => {
+    const loadEntitiesByCountry = async () => {
+      if (!formData.countryId) {
+        const allEntities = await getAllLocationEntities();
+        setLocationEntities(normalizeList(allEntities));
+        return;
+      }
+      const entities = await getLocationEntitiesByCountry(formData.countryId);
+      setLocationEntities(normalizeList(entities));
+    };
+
+    loadEntitiesByCountry().catch(err => {
+      console.error(err);
+      setLocationEntities([]);
+    });
+  }, [formData.countryId]);
 
   useEffect(() => {
     const loadModules = async () => {
@@ -146,10 +179,16 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
         countryId: Number(formData.countryId),
         locationEntityId: Number(formData.locationEntityId),
       };
+      if (Array.isArray(permissionIds) && permissionIds.length > 0) {
+        payload.permissionIds = permissionIds;
+      }
       if (!userId) payload.password = formData.password;
 
       if (userId) {
         await updateAccount(userId, payload);
+        if (Array.isArray(permissionIds) && permissionIds.length > 0) {
+          await updateAccountPermissions(userId, permissionIds);
+        }
       } else {
         await createAccount(payload);
       }
@@ -168,7 +207,7 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
   return (
     <>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
+      <Form id={formId} onSubmit={handleSubmit}>
         <Row>
           <Col md={6}>
             <Form.Group className="mb-2">
@@ -259,9 +298,7 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
             {locationEntities.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
           </Form.Select>
           {/* Debug info */}
-          <small className="text-muted d-block mt-1">
-            Debug: entities={locationEntities.length}, disabled={!locationEntities.length ? 'true' : 'false'}
-          </small>
+           
         </Form.Group>
 
         {showModules && (
@@ -284,9 +321,11 @@ const AccountForm = ({ userId = null, showModules = false, showSections = false,
           </Form.Group>
         )}
 
-        <Button type="submit" disabled={saving}>
-          {saving ? <Spinner animation="border" size="sm" /> : t('common.save')}
-        </Button>
+        {showActions && (
+          <Button type="submit" disabled={saving}>
+            {saving ? <Spinner animation="border" size="sm" /> : t('common.save')}
+          </Button>
+        )}
       </Form>
     </>
   );

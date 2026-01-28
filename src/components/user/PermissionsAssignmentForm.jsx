@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { getUserInfo } from '../../services/authUtils';
 import { apiClient } from '../../services/apiConfig';
 import { getAllAccounts } from '../../services/GetRequests';
 
-const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
+const PermissionsAssignmentForm = ({
+  onPermissionsChange,
+  selectedPermissions: selectedPermissionsProp,
+  onSelectedPermissionsChange,
+  selectedUserId,
+  onSelectedUserChange,
+  showUserSelect = true
+}) => {
   const { t } = useLanguage();
 
   const [loading, setLoading] = useState(true);
@@ -12,11 +20,30 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
   const [permissions, setPermissions] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
-  const [selectedPermissions, setSelectedPermissions] = useState([]);
+  const [selectedPermissionsState, setSelectedPermissionsState] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loginPermissionCodes, setLoginPermissionCodes] = useState([]);
+
+  const isControlled = Array.isArray(selectedPermissionsProp);
+  const selectedPermissions = isControlled ? selectedPermissionsProp : selectedPermissionsState;
+  const setSelectedPermissions = isControlled ? onSelectedPermissionsChange : setSelectedPermissionsState;
+
+  const resolvedSelectedUser = selectedUserId ?? selectedUser;
+  const setResolvedSelectedUser = onSelectedUserChange || setSelectedUser;
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  useEffect(() => {
+    const userInfo = getUserInfo();
+    const permissions = Array.isArray(userInfo?.permissions)
+      ? userInfo.permissions
+      : [];
+    const codes = permissions
+      .map(permission => permission?.code)
+      .filter(Boolean);
+    setLoginPermissionCodes(codes);
   }, []);
 
   // Notify parent component when permissions count changes
@@ -38,12 +65,15 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
       const permissionsData = Array.isArray(permissionsRes.data) ? permissionsRes.data : [];
       setPermissions(permissionsData);
 
+
       // Fetch all users (accounts) using existing service
-      const usersData = await getAllAccounts();
-      console.log('Users response:', usersData);
-      // getAllAccounts already extracts the data, check if it's an array or needs further extraction
-      const accountsList = Array.isArray(usersData) ? usersData : (usersData?.data || []);
-      setUsers(accountsList);
+      if (showUserSelect) {
+        const usersData = await getAllAccounts();
+        console.log('Users response:', usersData);
+        // getAllAccounts already extracts the data, check if it's an array or needs further extraction
+        const accountsList = Array.isArray(usersData) ? usersData : (usersData?.data || []);
+        setUsers(accountsList);
+      }
 
     } catch (err) {
       console.error('Error loading permissions/users:', err);
@@ -54,7 +84,22 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
     }
   };
 
+  useEffect(() => {
+    if (!permissions.length || !loginPermissionCodes.length) return;
+    if (selectedPermissions && selectedPermissions.length > 0) return;
+
+    const loginPermissionSet = new Set(loginPermissionCodes);
+    const matchedIds = permissions
+      .filter(permission => loginPermissionSet.has(permission.code))
+      .map(permission => permission.id);
+
+    if (matchedIds.length) {
+      setSelectedPermissions(matchedIds);
+    }
+  }, [permissions, loginPermissionCodes, selectedPermissions, setSelectedPermissions]);
+
   const handlePermissionChange = (permissionId) => {
+    if (!setSelectedPermissions) return;
     setSelectedPermissions(prev => {
       if (prev.includes(permissionId)) {
         return prev.filter(id => id !== permissionId);
@@ -64,7 +109,24 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
     });
   };
 
+  useEffect(() => {
+    const fetchSelectedUserPermissions = async () => {
+      if (!showUserSelect || !resolvedSelectedUser) return;
+      try {
+        const response = await apiClient.get(`/accounts/${resolvedSelectedUser}/permissions`);
+        const permissionsData = Array.isArray(response.data) ? response.data : [];
+        const ids = permissionsData.map(permission => permission.id).filter(Boolean);
+        setSelectedPermissions(ids);
+      } catch (err) {
+        console.error('Failed to load selected user permissions:', err);
+      }
+    };
+
+    fetchSelectedUserPermissions();
+  }, [resolvedSelectedUser, showUserSelect, setSelectedPermissions]);
+
   const handleSelectAll = (e) => {
+    if (!setSelectedPermissions) return;
     if (e.target.checked) {
       setSelectedPermissions(filteredPermissions.map(p => p.id));
     } else {
@@ -89,44 +151,51 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
       {error && <Alert variant="danger">{error}</Alert>}
       
       <Form>
-        {/* User Selection */}
-        <Form.Group className="mb-3">
-          <Form.Label>
-            <strong>{t('accounts.selectUser') || 'Select User'}</strong>
-          </Form.Label>
-          <Form.Select 
-            value={selectedUser} 
-            onChange={(e) => setSelectedUser(e.target.value)}
-            size="lg"
-          >
-            <option value="">{t('common.select') || 'Select...'}</option>
-            {users.map(user => (
-              <option key={user.id} value={user.id}>
-                {user.fullName} ({user.email})
-              </option>
-            ))}
-          </Form.Select>
-          <Form.Text className="text-muted">
-            {selectedUser ? `${t('common.selected')}: ${users.find(u => u.id === parseInt(selectedUser))?.fullName}` : t('accounts.noUserSelected') || 'No user selected'}
-          </Form.Text>
-        </Form.Group>
-
-        <hr />
-
-        {/* Permissions Selection */}
         <Row>
-          <Col md={6}>
+          {showUserSelect && (
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>
+                  <strong>{t('accounts.selectUser') || 'Select User'}</strong>
+                </Form.Label>
+                <Form.Select 
+                  value={resolvedSelectedUser} 
+                  onChange={(e) => setResolvedSelectedUser(e.target.value)}
+                  size="lg"
+                  className="form-select-sm-font"
+                >
+                  <option value="">{t('common.select') || 'Select...'}</option>
+                  {users.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.fullName} ({user.email})
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  {resolvedSelectedUser ? `${t('common.selected')}: ${users.find(u => u.id === parseInt(resolvedSelectedUser))?.fullName}` : t('accounts.noUserSelected') || 'No user selected'}
+                </Form.Text>
+              </Form.Group>
+            </Col>
+          )}
+
+          {/* Right Column - Permissions Selection */}
+          <Col md={showUserSelect ? 6 : 12}>
             <div className="mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <Form.Label className="mb-0">
                   <strong>{t('permissions.assignPermissions') || 'Assign Permissions'}</strong>
                 </Form.Label>
-                <Form.Check
-                  type="checkbox"
-                  label={t('common.selectAll') || 'Select All'}
-                  checked={selectedPermissions.length === filteredPermissions.length && filteredPermissions.length > 0}
-                  onChange={handleSelectAll}
-                />
+                <div className="d-flex align-items-center gap-2">
+                  <Form.Check
+                    type="checkbox"
+                    id="select-all-permissions"
+                    checked={selectedPermissions.length === filteredPermissions.length && filteredPermissions.length > 0}
+                    onChange={handleSelectAll}
+                  />
+                  <label htmlFor="select-all-permissions" style={{ cursor: 'pointer', marginBottom: 0 }}>
+                    {t('common.selectAll') || 'Select All'}
+                  </label>
+                </div>
               </div>
               
               {/* Search Input */}
@@ -152,20 +221,16 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
                   }
                 </Alert>
               ) : (
-                <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px', padding: '10px' }}>
+                <div style={{ height: '150px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px', padding: '10px' }} className="form-select-sm-font">
                   {filteredPermissions.map((permission) => (
-                    <div key={permission.id} className="mb-2">
+                    <div key={permission.id} className="mb-1">
                     <Form.Check
                       type="checkbox"
                       id={`permission-${permission.id}`}
                       label={
                         <div>
-                          <strong>{permission.name}</strong>
-                          {permission.code && (
-                            <span className="text-muted ms-2">
-                              <code>{permission.code}</code>
-                            </span>
-                          )}
+                          <div>{permission.name}</div>
+                           
                           {permission.description && (
                             <div className="small text-muted">
                               {permission.description}
@@ -183,11 +248,6 @@ const PermissionsAssignmentForm = ({ onPermissionsChange }) => {
             </div>
           </Col>
         </Row>
-
-        {/* Debug Info */}
-        <small className="text-muted d-block mt-3">
-          Debug: user={selectedUser || 'none'}, permissions={selectedPermissions.length} selected
-        </small>
       </Form>
     </>
   );
