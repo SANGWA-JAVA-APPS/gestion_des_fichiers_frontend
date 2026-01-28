@@ -171,13 +171,6 @@ export function TopNavbar({ onSidebarToggle }) {
 </li>
 
 
-            <li>
-              <button className="dropdown-item d-flex align-items-center gap-2">
-                <Settings size={16} />
-                Settings
-              </button>
-            </li>
-
             <li><hr className="dropdown-divider" /></li>
 
             <li>

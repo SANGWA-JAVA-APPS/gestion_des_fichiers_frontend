@@ -60,8 +60,7 @@ export function SidebarItem({ item, isActive, onClick, sidebarState, expandedGro
                       key={`${idx}-${gIdx}`}
                       className={`sidebar-menu-child d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === grandchild.url ? 'bg-primary text-white' : 'text-white'}`}
                       onClick={() => onClick(grandchild.url)}
-                      role="button"
-                    >
+                      role="button"                    >
                       {grandchild.icon && <grandchild.icon size={14} strokeWidth={2} />}
                       <span className="sidebar-menu-child-text" style={{ fontSize: '12px' }}>{grandchild.title}</span>
                       {grandchild.badge && <span className="badge bg-primary rounded-pill ms-4">{grandchild.badge}</span>}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { FaEdit, FaTrash } from 'react-icons/fa'
 import {
   Container,
   Row,
@@ -325,15 +326,16 @@ const EntityComponent = () => {
                             className='me-2'
                             onClick={() => handleShowModal(entity)}
                             >
-                            <i className='fas fa-edit' /> {t('common.edit')}
+                              <FaEdit />
+                              <span className='visually-hidden'>{t('common.edit')}</span>
                           </Button>
                           <Button
                             variant='outline-danger'
                             size='sm'
                             onClick={() => handleDelete(entity.id)}
                             >
-                            <i className='fas fa-trash' />{' '}
-                            {t('common.delete')}
+                              <FaTrash />
+                              <span className='visually-hidden'>{t('common.delete')}</span>
                           </Button>
                         </td>
                       </tr>

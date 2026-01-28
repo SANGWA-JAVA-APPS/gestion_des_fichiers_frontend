@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
+import { FaEdit } from 'react-icons/fa'
 import {
   Container,
   Row,
@@ -300,7 +301,8 @@ const CountryComponent = () => {
                             className='me-2'
                             onClick={() => handleShowModal(country)}
                             >
-                            <i className='fas fa-edit' /> {t('common.edit')}
+                            <FaEdit />
+                            <span className='visually-hidden'>{t('common.edit')}</span>
                           </Button>
                           {/* <Button
                             variant='outline-danger'

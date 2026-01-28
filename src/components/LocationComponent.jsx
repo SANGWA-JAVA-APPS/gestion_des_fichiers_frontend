@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { FaEdit, FaTrash } from 'react-icons/fa'
 import {
   Row,
   Col,
@@ -168,14 +169,16 @@ const LocationComponent = () => {
                         className='me-2'
                         onClick={() => handleShowModal(location)}
                         >
-                          Edit
+                          <FaEdit />
+                          <span className='visually-hidden'>Edit</span>
                         </Button>
                       <Button
                         variant='outline-danger'
                         size='sm'
                         onClick={() => handleDelete(location.id)}
                         >
-                          Delete
+                          <FaTrash />
+                          <span className='visually-hidden'>Delete</span>
                         </Button>
                     </td>
                   </tr>

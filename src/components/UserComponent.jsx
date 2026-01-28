@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { FaEdit } from 'react-icons/fa'
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge } from 'react-bootstrap'
 import {  getAllUsers,  getAccountById } from '../services/GetRequests'
 
@@ -222,7 +223,8 @@ const loadProfileUser = async () => {
                           variant="outline-primary"
                           onClick={() => handleShowModal(user)}
                         >
-                          Edit
+                          <FaEdit />
+                          <span className="visually-hidden">Edit</span>
                         </Button>
                       </td>
                     </tr>

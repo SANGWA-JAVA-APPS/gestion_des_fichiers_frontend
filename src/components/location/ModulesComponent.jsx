@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 
 import { getAllModules, getAllLocationEntities } from '../../services/GetRequests';
@@ -231,14 +232,16 @@ const getModuleTypeBadge = (type) => {
                         onClick={() => handleShowModal(module)}
                         className="me-2"
                       >
-                        {t('common.edit')}
+                        <FaEdit />
+                        <span className="visually-hidden">{t('common.edit')}</span>
                       </Button>
                       <Button 
                         size="sm" 
                         variant="outline-danger" 
                         onClick={() => handleDelete(module.id)}
                       >
-                        {t('common.delete')}
+                        <FaTrash />
+                        <span className="visually-hidden">{t('common.delete')}</span>
                       </Button>
                     </td>
                   </tr>
