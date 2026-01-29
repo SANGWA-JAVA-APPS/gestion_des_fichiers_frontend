@@ -6,7 +6,7 @@ import { apiClient } from './apiConfig';
 
 export const getAllCountries = async () => {
   try {
-    const response = await apiClient.get('/api/location/countries');
+    const response = await apiClient.get('/location/countries');
     return response.data;
   } catch (error) {
     console.error('Get countries error:', error);
@@ -16,7 +16,7 @@ export const getAllCountries = async () => {
 
 export const getCountryById = async (id) => {
   try {
-    const response = await apiClient.get(`/api/location/countries/${id}`);
+    const response = await apiClient.get(`/location/countries/${id}`);
     return response.data;
   } catch (error) {
     console.error('Get country by ID error:', error);
@@ -26,7 +26,7 @@ export const getCountryById = async (id) => {
 
 export const createCountry = async (countryData) => {
   try {
-    const response = await apiClient.post('/api/location/countries', countryData);
+    const response = await apiClient.post('/location/countries', countryData);
     return response.data;
   } catch (error) {
     console.error('Create country error:', error);
@@ -36,7 +36,7 @@ export const createCountry = async (countryData) => {
 
 export const updateCountry = async (id, countryData) => {
   try {
-    const response = await apiClient.put(`/api/location/countries/${id}`, countryData);
+    const response = await apiClient.put(`/location/countries/${id}`, countryData);
     return response.data;
   } catch (error) {
     console.error('Update country error:', error);
@@ -46,7 +46,7 @@ export const updateCountry = async (id, countryData) => {
 
 export const deleteCountry = async (id) => {
   try {
-    const response = await apiClient.delete(`/api/location/countries/${id}`);
+    const response = await apiClient.delete(`/location/countries/${id}`);
     return response.data;
   } catch (error) {
     console.error('Delete country error:', error);
@@ -70,7 +70,7 @@ export const getAllLocationEntities = async () => {
 
 export const getLocationEntitiesByCountry = async (countryId) => {
   try {
-    const response = await apiClient.get(`/api/location/entities/country/${countryId}`);
+    const response = await apiClient.get(`/location/entities/country/${countryId}`);
     // Backend returns paginated response with data.content
     return response.data?.data?.content || response.data?.content || response.data?.data || [];
   } catch (error) {
@@ -81,7 +81,7 @@ export const getLocationEntitiesByCountry = async (countryId) => {
 
 export const getLocationEntityById = async (id) => {
   try {
-    const response = await apiClient.get(`/api/location/entities/${id}`);
+    const response = await apiClient.get(`/location/entities/${id}`);
     return response.data;
   } catch (error) {
     console.error('Get location entity by ID error:', error);
@@ -91,7 +91,7 @@ export const getLocationEntityById = async (id) => {
 
 export const createLocationEntity = async (entityData) => {
   try {
-    const response = await apiClient.post('/api/location/entities', entityData);
+    const response = await apiClient.post('/location/entities', entityData);
     return response.data;
   } catch (error) {
     console.error('Create location entity error:', error);
@@ -101,7 +101,7 @@ export const createLocationEntity = async (entityData) => {
 
 export const updateLocationEntity = async (id, entityData) => {
   try {
-    const response = await apiClient.put(`/api/location/entities/${id}`, entityData);
+    const response = await apiClient.put(`/location/entities/${id}`, entityData);
     return response.data;
   } catch (error) {
     console.error('Update location entity error:', error);
@@ -111,7 +111,7 @@ export const updateLocationEntity = async (id, entityData) => {
 
 export const deleteLocationEntity = async (id) => {
   try {
-    const response = await apiClient.delete(`/api/location/entities/${id}`);
+    const response = await apiClient.delete(`/location/entities/${id}`);
     return response.data;
   } catch (error) {
     console.error('Delete location entity error:', error);
@@ -125,7 +125,7 @@ export const deleteLocationEntity = async (id) => {
 
 export const getAllModules = async () => {
   try {
-    const response = await apiClient.get('/api/location/modules');
+    const response = await apiClient.get('/location/modules');
     return response.data;
   } catch (error) {
     console.error('Get modules error:', error);
@@ -135,7 +135,7 @@ export const getAllModules = async () => {
 
 export const getModulesByLocationEntity = async (entityId) => {
   try {
-    const response = await apiClient.get(`/api/location/modules/entity/${entityId}`);
+    const response = await apiClient.get(`/location/modules/entity/${entityId}`);
     return response.data;
   } catch (error) {
     console.error('Get modules by entity error:', error);
@@ -145,7 +145,7 @@ export const getModulesByLocationEntity = async (entityId) => {
 
 export const getModuleById = async (id) => {
   try {
-    const response = await apiClient.get(`/api/location/modules/${id}`);
+    const response = await apiClient.get(`/location/modules/${id}`);
     return response.data;
   } catch (error) {
     console.error('Get module by ID error:', error);
@@ -155,7 +155,7 @@ export const getModuleById = async (id) => {
 
 export const createModule = async (moduleData) => {
   try {
-    const response = await apiClient.post('/api/location/modules', moduleData);
+    const response = await apiClient.post('/location/modules', moduleData);
     return response.data;
   } catch (error) {
     console.error('Create module error:', error);
@@ -165,7 +165,7 @@ export const createModule = async (moduleData) => {
 
 export const updateModule = async (id, moduleData) => {
   try {
-    const response = await apiClient.put(`/api/location/modules/${id}`, moduleData);
+    const response = await apiClient.put(`/location/modules/${id}`, moduleData);
     return response.data;
   } catch (error) {
     console.error('Update module error:', error);
@@ -175,7 +175,7 @@ export const updateModule = async (id, moduleData) => {
 
 export const deleteModule = async (id) => {
   try {
-    const response = await apiClient.delete(`/api/location/modules/${id}`);
+    const response = await apiClient.delete(`/location/modules/${id}`);
     return response.data;
   } catch (error) {
     console.error('Delete module error:', error);
@@ -189,7 +189,7 @@ export const deleteModule = async (id) => {
 
 export const getAllSections = async () => {
   try {
-    const response = await apiClient.get('/api/location/sections');
+    const response = await apiClient.get('/location/sections');
     return response.data;
   } catch (error) {
     console.error('Get sections error:', error);
@@ -199,7 +199,7 @@ export const getAllSections = async () => {
 
 export const getSectionsByModule = async (moduleId) => {
   try {
-    const response = await apiClient.get(`/api/location/sections/module/${moduleId}`);
+    const response = await apiClient.get(`/location/sections/module/${moduleId}`);
     return response.data;
   } catch (error) {
     console.error('Get sections by module error:', error);
@@ -209,7 +209,7 @@ export const getSectionsByModule = async (moduleId) => {
 
 export const getSectionById = async (id) => {
   try {
-    const response = await apiClient.get(`/api/location/sections/${id}`);
+    const response = await apiClient.get(`/location/sections/${id}`);
     return response.data;
   } catch (error) {
     console.error('Get section by ID error:', error);
@@ -219,7 +219,7 @@ export const getSectionById = async (id) => {
 
 export const createSection = async (sectionData) => {
   try {
-    const response = await apiClient.post('/api/location/sections', sectionData);
+    const response = await apiClient.post('/location/sections', sectionData);
     return response.data;
   } catch (error) {
     console.error('Create section error:', error);
@@ -229,7 +229,7 @@ export const createSection = async (sectionData) => {
 
 export const updateSection = async (id, sectionData) => {
   try {
-    const response = await apiClient.put(`/api/location/sections/${id}`, sectionData);
+    const response = await apiClient.put(`/location/sections/${id}`, sectionData);
     return response.data;
   } catch (error) {
     console.error('Update section error:', error);
@@ -239,7 +239,7 @@ export const updateSection = async (id, sectionData) => {
 
 export const deleteSection = async (id) => {
   try {
-    const response = await apiClient.delete(`/api/location/sections/${id}`);
+    const response = await apiClient.delete(`/location/sections/${id}`);
     return response.data;
   } catch (error) {
     console.error('Delete section error:', error);
@@ -274,7 +274,7 @@ export const getLocationHierarchy = async () => {
 
 export const searchLocations = async (searchTerm) => {
   try {
-    const response = await apiClient.get(`/api/location/search?q=${encodeURIComponent(searchTerm)}`);
+    const response = await apiClient.get(`/location/search?q=${encodeURIComponent(searchTerm)}`);
     return response.data;
   } catch (error) {
     console.error('Search locations error:', error);
