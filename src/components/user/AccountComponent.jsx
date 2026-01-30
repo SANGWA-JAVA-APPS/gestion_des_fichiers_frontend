@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react'
 import {
   Container,
@@ -8,12 +9,10 @@ import {
   Table,
   Modal,
   Alert,
-  Spinner,
-  Badge,
-  Tabs,
-  Tab
+  Spinner
 } from 'react-bootstrap'
-import { FaEdit, FaTrash, FaEye } from 'react-icons/fa'
+import { useSearchParams } from 'react-router-dom'
+
 import { useLanguage } from '../../i18n/LanguageContext'
 import { getAllAccounts } from '../../services/GetRequests'
 import { deleteAccount } from '../../services/UpdRequests'
@@ -24,16 +23,17 @@ import PermissionsAssignmentForm from './PermissionsAssignmentForm'
 
 const AccountComponent = () => {
   const { t } = useLanguage()
+  const [_searchParams, setSearchParams] = useSearchParams()
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const [showModal, setShowModal] = useState(false)
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false)
   const [editingUserId, setEditingUserId] = useState(null)
+  const [permissionsUserId, setPermissionsUserId] = useState(null)
   const [selectedPermissionsCount, setSelectedPermissionsCount] = useState(0)
   const [selectedPermissionIds, setSelectedPermissionIds] = useState([])
-  const [selectedPermissionsUserId, setSelectedPermissionsUserId] = useState('')
-  const [activeTab, setActiveTab] = useState('account')
 
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [profileUserId, setProfileUserId] = useState(null)
@@ -69,40 +69,40 @@ const AccountComponent = () => {
 
   const handleShowModal = (userId = null) => {
     setEditingUserId(userId)
+    setShowModal(true)
+  }
+
+  const handleShowPermissionsModal = userId => {
+    setPermissionsUserId(userId)
     setSelectedPermissionIds([])
     setSelectedPermissionsCount(0)
-    setSelectedPermissionsUserId('')
-    setActiveTab('account')
-    setShowModal(true)
+    setSearchParams({ userId: userId.toString() })
+    setShowPermissionsModal(true)
   }
 
   const handleCloseModal = () => {
     setEditingUserId(null)
-    setSelectedPermissionIds([])
-    setSelectedPermissionsCount(0)
-    setSelectedPermissionsUserId('')
-    setActiveTab('account')
     setShowModal(false)
   }
 
-  const handleSaveClick = async () => {
-    setError('')
-    if (activeTab === 'account') {
-      const form = document.getElementById('account-form')
-      if (form && form.requestSubmit) {
-        form.requestSubmit()
-      }
-      return
-    }
+  const handleClosePermissionsModal = () => {
+    setPermissionsUserId(null)
+    setSelectedPermissionIds([])
+    setSelectedPermissionsCount(0)
+    setSearchParams({})
+    setShowPermissionsModal(false)
+  }
 
-    if (!selectedPermissionsUserId) {
+  const handleSavePermissions = async () => {
+    setError('')
+    if (!permissionsUserId) {
       setError(t('accounts.noUserSelected') || 'No user selected')
       return
     }
 
     try {
-      await updateAccountPermissions(selectedPermissionsUserId, selectedPermissionIds)
-      handleCloseModal()
+      await updateAccountPermissions(permissionsUserId, selectedPermissionIds)
+      handleClosePermissionsModal()
       loadData()
     } catch (err) {
       console.error(err)
@@ -180,7 +180,7 @@ const AccountComponent = () => {
                 <th>
                   {t('common.status')}
                 </th>
-                <th width='200'>
+                <th width='250'>
                   {t('accounts.actions')}
                 </th>
               </tr>
@@ -232,6 +232,14 @@ const AccountComponent = () => {
                     </Button>
                     <Button
                       size='sm'
+                      variant='outline-info'
+                      className='me-1'
+                      onClick={() => handleShowPermissionsModal(acc.id)}
+                    >
+                      {t('permissions.manage') || 'Permissions'}
+                    </Button>
+                    <Button
+                      size='sm'
                       variant='outline-secondary'
                       className='me-1'
                       onClick={() => handleShowProfile(acc.id)}
@@ -253,8 +261,8 @@ const AccountComponent = () => {
         </Card.Body>
       </Card>
 
-      {/* Account Form Modal with Tabs */}
-      <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+      {/* Account Form Modal */}
+      <Modal show={showModal} onHide={handleCloseModal} size='lg' centered>
         <Modal.Header closeButton>
           <Modal.Title>
             {editingUserId
@@ -263,49 +271,62 @@ const AccountComponent = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} id="account-modal-tabs" className="mb-3">
-            <Tab eventKey="account" title={t('accounts.accountInfo') || 'Account Info'}>
-              <AccountForm
-                userId={editingUserId}
-                showModules={false}
-                showSections={false}
-                showActions={false}
-                formId="account-form"
-                permissionIds={selectedPermissionIds}
-                onSuccess={() => {
-                  handleCloseModal()
-                  loadData()
-                }}
-              />
-            </Tab>
-            <Tab 
-              eventKey="permissions" 
-              title={
-                <span>
-                  {t('accounts.permissions') || 'Permissions'} 
-                  {selectedPermissionsCount > 0 && (
-                    <Badge bg="primary" className="ms-2">{selectedPermissionsCount}</Badge>
-                  )}
-                </span>
-              }
-            >
-              <PermissionsAssignmentForm
-                showUserSelect={true}
-                selectedPermissions={selectedPermissionIds}
-                onSelectedPermissionsChange={setSelectedPermissionIds}
-                onPermissionsChange={setSelectedPermissionsCount}
-                selectedUserId={selectedPermissionsUserId}
-                onSelectedUserChange={setSelectedPermissionsUserId}
-              />
-            </Tab>
-          </Tabs>
+          <AccountForm
+            userId={editingUserId}
+            showModules={false}
+            showSections={false}
+            showActions={false}
+            formId='account-form'
+            onSuccess={() => {
+              handleCloseModal()
+              loadData()
+            }}
+          />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
+          <Button variant='secondary' onClick={handleCloseModal}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" onClick={handleSaveClick}>
+          <Button
+            variant='primary'
+            onClick={() => {
+              const form = document.getElementById('account-form')
+              if (form && form.requestSubmit) {
+                form.requestSubmit()
+              }
+            }}
+          >
             {t('common.save')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Permissions Management Modal */}
+      <Modal
+        show={showPermissionsModal}
+        onHide={handleClosePermissionsModal}
+        size='lg'
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {t('permissions.managePermissions') || 'Manage Permissions'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <PermissionsAssignmentForm
+            showUserSelect={false}
+            selectedPermissions={selectedPermissionIds}
+            onSelectedPermissionsChange={setSelectedPermissionIds}
+            onPermissionsChange={setSelectedPermissionsCount}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='secondary' onClick={handleClosePermissionsModal}>
+            {t('common.cancel')}
+          </Button>
+          <Button variant='primary' onClick={handleSavePermissions}>
+            {t('common.save')} ({selectedPermissionsCount})
           </Button>
         </Modal.Footer>
       </Modal>

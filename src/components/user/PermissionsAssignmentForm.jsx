@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { Form, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { getUserInfo } from '../../services/authUtils';
+
 import { apiClient } from '../../services/apiConfig';
 import { getAllAccounts } from '../../services/GetRequests';
+import UserProfile from './UserProfile';
 
 const PermissionsAssignmentForm = ({
   onPermissionsChange,
@@ -14,6 +17,7 @@ const PermissionsAssignmentForm = ({
   showUserSelect = true
 }) => {
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,28 +26,18 @@ const PermissionsAssignmentForm = ({
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedPermissionsState, setSelectedPermissionsState] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loginPermissionCodes, setLoginPermissionCodes] = useState([]);
 
   const isControlled = Array.isArray(selectedPermissionsProp);
   const selectedPermissions = isControlled ? selectedPermissionsProp : selectedPermissionsState;
   const setSelectedPermissions = isControlled ? onSelectedPermissionsChange : setSelectedPermissionsState;
 
-  const resolvedSelectedUser = selectedUserId ?? selectedUser;
+  // Get userId from URL params or props
+  const userIdFromParams = searchParams.get('userId');
+  const resolvedSelectedUser = userIdFromParams || selectedUserId || selectedUser;
   const setResolvedSelectedUser = onSelectedUserChange || setSelectedUser;
 
   useEffect(() => {
     loadData();
-  }, []);
-
-  useEffect(() => {
-    const userInfo = getUserInfo();
-    const permissions = Array.isArray(userInfo?.permissions)
-      ? userInfo.permissions
-      : [];
-    const codes = permissions
-      .map(permission => permission?.code)
-      .filter(Boolean);
-    setLoginPermissionCodes(codes);
   }, []);
 
   // Notify parent component when permissions count changes
@@ -84,19 +78,7 @@ const PermissionsAssignmentForm = ({
     }
   };
 
-  useEffect(() => {
-    if (!permissions.length || !loginPermissionCodes.length) return;
-    if (selectedPermissions && selectedPermissions.length > 0) return;
-
-    const loginPermissionSet = new Set(loginPermissionCodes);
-    const matchedIds = permissions
-      .filter(permission => loginPermissionSet.has(permission.code))
-      .map(permission => permission.id);
-
-    if (matchedIds.length) {
-      setSelectedPermissions(matchedIds);
-    }
-  }, [permissions, loginPermissionCodes, selectedPermissions, setSelectedPermissions]);
+  // Remove auto-selection of login user permissions - start with empty permissions for new users
 
   const handlePermissionChange = (permissionId) => {
     if (!setSelectedPermissions) return;
@@ -111,9 +93,11 @@ const PermissionsAssignmentForm = ({
 
   useEffect(() => {
     const fetchSelectedUserPermissions = async () => {
-      if (!showUserSelect || !resolvedSelectedUser) return;
+      if (!resolvedSelectedUser) return;
       try {
+        console.log("prestating to fetch  the permions for the user  ",resolvedSelectedUser)
         const response = await apiClient.get(`/accounts/${resolvedSelectedUser}/permissions`);
+        console.log("fetched the permions for the user  ", response.data)
         const permissionsData = Array.isArray(response.data) ? response.data : [];
         const ids = permissionsData.map(permission => permission.id).filter(Boolean);
         setSelectedPermissions(ids);
@@ -123,7 +107,7 @@ const PermissionsAssignmentForm = ({
     };
 
     fetchSelectedUserPermissions();
-  }, [resolvedSelectedUser, showUserSelect, setSelectedPermissions]);
+  }, [resolvedSelectedUser, setSelectedPermissions, searchParams]);
 
   const handleSelectAll = (e) => {
     if (!setSelectedPermissions) return;
@@ -149,6 +133,14 @@ const PermissionsAssignmentForm = ({
   return (
     <>
       {error && <Alert variant="danger">{error}</Alert>}
+      
+      {/* User Profile Display */}
+      {resolvedSelectedUser && (
+        <div className="mb-4">
+          <h6 className="text-muted mb-2">{t('permissions.managingPermissionsFor') || 'Managing permissions for'}:</h6>
+          <UserProfile userId={resolvedSelectedUser} compact={true} />
+        </div>
+      )}
       
       <Form>
         <Row>
@@ -221,27 +213,17 @@ const PermissionsAssignmentForm = ({
                   }
                 </Alert>
               ) : (
-                <div style={{ height: '150px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px', padding: '10px' }} className="form-select-sm-font">
-                  {filteredPermissions.map((permission) => (
-                    <div key={permission.id} className="mb-1">
+                <div style={{ height: '200px', overflowY: 'auto', border: '1px solid #dee2e6', borderRadius: '4px', padding: '10px' }}>
+                  {filteredPermissions.map(permission => (
                     <Form.Check
+                      key={permission.id}
                       type="checkbox"
                       id={`permission-${permission.id}`}
-                      label={
-                        <div>
-                          <div>{permission.name}</div>
-                           
-                          {permission.description && (
-                            <div className="small text-muted">
-                              {permission.description}
-                            </div>
-                          )}
-                        </div>
-                      }
+                      label={`${permission.name} (${permission.code})`}
                       checked={selectedPermissions.includes(permission.id)}
                       onChange={() => handlePermissionChange(permission.id)}
+                      className="mb-2"
                     />
-                  </div>
                   ))}
                 </div>
               )}

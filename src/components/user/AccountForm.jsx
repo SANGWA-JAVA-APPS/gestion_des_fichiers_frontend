@@ -111,7 +111,7 @@ const AccountForm = ({
     };
 
     loadData();
-  }, [userId, showModules, showSections]); // Removed t from dependencies
+  }, [userId, showModules, showSections]);
 
   // Reload location entities when country changes (filter by country when possible)
   useEffect(() => {
@@ -277,10 +277,7 @@ const AccountForm = ({
                 <option value="">{t('common.select')}</option>
                 {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </Form.Select>
-              {/* Debug info */}
-              <small className="text-muted d-block mt-1">
-                Debug:  countries={countries.length}, selected={formData.countryId || 'none'}
-              </small>
+            
             </Form.Group>
           </Col>
         </Row>
