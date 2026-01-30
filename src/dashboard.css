@@ -37,6 +37,10 @@
     cursor: pointer;
 }
 
+.sidebar-menu-grandchild:hover {
+    background-color: rgba(173, 216, 230, 0.25);
+}
+
 .sidebar-menu-child-text {
     font-size: 12px;
 }

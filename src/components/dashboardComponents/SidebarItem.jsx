@@ -58,7 +58,7 @@ export function SidebarItem({ item, isActive, onClick, sidebarState, expandedGro
                   {child.items.map((grandchild, gIdx) => (
                     <div  
                       key={`${idx}-${gIdx}`}
-                      className={`sidebar-menu-child d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === grandchild.url ? 'bg-primary text-white' : 'text-white'}`}
+                      className={`sidebar-menu-child sidebar-menu-grandchild d-flex align-items-center py-2 text-decoration-none ps-1 border-2 gap-2 ${isActive === grandchild.url ? 'bg-primary text-white' : 'text-white'}`}
                       onClick={() => onClick(grandchild.url)}
                       role="button"                    >
                       {grandchild.icon && <grandchild.icon size={14} strokeWidth={2} />}

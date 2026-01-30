@@ -37,7 +37,7 @@ const LoginPage = () => {
       if (response.success) {
         // setUserInfo(response);
 
-        navigate('/dashboard/docstatus', { replace: true });
+        navigate('/dashboard', { replace: true });
       } else {
         setError(response.message || t("auth.loginFailed"));
       }

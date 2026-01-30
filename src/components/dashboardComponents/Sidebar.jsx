@@ -86,7 +86,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
 
 
-  const sidebarWidth = isHidden ? '0' : isIconOnly ? '70px' : '280px'
+  const sidebarWidth = isHidden ? '0' : isIconOnly ? '70px' : '230px'
 
   const visibleNavGroups = sidebarData.navGroups.map(group => ({
     ...group,
@@ -97,7 +97,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
           if (permissionsLoading) {
             return {
               ...item,
-              items: [
+             items: [
                 {
                   title: 'Initializing permissions...',
                   isLoading: true
@@ -155,7 +155,7 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
   return (
     <div
-      className='bg-dark d-flex flex-column position-fixed position-md-relative'
+      className='bg-dark d-flex flex-column position-fixed position-md-relative sidebar-scroll'
       style={{
         width: sidebarWidth,
         height: 'calc(100vh - 56px)',

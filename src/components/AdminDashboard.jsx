@@ -30,6 +30,8 @@ import DocumentComponent from "./DocumentComponent";
 // Navigation Menu Component
 import MenuBox from "./MenuBox";
 import { useEffect } from "react";
+import DashboardLayout from "./dashboardComponents/DashboardLayout";
+import TestRedirection from "./TestRedirection";
 const AdminDashboard = ({ onLogout }) => {
   console.log("AdminDashboard component mounting...");
 
@@ -105,7 +107,8 @@ const AdminDashboard = ({ onLogout }) => {
         return <RolesComponent />;
       // Document Management
       case "document":
-        return <DocumentComponent />;
+       return <DashboardLayout/>;
+        // return <DashboardLayout />;
 
       // Archive Documents
       case "archive":
@@ -209,7 +212,7 @@ const AdminDashboard = ({ onLogout }) => {
 
       <Container
         fluid
-        className="min-vh-100 p-0  hasIndex2 "
+        className="min-vh-100 p-0  hasIndex2"
         style={{
           backgroundImage: `url(${`overview` == activeTab ? DashboardBg : ``})`,
           backgroundSize: "cover",
@@ -217,160 +220,19 @@ const AdminDashboard = ({ onLogout }) => {
           backgroundRepeat: "no-repeat",
           backgroundAttachment: "fixed",
         }}>
-        {/* Header */}
-        <Row
-          className="g-0 modern-navbar  "
-          style={{ borderBotton: "1px solid #fff important" }}>
-          <Col xs={12} className="py-3">
-            <Container>
-              <Row className="align-items-center">
-                {/* Left Side - INGENZI Brand */}
-                <Col xs="auto">
-                  <div className="navbar-brand">
-                    <i className="fas fa-shield-alt me-3"></i>
-                    <div>
-                      <h4
-                        className="mb-0 fw-bold"
-                        style={{ cursor: "pointer" }}
-                        onClick={changeToOverviewAgain}>
-                        INGENZI
-                      </h4>
-                      <small className="text-muted">Admin Panel</small>
-                    </div>
-                  </div>
-                </Col>
-
-                {/* Center - Action Buttons */}
-                <Col className="text-center">
-                  <div className="d-flex gap-2 justify-content-center">
-                    <Button
-                      variant="outline-light"
-                      size="sm"
-                      onClick={() => setActiveTab("archive")}
-                      className="d-flex align-items-center">
-                      <i className="fas fa-archive me-2"></i>
-                      Archive
-                    </Button>
-
-                    <Button
-                      variant="outline-warning"
-                      size="sm"
-                      onClick={() => setActiveTab("expiry")}
-                      className="d-flex align-items-center">
-                      <i className="fas fa-clock me-2"></i>
-                      Expiry
-                    </Button>
-
-                    <Button
-                      variant="outline-success"
-                      size="sm"
-                      onClick={() => setActiveTab("activeDocs")}
-                      className="d-flex align-items-center">
-                      <i className="fas fa-check-circle me-2"></i>
-                      Active Docs
-                    </Button>
-
-                    {/* Divider */}
-                    <div
-                      className="vr bg-light opacity-50"
-                      style={{ height: "30px" }}></div>
-
-                    {/* Logout Button */}
-                    <Button
-                      variant="outline-light"
-                      size="sm"
-                      onClick={onLogout}>
-                      <i className="fas fa-sign-out-alt me-2"></i>
-                      Logout
-                    </Button>
-                  </div>
-                </Col>
-              </Row>
-            </Container>
-          </Col>
-        </Row>
-
-        {/* Navigation Tabs - Desktop and Mobile Responsive */}
-        <Row className={`g-0 bg-white border-bottom shadow-sm  ${activeTab === "overview" ? "d-none" : ""}`}>
-          <Col xs={12}>
-            <Container>
-              <Nav variant="tabs" className="border-0">
-                <Nav.Item>
-                  <Nav.Link
-                    active={activeTab === "overview"}
-                    onClick={() => setActiveTab("overview")}
-                    className="text-dark">
-                    <i className="fas fa-th-large me-2"></i>
-                    Dashboard
-                  </Nav.Link>
-                </Nav.Item>
-
-                {/* Users Dropdown Menu */}
-                <NavDropdown
-                  title={
-                    <span className="text-dark">
-                      <i className="fas fa-users me-2"></i>
-                      Users
-                    </span>
-                  }
-                  id="users-nav-dropdown"
-                  active={activeTab === "account" || activeTab === "roles"}>
-                  <NavDropdown.Item
-                    onClick={() => setActiveTab("account")}
-                    active={activeTab === "account"}>
-                    <i className="fas fa-user me-2"></i>
-                    Accounts
-                  </NavDropdown.Item>
-                  <NavDropdown.Item
-                    onClick={() => setActiveTab("roles")}
-                    active={activeTab === "roles"}>
-                    <i className="fas fa-user-tag me-2"></i>
-                    Roles
-                  </NavDropdown.Item>
-                </NavDropdown>
-
-                <Nav.Item>
-                  <Nav.Link
-                    active={activeTab === "document"}
-                    onClick={() => setActiveTab("document")}
-                    className="text-dark">
-                    <i className="fas fa-file-alt me-2"></i>
-                    Documents
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link
-                    active={activeTab === "country"}
-                    onClick={() => setActiveTab("country")}
-                    className="text-dark">
-                    <i className="fas fa-map-marker-alt me-2"></i>
-                    Locations
-                  </Nav.Link>
-                </Nav.Item>
-              </Nav>
-            </Container>
-          </Col>
-        </Row>
+        
 
         {/* Main Content Area - Fully Responsive */}
         <Row className="g-0 ">
           <Col xs={12} className="p-0  d-flex justify-content-center ">
             <Container
               fluid={activeTab !== "overview"}
-              className="m-0 mt-1 px-2 px-md-3">
-              <Card
-                className={`border-0 shadow-sm ${
-                  "overview" === activeTab ? "adminLightkBg" : "adminDarkBg"
-                } `}
-                style={{
-                  backgroundColor: `${
-                    `overview` == activeTab ? "transparent" : "#fff"
-                  }`,
-                }}>
-                <Card.Body className="p-2 p-md-3 p-lg-4">
+              className="m-0 mt-0 p-0 px-md-0">
+              
+                {/* <Card.Body className="p-2 p-md-3 p-lg-4"> */}
                   {renderContent()}
-                </Card.Body>
-              </Card>
+                {/* </Card.Body> */}
+              
             </Container>
           </Col>
         </Row>

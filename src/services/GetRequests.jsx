@@ -164,6 +164,53 @@ export const getAllUsers = async () => {
   }
 };
 
+// Reporting summary
+export const getReportingSummary = async (documentThreshold = 100) => {
+  try {
+    const response = await apiClient.get('/document/reporting/summary', {
+      params: { documentThreshold }
+    });
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
+    throw new Error(response.data?.message || 'Failed to get reporting summary');
+  } catch (error) {
+    console.error('Get reporting summary error:', error);
+    handleApiError(error);
+    throw error.response?.data || { message: 'Failed to get reporting summary' };
+  }
+};
+
+// Reporting document type counts
+export const getReportingDocumentTypeCounts = async () => {
+  try {
+    const response = await apiClient.get('/document/reporting/document-types');
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
+    throw new Error(response.data?.message || 'Failed to get document type counts');
+  } catch (error) {
+    console.error('Get document type counts error:', error);
+    handleApiError(error);
+    throw error.response?.data || { message: 'Failed to get document type counts' };
+  }
+};
+
+// Reporting file status counts
+export const getReportingFileStatusCounts = async () => {
+  try {
+    const response = await apiClient.get('/document/reporting/file-status');
+    if (isSuccessResponse(response)) {
+      return extractResponseData(response);
+    }
+    throw new Error(response.data?.message || 'Failed to get file status counts');
+  } catch (error) {
+    console.error('Get file status counts error:', error);
+    handleApiError(error);
+    throw error.response?.data || { message: 'Failed to get file status counts' };
+  }
+};
+
 // Get user by ID
 export const getUserById = async (userId) => {
   try {

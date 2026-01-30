@@ -16,3 +16,5 @@ export {
 export { default as EstateComponent } from './EstateComponent'
 export { default as CertLicensesComponent } from './CertLicensesComponent'
 export { default as CargoDamageComponent } from './CargoDamageComponent'
+export { default as ArchivedDocuments } from './ArchivedDocuments'
+export { default as ExpiringDocuments } from './ExpiringDocuments'

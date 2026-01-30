@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import DashboardLayout from './components/dashboardComponents/DashboardLayout'
 import RolesComponent from './components/user/RolesComponent'
 import AccountComponent from './components/user/AccountComponent'
@@ -8,6 +8,8 @@ import SectionsComponent from './components/location/SectionsComponent'
 import EntityComponent from './components/location/EntityComponent'
 import ProtectedRoutes from './components/dashboardComponents/ProtectedRoute'
 import LoginPage from './components/LoginPage'
+import AdminDashboard from './components/AdminDashboard'
+import { clearAuthData } from './services/authUtils'
 
 // Document components
 import {
@@ -19,14 +21,30 @@ import {
   AccordConcessionComponent,
   EstateComponent,
   CertLicensesComponent,
-  CargoDamageComponent
+  CargoDamageComponent,
+  ArchivedDocuments,
+  ExpiringDocuments
 } from './components/document'
 import CommonDocDetailsComponent from './components/document/CommonDocDetailsComponent'
 import CommThirdPartyComponent from './components/document/CommThirdPartyComponent'
+import TestRedirection from './components/TestRedirection'
+import UsersPage from './components/user/UsersPage'
+import { ReportingDashboard } from './components/reporting'
 
 // Pages
 export function Users () {
-  return <h2>Users Page</h2>
+  return <UsersPage />
+}
+
+const AdminDashboardRoute = () => {
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    clearAuthData()
+    navigate('/login', { replace: true })
+  }
+
+  return <AdminDashboard onLogout={handleLogout} />
+  // return <TestRedirection onLogout={handleLogout} />
 }
 
 export default function App () {
@@ -36,17 +54,27 @@ export default function App () {
         <Route path='/login' element={<LoginPage />} />
         <Route
           path='/'
-          element={<Navigate to='/dashboard/docstatus' replace />}
+          element={<Navigate to='/dashboard' replace />}
         />
 
+       
         <Route
-          path='/dashboard/*'
+          path='/dashboard'
+          element={
+            <ProtectedRoutes>
+              {/* <DashboardLayout /> */}
+              <AdminDashboardRoute/>
+            </ProtectedRoutes>
+          } >
+
+        {/* <Route
+          path='/newdashboard/*'
           element={
             <ProtectedRoutes>
               <DashboardLayout />
             </ProtectedRoutes>
           }
-        >
+        > */}
           <Route path='locations'>
             <Route path='countries' element={<CountryComponent />} />
             <Route path='entities' element={<EntityComponent />} />
@@ -54,11 +82,14 @@ export default function App () {
             <Route path='sections' element={<SectionsComponent />} />
           </Route>
           {/* Default redirect */}
-          <Route index element={<Navigate to='/docstatus' replace />} />
+          <Route index element={<Navigate to='/dashboard' replace />} />
 
           {/* Dashboard / Main */}
           <Route path='docstatus' element={<DocStatusComponent />} />
           <Route path='users' element={<Users />} />
+          <Route path='archive' element={<ArchivedDocuments />} />
+          <Route path='expiry' element={<ExpiringDocuments />} />
+          <Route path='reporting' element={<ReportingDashboard />} />
 
           {/* Documents */}
           <Route path='docsCategories' element={<SectionCategoryComponent />} />

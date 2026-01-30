@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllNormeLoi } from '../../services/GetRequests';
 import { createNormeLoiWithFile } from '../../services/Inserts';
-import { updateNormeLoi, deleteNormeLoi } from '../../services/UpdRequests';
+import { updateNormeLoi, updateNormeLoiWithFile, deleteNormeLoi } from '../../services/UpdRequests';
 import { getAllDocStatuses } from '../../services/GetRequests';
 import { getText } from '../../data/texts';
 import SearchComponent from '../SearchComponent';
@@ -224,7 +224,6 @@ const loadData = async () => {
 
         await createNormeLoiWithFile(formDataToSend);
       } else if (editingItem) {
-        // Handle UPDATE (with or without file - backend doesn't support file update yet)
         const dataToSubmit = {
           ...formData,
           dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
@@ -233,11 +232,16 @@ const loadData = async () => {
           status: formData.status.id ? { id: parseInt(formData.status.id) } : null
         };
 
-        await updateNormeLoi(editingItem.id, dataToSubmit);
-
-        // Show info message if user selected a new file (not supported yet)
         if (selectedFile) {
-          console.warn('File update not yet supported by backend. Document was not changed.');
+          const formDataToSend = new FormData();
+          formDataToSend.append('file', selectedFile);
+          formDataToSend.append('normeLoi', new Blob([JSON.stringify(dataToSubmit)], {
+            type: 'application/json'
+          }));
+
+          await updateNormeLoiWithFile(editingItem.id, formDataToSend);
+        } else {
+          await updateNormeLoi(editingItem.id, dataToSubmit);
         }
       }
 

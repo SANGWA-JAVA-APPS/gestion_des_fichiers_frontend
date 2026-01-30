@@ -20,6 +20,10 @@ import AdminCArdmenu from './AdminCArdmenu';
 import { getText } from '../data/texts';
 
 const MenuBox = ({ setActiveTab, language = 'en' }) => {
+  const handleDocumentClick = () => {
+    setActiveTab('document');
+  };
+  
   return (
     <Row className="g-4 mt-4">
       <Col xs={12}>
@@ -28,7 +32,7 @@ const MenuBox = ({ setActiveTab, language = 'en' }) => {
       
       {/* Main Sections */}
       {/* <AdminCArdmenu title={getText('adminMenu.dashboard', language)} icon={FaThLarge} iconColor="#0d6efd" onClick={() => setActiveTab('overview')} /> */}
-      <AdminCArdmenu title={getText('adminMenu.documents', language)} icon={FaFileAlt} iconColor="#28a745" onClick={() => setActiveTab('document')} />
+      <AdminCArdmenu title={getText('adminMenu.documents', language)} icon={FaFileAlt} iconColor="#28a745" onClick={handleDocumentClick} />
       <AdminCArdmenu title={getText('adminMenu.archive', language)} icon={FaArchive} iconColor="#6c757d" onClick={() => setActiveTab('archive')} />
       <AdminCArdmenu title={getText('adminMenu.expiringSoon', language)} icon={FaClock} iconColor="#ffc107" onClick={() => setActiveTab('expiry')} />
       <AdminCArdmenu title={getText('adminMenu.activeDocs', language)} icon={FaCheckCircle} iconColor="#28a745" onClick={() => setActiveTab('activeDocs')} />

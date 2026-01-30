@@ -6,7 +6,7 @@ import {  getAllUsers,  getAccountById } from '../services/GetRequests'
 import { updateUserProfile } from '../services/UpdRequests'
 import { CurrentUserId, getUserInfo, isAdmin } from '../services/authUtils'
 
-const UserComponent = ({ userId = null }) => {
+const UserComponent = ({ userId = null, embedded = false }) => {
   const [users, setUsers] = useState([])
   const [profileUser, setProfileUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -110,15 +110,17 @@ const loadProfileUser = async () => {
     )
   }
 
-  return (
-    <div className="container-fluid">
-      <Row className="mb-4">
-        <Col>
-          <h3 className="fw-semibold">
-            {userId ? 'User Profile' : 'My Profile'}
-          </h3>
-        </Col>
-      </Row>
+  const content = (
+    <>
+      {!embedded && (
+        <Row className="mb-4">
+          <Col>
+            <h3 className="fw-semibold">
+              {userId ? 'User Profile' : 'My Profile'}
+            </h3>
+          </Col>
+        </Row>
+      )}
 
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError('')}>
@@ -299,8 +301,10 @@ const loadProfileUser = async () => {
           </Modal.Footer>
         </Form>
       </Modal>
-    </div>
+    </>
   )
+
+  return embedded ? content : <div className="container-fluid">{content}</div>
 }
 
 export default UserComponent

@@ -53,7 +53,7 @@ export default function DashboardLayout () {
   const marginLeft =
     sidebarState === 'hidden'
       ? '0'
-      : sidebarState === 'icon-only' ? '70px' : '280px'
+      : sidebarState === 'icon-only' ? '70px' : '210px'
 
   return (
     <div className='d-flex flex-column vh-100 overflow-hidden'>
@@ -62,7 +62,7 @@ export default function DashboardLayout () {
         onSidebarToggle={handleSidebarToggle}
       />
 
-      <div className='d-flex flex-grow-1 overflow-hidden'>
+      <div className='d-flex flex-grow-1 overflow-hidden '>
         <Sidebar
           sidebarState={sidebarState}
           activeUrl={location.pathname}
@@ -71,11 +71,11 @@ export default function DashboardLayout () {
 
         {/* MAIN CONTENT VIA OUTLET */}
         <main
-          className='flex-grow-1 overflow-auto bg-light'
+          className='flex-grow-1 overflow-auto bg-light scroll-hover'
           style={{
             marginLeft: window.innerWidth >= 768 ? marginLeft : '0',
             transition: 'margin-left 0.3s ease',
-            marginTop: '56px'
+            marginTop: '20px'
           }}
         >
           <div className='container-fluid py-4'>

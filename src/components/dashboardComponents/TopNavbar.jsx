@@ -1,12 +1,16 @@
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 import {
   Bell,
   LogOut,
   User,
-  Settings,
-  Menu
+  Menu,
+  LayoutDashboard,
+  Archive,
+  Clock,
+  Users,
+  BarChart3
 } from 'lucide-react'
 import { clearAuthData, getUserInfo } from '../../services/authUtils'
 import { getFlagUrl } from '../../services/commonUtils'
@@ -38,7 +42,7 @@ export function TopNavbar({ onSidebarToggle }) {
   console.log('TopNavbar - Flag Error:', flagError)
 
   return (
-    <nav className="navbar navbar-dark bg-dark px-3">
+    <nav className="navbar navbar-dark bg-dark px-3 top-navbar">
       {/* Sidebar toggle */}
       <button
         className="btn btn-outline-light me-3 d-flex align-items-center"
@@ -55,6 +59,56 @@ export function TopNavbar({ onSidebarToggle }) {
       >
         <img src={logo} alt="MAGERWA" style={{ height: '32px' }} />
         <span>INGENZI</span>
+      </div>
+
+      {/* Center links */}
+      <div className="top-navbar-center">
+        <NavLink
+          to="/dashboard"
+          end
+          className={({ isActive }) =>
+            `top-navbar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <LayoutDashboard size={14} />
+          Dashboard
+        </NavLink>
+        <NavLink
+          to="/dashboard/archive"
+          className={({ isActive }) =>
+            `top-navbar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <Archive size={14} />
+          Archived
+        </NavLink>
+        <NavLink
+          to="/dashboard/expiry"
+          className={({ isActive }) =>
+            `top-navbar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <Clock size={14} />
+          Expiring
+        </NavLink>
+        <NavLink
+          to="/dashboard/users"
+          className={({ isActive }) =>
+            `top-navbar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <Users size={14} />
+          Users
+        </NavLink>
+        <NavLink
+          to="/dashboard/reporting"
+          className={({ isActive }) =>
+            `top-navbar-link ${isActive ? 'active' : ''}`
+          }
+        >
+          <BarChart3 size={14} />
+          Reporting
+        </NavLink>
       </div>
 
       {/* Right section */}
