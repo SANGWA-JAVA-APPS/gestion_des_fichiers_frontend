@@ -17,7 +17,7 @@ import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
 import { getUserInfo } from '../../services/authUtils';
 import { useLanguage } from '../../i18n/LanguageContext';
 import PaginationControl from '../PaginationControl';
-import { replace, useSearchParams } from 'react-router-dom';
+import {  useSearchParams } from 'react-router-dom';
 import SimpleSearchComponent from '../SimpleSearchComponent';
 
 const NormeLoiComponent = () => {

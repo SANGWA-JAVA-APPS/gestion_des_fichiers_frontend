@@ -33,15 +33,18 @@ const AccordConcessionComponent = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     contratConcession: '',
+    numeroAccord: '',
+    objetConcession: '',
+    concessionnaire: '',
+    dureeAnnees: '',
+    conditionsFinancieres: '',
     emplacement: '',
     coordonneesGps: '',
     rapportTransfertGestion: '',
-    dateSignature: '',
-    dateExpiration: '',
-    doneBy: { id: '' },
-    document: { id: '' },
-    status: { id: '' },
-    sectionCategory: { id: '' }
+    dateDebutConcession: '',
+    dateFinConcession: '',
+    statusId: '',
+    sectionCategoryId: ''
   });
   const {language} = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -126,30 +129,36 @@ const loadData = async () => {
       setEditingItem(item);
       setFormData({
         contratConcession: item.contratConcession || '',
+        numeroAccord: item.numeroAccord || '',
+        objetConcession: item.objetConcession || '',
+        concessionnaire: item.concessionnaire || '',
+        dureeAnnees: item.dureeAnnees || '',
+        conditionsFinancieres: item.conditionsFinancieres || '',
         emplacement: item.emplacement || '',
         coordonneesGps: item.coordonneesGps || '',
         rapportTransfertGestion: item.rapportTransfertGestion || '',
-        dateSignature: item.dateSignature ? item.dateSignature.split('T')[0] : '',
-        dateExpiration: item.dateExpiration ? item.dateExpiration.split('T')[0] : '',
-     
-        document: { id: item.document?.id || '' },
-        status: { id: item.status?.id || '' },
-        sectionCategory: { id: item.sectionCategory?.id || '' }
+        dateDebutConcession: item.dateDebutConcession ? item.dateDebutConcession.slice(0, 16) : '',
+        dateFinConcession: item.dateFinConcession ? item.dateFinConcession.slice(0, 16) : '',
+        statusId: item.status?.id || '',
+        sectionCategoryId: item.sectionCategory?.id || ''
       });
       setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
         contratConcession: '',
+        numeroAccord: '',
+        objetConcession: '',
+        concessionnaire: '',
+        dureeAnnees: '',
+        conditionsFinancieres: '',
         emplacement: '',
         coordonneesGps: '',
         rapportTransfertGestion: '',
-        dateSignature: '',
-        dateExpiration: '',
-   
-        document: { id: '' },
-        status: { id: '' },
-        sectionCategory: { id: '' }
+        dateDebutConcession: '',
+        dateFinConcession: '',
+        statusId: '',
+        sectionCategoryId: ''
       });
       setSelectedFile(null);
     }
@@ -165,18 +174,10 @@ const loadData = async () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: { ...prev[parent], [child]: value }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleFileChange = (e) => {
@@ -196,25 +197,30 @@ const loadData = async () => {
         return;
       }
 
-      if (selectedFile) {
+      if (selectedFile || !editingItem) {
+        // CREATE or UPDATE with file
         const formDataToSend = new FormData();
-        formDataToSend.append('file', selectedFile);
+        if (selectedFile) {
+          formDataToSend.append('file', selectedFile);
+        }
 
-        // Build accordConcession object as JSON
         const accordConcessionData = {
-          numeroAccord: formData.contratConcession,  // Backend expects numeroAccord
-          contratConcession: formData.contratConcession,  // Also keep original field
+          contratConcession: formData.contratConcession || null,
+          numeroAccord: formData.numeroAccord || null,
+          objetConcession: formData.objetConcession || null,
+          concessionnaire: formData.concessionnaire || null,
+          dureeAnnees: formData.dureeAnnees ? parseInt(formData.dureeAnnees) : null,
+          conditionsFinancieres: formData.conditionsFinancieres || null,
           emplacement: formData.emplacement || null,
           coordonneesGps: formData.coordonneesGps || null,
           rapportTransfertGestion: formData.rapportTransfertGestion || null,
-          dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
-          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
-          doneBy: { id:CurrentUserId },
-          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null,
-          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+          dateDebutConcession: formData.dateDebutConcession ? new Date(formData.dateDebutConcession).toISOString() : null,
+          dateFinConcession: formData.dateFinConcession ? new Date(formData.dateFinConcession).toISOString() : null,
+          sectionCategoryId: formData.sectionCategoryId ? parseInt(formData.sectionCategoryId) : null,
+          statusId: formData.statusId ? parseInt(formData.statusId) : null,
+          getDoneById: CurrentUserId
         };
 
-        // Add accordConcession as JSON blob
         formDataToSend.append('accordConcession', new Blob([JSON.stringify(accordConcessionData)], {
           type: 'application/json'
         }));
@@ -223,21 +229,6 @@ const loadData = async () => {
           await updateAccordConcessionWithFile(editingItem.id, formDataToSend);
         } else {
           await createAccordConcessionWithFile(formDataToSend);
-        }
-      } else {
-        const dataToSubmit = {
-          ...formData,
-          dateSignature: formData.dateSignature ? new Date(formData.dateSignature).toISOString() : null,
-          dateExpiration: formData.dateExpiration ? new Date(formData.dateExpiration).toISOString() : null,
-          doneBy:  { id:CurrentUserId } ,
-          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-          sectionCategory: formData.sectionCategory.id ? { id: parseInt(formData.sectionCategory.id) } : null
-        };
-
-        // Only include status for updates (backend sets default status on creation)
-        if (editingItem) {
-          dataToSubmit.status = formData.status.id ? { id: parseInt(formData.status.id) } : null;
-          await updateAccordConcession(editingItem.id, dataToSubmit);
         }
       }
 
@@ -538,10 +529,50 @@ const loadData = async () => {
           <Modal.Body>
             {error && <Alert variant="danger" dismissible onClose={() => setError('')}>{error}</Alert>}
 
-            <Form.Group className="mb-3">
-              <Form.Label>{getText('document.fields.contratConcession', language)} *</Form.Label>
-              <Form.Control type="text" name="contratConcession" value={formData.contratConcession} onChange={handleChange} required />
-            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Numero Accord *</Form.Label>
+                  <Form.Control type="text" name="numeroAccord" value={formData.numeroAccord} onChange={handleChange} required />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Contrat Concession</Form.Label>
+                  <Form.Control type="text" name="contratConcession" value={formData.contratConcession} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Objet Concession</Form.Label>
+                  <Form.Control type="text" name="objetConcession" value={formData.objetConcession} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Concessionnaire</Form.Label>
+                  <Form.Control type="text" name="concessionnaire" value={formData.concessionnaire} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Durée (Années)</Form.Label>
+                  <Form.Control type="number" name="dureeAnnees" value={formData.dureeAnnees} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Conditions Financières</Form.Label>
+                  <Form.Control type="text" name="conditionsFinancieres" value={formData.conditionsFinancieres} onChange={handleChange} />
+                </Form.Group>
+              </Col>
+            </Row>
 
             <Row>
               <Col md={6}>
@@ -566,14 +597,14 @@ const loadData = async () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateSignature', language)}</Form.Label>
-                  <Form.Control type="date" name="dateSignature" value={formData.dateSignature} onChange={handleChange} />
+                  <Form.Label>Date Début Concession</Form.Label>
+                  <Form.Control type="datetime-local" name="dateDebutConcession" value={formData.dateDebutConcession} onChange={handleChange} />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateExpiration', language)}</Form.Label>
-                  <Form.Control type="date" name="dateExpiration" value={formData.dateExpiration} onChange={handleChange} />
+                  <Form.Label>Date Fin Concession</Form.Label>
+                  <Form.Control type="datetime-local" name="dateFinConcession" value={formData.dateFinConcession} onChange={handleChange} />
                 </Form.Group>
               </Col>
             </Row>
@@ -607,8 +638,8 @@ const loadData = async () => {
             
               <Col md={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
-                  <Form.Select name="status.id" value={formData.status.id} onChange={handleChange} required>
+                  <Form.Label>Status *</Form.Label>
+                  <Form.Select name="statusId" value={formData.statusId} onChange={handleChange} required>
                     <option value="">{getText('common.select', language)}</option>
                     {docStatuses.map(status => <option key={status.id} value={status.id}>{status.name}</option>)}
                   </Form.Select>
@@ -616,11 +647,8 @@ const loadData = async () => {
               </Col>
               <Col md={3}>
                 <Form.Group className="mb-3">
-               
-                  <Form.Label>{getText('document.sectionCategory', language)} *</Form.Label>
-                  <Form.Select name="sectionCategory.id" value={formData.sectionCategory.id} onChange={handleChange} required>
-              
-                    
+                  <Form.Label>Section Category *</Form.Label>
+                  <Form.Select name="sectionCategoryId" value={formData.sectionCategoryId} onChange={handleChange} required>
                     <option value="">{getText('common.select', language)}</option>
                     {sectionCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </Form.Select>

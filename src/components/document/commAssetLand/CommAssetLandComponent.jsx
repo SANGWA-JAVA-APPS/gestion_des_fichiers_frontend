@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
 import { getAllCommAssetLand } from '../../../services/GetRequests';
 import {  createCommAssetLandWithFile } from '../../../services/Inserts';
-import { updateCommAssetLand, deleteCommAssetLand } from '../../../services/UpdRequests';
+import { updateCommAssetLand, updateCommAssetLandWithFile, deleteCommAssetLand } from '../../../services/UpdRequests';
 import { getAllDocStatuses, getAllSectionCategories } from '../../../services/GetRequests';
 import { getText } from '../../../data/texts';
 
@@ -266,21 +266,41 @@ const handleCloseViewModal = () => {
 
         await createCommAssetLandWithFile(formDataToSend);
       } else if (editingItem) {
-        // Handle UPDATE (with or without file - backend doesn't support file update yet)
-        const dataToSubmit = {
-          ...formData,
-          dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
-          doneBy: { id:CurrentUserId },
-          document: {id: editingItem.documentId } ,
-          section: formData.section.id ? { id: parseInt(formData.section.id) } : null,
-          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
-        };
-
-        await updateCommAssetLand(editingItem.id, dataToSubmit);
-
-        // Show info message if user selected a new file (not supported yet)
+        // Handle UPDATE
         if (selectedFile) {
-          console.warn('File update not yet supported by backend. Document was not changed.');
+          // UPDATE with new file
+          const formDataToSend = new FormData();
+          formDataToSend.append('file', selectedFile);
+          
+          const commAssetLandData = {
+            reference: formData.reference,
+            description: formData.description || null,
+            dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
+            coordonneesGps: formData.coordonneesGps || null,
+            emplacement: formData.emplacement || null,
+            doneBy: { id: CurrentUserId },
+            document: { id: editingItem.documentId },
+            status: formData.status.id ? { id: parseInt(formData.status.id) } : null,
+            section: formData.section.id ? { id: parseInt(formData.section.id) } : null
+          };
+          
+          formDataToSend.append('commAssetLand', new Blob([JSON.stringify(commAssetLandData)], {
+            type: 'application/json'
+          }));
+          
+          await updateCommAssetLandWithFile(editingItem.id, formDataToSend);
+        } else {
+          // UPDATE without file change
+          const dataToSubmit = {
+            ...formData,
+            dateObtention: formData.dateObtention ? new Date(formData.dateObtention).toISOString() : null,
+            doneBy: { id: CurrentUserId },
+            document: { id: editingItem.documentId },
+            section: formData.section.id ? { id: parseInt(formData.section.id) } : null,
+            status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+          };
+          
+          await updateCommAssetLand(editingItem.id, dataToSubmit);
         }
       }
 

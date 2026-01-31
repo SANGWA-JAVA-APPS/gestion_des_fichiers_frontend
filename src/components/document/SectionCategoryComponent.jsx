@@ -32,7 +32,8 @@ const SectionCategoryComponent = () => {
   const [itemToDelete, setItemToDelete] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
-    description: ''
+    description: '',
+    code: ''
   })
   const { language } = useLanguage()
 
@@ -91,12 +92,14 @@ const SectionCategoryComponent = () => {
       setEditingItem(item)
       setFormData({
         name: item.name || '',
-        description: item.description || ''
+        description: item.description || '',
+        code: item.code || ''
       })
     } else {
       setEditingItem(null)
       setFormData({
         name: '',
+        code: '',
         description: ''
       })
     }
@@ -392,6 +395,25 @@ const SectionCategoryComponent = () => {
                 {language === 'fr'
                   ? 'Ex: Financial documents, HR records, IT files...'
                   : 'Ex: Financial documents, HR records, IT files...'}
+              </Form.Text>
+            </Form.Group>
+            <Form.Group className='mb-3'>
+              <Form.Label>
+                {getText('document.fields.code', language)} *
+              </Form.Label>
+              <Form.Control
+                type='text'
+                name='code'
+                value={formData.code}
+                onChange={handleChange}
+                required
+                disabled={!!editingItem} // 🔒 lock on update
+                placeholder='Ex: FIN, HR, IT'
+              />
+              <Form.Text className='text-muted'>
+                {editingItem
+                  ? 'Code cannot be changed'
+                  : 'Short unique code (required)'}
               </Form.Text>
             </Form.Group>
           </Modal.Body>
