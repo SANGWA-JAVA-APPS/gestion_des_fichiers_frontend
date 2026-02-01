@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate
+} from 'react-router-dom'
 import DashboardLayout from './components/dashboardComponents/DashboardLayout'
 import RolesComponent from './components/user/RolesComponent'
 import AccountComponent from './components/user/AccountComponent'
@@ -52,22 +58,18 @@ export default function App () {
     <BrowserRouter>
       <Routes>
         <Route path='/login' element={<LoginPage />} />
-        <Route
-          path='/'
-          element={<Navigate to='/dashboard' replace />}
-        />
+        <Route path='/' element={<Navigate to='/dashboard' replace />} />
 
-       
         <Route
           path='/dashboard'
           element={
             <ProtectedRoutes>
               {/* <DashboardLayout /> */}
-              <AdminDashboardRoute/>
+              <AdminDashboardRoute />
             </ProtectedRoutes>
-          } >
-
-        {/* <Route
+          }
+        >
+          {/* <Route
           path='/newdashboard/*'
           element={
             <ProtectedRoutes>
