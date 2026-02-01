@@ -38,7 +38,7 @@ const ReportingDashboard = () => {
       { label: 'Entities', value: summary?.totalEntities },
       { label: 'Files', value: summary?.totalFiles },
       { label: 'Doc Records', value: summary?.totalDocRecords },
-      { label: 'Section Categories', value: summary?.totalSectionCategories }
+      // { label: 'Section Categories', value: summary?.totalSectionCategories }
     ]
   ), [summary])
 

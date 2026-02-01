@@ -104,7 +104,7 @@ export const useSidebarData = () => {
                 url: '/dashboard/locations/entities',
                 icon: Building2Icon,
                 roles: [ROLES.ADMIN, ROLES.MANAGER]
-              },
+              }
               // {
               //   title: t('sidebar.moduleManagement'),
               //   url: '/dashboard/locations/modules',
@@ -146,13 +146,13 @@ export const useSidebarData = () => {
             roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
             permissionGroup: 'documents',
             items: [
-              {
-                title: t('sidebar.sectionCategory'),
-                url: '/dashboard/sectionCategory',
-                icon: ListIcon,
-                roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
-                permissionCode: 'SECTION_CATEGORY'
-              },
+              // {
+              //   title: t('sidebar.sectionCategory'),
+              //   url: '/dashboard/sectionCategory',
+              //   icon: ListIcon,
+              //   roles: [ROLES.ADMIN, ROLES.MANAGER, ROLES.USER],
+              //   permissionCode: 'SECTION_CATEGORY'
+              // },
               {
                 title: t('sidebar.normeLoi'),
                 url: '/dashboard/NormeLoi',
