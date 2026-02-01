@@ -43,7 +43,7 @@ export const getAllCommonDocDetails = async ({
   search
 } = {}) => {
   try {
-    const response = await apiClient.get('/common-docs', {
+    const response = await apiClient.get('/document/common-doc-details', {
       params: {
         page,
         size,
@@ -69,7 +69,7 @@ export const getAllCommonDocDetails = async ({
 // Get common doc details by ID
 export const getCommonDocDetailsById = async (id) => {
   try {
-    const response = await apiClient.get(`/common-docs/${id}`);
+    const response = await apiClient.get(`/document/common-doc-details/${id}`);
     return response.data;
   } catch (error) {
     console.error('Get common doc details by ID error:', error);

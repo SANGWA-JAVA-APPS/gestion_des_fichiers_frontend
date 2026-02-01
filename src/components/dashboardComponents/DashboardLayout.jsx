@@ -50,6 +50,21 @@ export default function DashboardLayout () {
     }
   }
 
+  const handleDashboardClick = () => {
+    setSidebarState('hidden')
+  }
+
+  const handleTopNavItemClick = () => {
+    setSidebarState('full')
+  }
+
+  const handleDashboardCardClick = url => {
+    if (url) {
+      navigate(url)
+    }
+    setSidebarState('full')
+  }
+
   const marginLeft =
     sidebarState === 'hidden'
       ? '0'
@@ -60,6 +75,8 @@ export default function DashboardLayout () {
       <TopNavbar
         sidebarState={sidebarState}
         onSidebarToggle={handleSidebarToggle}
+        onDashboardClick={handleDashboardClick}
+        onTopNavItemClick={handleTopNavItemClick}
       />
 
       <div className='d-flex flex-grow-1 overflow-hidden '>
@@ -79,7 +96,10 @@ export default function DashboardLayout () {
           }}
         >
           <div className='container-fluid py-4'>
-            <Outlet />
+            <Outlet
+              key={location.pathname}
+              context={{ onDashboardCardClick: handleDashboardCardClick }}
+            />
           </div>
         </main>
       </div>

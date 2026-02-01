@@ -135,12 +135,14 @@ const AccountComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h4>
-            {t('accounts.management')}
-          </h4>
-          <p className='text-muted'>
-            {t('accounts.subtitle')}
-          </p>
+          <div className='page-title-group'>
+            <h4>
+              {t('accounts.management')}
+            </h4>
+            <p className='text-muted'>
+              {t('accounts.subtitle')}
+            </p>
+          </div>
         </Col>
         <Col xs='auto'>
           <Button onClick={() => handleShowModal()}>

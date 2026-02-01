@@ -178,12 +178,14 @@ const CountryComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h5>
-            {t('adminMenu.countries')}
-          </h5>
-          <p className='text-muted'>
-            {t('countries.subtitle')}
-          </p>
+          <div className='page-title-group'>
+            <h5>
+              {t('adminMenu.countries')}
+            </h5>
+            <p className='text-muted'>
+              {t('countries.subtitle')}
+            </p>
+          </div>
         </Col>
         {/* <Col xs='auto'>
           <Button variant='primary' onClick={() => handleShowModal()}>

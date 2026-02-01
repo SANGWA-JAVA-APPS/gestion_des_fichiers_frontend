@@ -3,11 +3,26 @@ import { apiClient } from './apiConfig';
 // Update an existing common doc detail
 export const updateCommonDocDetails = async (id, data) => {
   try {
-    const response = await apiClient.put(`/common-docs/${id}`, data);
+    const response = await apiClient.put(`/document/common-doc-details/${id}`, data);
     return response.data;
   } catch (error) {
     console.error('Update common doc details error:', error);
     throw error.response?.data || { message: 'Failed to update common doc details' };
+  }
+};
+
+// Update common doc details with file upload
+export const updateCommonDocDetailsWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/common-doc-details/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update common doc details with file error:', error);
+    throw error.response?.data || { message: 'Failed to update common doc details with file' };
   }
 };
 
@@ -27,7 +42,7 @@ export const updateCommThirdPartyWithFile = async (id, formData) => {
 // Delete a common doc detail
 export const deleteCommonDocDetails = async (id) => {
   try {
-    const response = await apiClient.delete(`/common-docs/${id}`);
+    const response = await apiClient.delete(`/document/common-doc-details/${id}`);
     return response.data;
   } catch (error) {
     console.error('Delete common doc details error:', error);

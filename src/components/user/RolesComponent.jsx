@@ -197,12 +197,14 @@ const RolesComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h4>
-            {t('roles.management')}
-          </h4>
-          <p className='text-muted'>
-            {t('roles.subtitle')}
-          </p>
+          <div className='page-title-group'>
+            <h4>
+              {t('roles.management')}
+            </h4>
+            <p className='text-muted'>
+              {t('roles.subtitle')}
+            </p>
+          </div>
         </Col>
         <Col xs='auto'>
           {/* <Button variant='primary' onClick={() => handleShowModal()}>

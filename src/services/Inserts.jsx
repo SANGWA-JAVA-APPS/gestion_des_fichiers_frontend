@@ -48,11 +48,26 @@ export const getUserSections = async (userId) => {
 // Create a new common doc detail
 export const createCommonDocDetails = async (data) => {
   try {
-    const response = await apiClient.post('/common-docs', data);
+    const response = await apiClient.post('/document/common-doc-details', data);
     return response.data;
   } catch (error) {
     console.error('Create common doc details error:', error);
     throw error.response?.data || { message: 'Failed to create common doc details' };
+  }
+};
+
+// Create common doc details with file upload
+export const createCommonDocDetailsWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/common-doc-details', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create common doc details with file error:', error);
+    throw error.response?.data || { message: 'Failed to create common doc details with file' };
   }
 };
 

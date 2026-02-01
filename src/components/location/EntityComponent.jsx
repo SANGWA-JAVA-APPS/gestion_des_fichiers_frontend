@@ -199,12 +199,14 @@ const EntityComponent = () => {
     <Container fluid>
       <Row className='mb-4'>
         <Col>
-          <h4>
-            {t('entities.management')}
-          </h4>
-          <p className='text-muted'>
-            {t('entities.subtitle')}
-          </p>
+          <div className='page-title-group'>
+            <h4>
+              {t('entities.management')}
+            </h4>
+            <p className='text-muted'>
+              {t('entities.subtitle')}
+            </p>
+          </div>
         </Col>
         <Col xs='auto'>
           <Button variant='primary' onClick={() => handleShowModal()}>

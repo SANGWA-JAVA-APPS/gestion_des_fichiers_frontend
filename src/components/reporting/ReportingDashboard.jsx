@@ -82,12 +82,12 @@ const ReportingDashboard = () => {
             </Card.Header>
             <Card.Body>
               <Row className='g-3 mb-3'>
-                {summaryCards.map(card => (
+                {summaryCards.map((card, index) => (
                   <Col xs={12} sm={6} lg={4} xl={3} key={card.label}>
-                    <Card className='h-100 shadow-sm border-2' style ={{border:'#5d5c8f 1px solid'}}>
+                    <Card className={`h-100 shadow-sm border-2 reporting-summary-card reporting-summary-card--${index % 6}`}>
                       <Card.Body className='d-flex flex-column gap-2'>
-                        <span className=' ' style={{color:'#338c92',fontSize:'13px', fontWeight:'bold'}}>{card.label}</span>
-                        <span className='fs-4 fw-semibold' style={{color:'#f59402'}}>
+                        <span className='reporting-summary-label'>{card.label}</span>
+                        <span className='fs-4 fw-semibold reporting-summary-value'>
                           {loading ? '...' : (card.value ?? '-')}
                         </span>
                       </Card.Body>

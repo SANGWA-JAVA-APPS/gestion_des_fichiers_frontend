@@ -21,7 +21,7 @@ import UserProfile from '../user/UserProfile'
 import logo from '../../assets/magerwa-logo.png'
 
 
-export function TopNavbar({ onSidebarToggle }) {
+export function TopNavbar({ onSidebarToggle, onDashboardClick, onTopNavItemClick }) {
   const navigate = useNavigate()
   const user = getUserInfo()
   const [showProfileModal, setShowProfileModal] = useState(false)
@@ -69,6 +69,7 @@ export function TopNavbar({ onSidebarToggle }) {
           className={({ isActive }) =>
             `top-navbar-link ${isActive ? 'active' : ''}`
           }
+          onClick={onDashboardClick}
         >
           <LayoutDashboard size={14} />
           Dashboard
@@ -78,6 +79,7 @@ export function TopNavbar({ onSidebarToggle }) {
           className={({ isActive }) =>
             `top-navbar-link ${isActive ? 'active' : ''}`
           }
+          onClick={onTopNavItemClick}
         >
           <Archive size={14} />
           Archived
@@ -87,6 +89,7 @@ export function TopNavbar({ onSidebarToggle }) {
           className={({ isActive }) =>
             `top-navbar-link ${isActive ? 'active' : ''}`
           }
+          onClick={onTopNavItemClick}
         >
           <Clock size={14} />
           Expiring
@@ -96,6 +99,7 @@ export function TopNavbar({ onSidebarToggle }) {
           className={({ isActive }) =>
             `top-navbar-link ${isActive ? 'active' : ''}`
           }
+          onClick={onTopNavItemClick}
         >
           <Users size={14} />
           Users
@@ -105,6 +109,7 @@ export function TopNavbar({ onSidebarToggle }) {
           className={({ isActive }) =>
             `top-navbar-link ${isActive ? 'active' : ''}`
           }
+          onClick={onTopNavItemClick}
         >
           <BarChart3 size={14} />
           Reporting

@@ -19,17 +19,22 @@ import { FaEdit, FaTrash, FaEye, FaFileAlt } from 'react-icons/fa'
 
 import {
   getAllCommonDocDetails,
-
-  getSectionCategoryByCode 
+  getSectionCategoryByCode,
+  getAllDocStatuses,
+  getAllSectionCategories
 } from '../../services/GetRequests'
 import {
   deleteCommonDocDetails,
-  updateCommonDocDetails
+  updateCommonDocDetails,
+  updateCommonDocDetailsWithFile
 } from '../../services/UpdRequests'
-import { createCommonDocDetails } from '../../services/Inserts'
+import { createCommonDocDetailsWithFile } from '../../services/Inserts'
+import { CurrentUserId } from '../../services/authUtils'
 import { useLanguage } from '../../i18n/LanguageContext'
 import SimpleSearchComponent from '../SimpleSearchComponent'
 import PaginationControl from '../PaginationControl'
+import DocumentCard from '../DocumentCard'
+import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal'
 
 import {
   DollarSign,
@@ -97,27 +102,47 @@ const CommonDocDetailsComponent = () => {
 
   const [toast, setToast] = useState({ show: false, message: '', variant: 'success' })
 
-  const [activeView, setActiveView] = useState('table')
+  const [activeView, setActiveView] = useState('cards')
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   const [editingDoc, setEditingDoc] = useState(null)
   const [docToDelete, setDocToDelete] = useState(null)
+  const [selectedDocForDetails, setSelectedDocForDetails] = useState(null)
+
+  const [docStatuses, setDocStatuses] = useState([])
+  const [sectionCategories, setSectionCategories] = useState([])
+  const [selectedFile, setSelectedFile] = useState(null)
 
   const [formData, setFormData] = useState({
     reference: '',
     description: '',
-    status: 'DRAFT',
+    status: '',
     dateTime: '',
     expirationDate: '',
-    sectionId: ''
+    sectionCategoryId: '',
+    statusId: ''
   })
 
 
   const fetchSectionCategory = async () => {
     const section = await getSectionCategoryByCode(sectionCode)
     setCurrentSection(section)
-    setFormData(prev => ({ ...prev, sectionId: String(section.id) }))
+    setFormData(prev => ({ ...prev, sectionCategoryId: String(section.id) }))
+  }
+
+  const fetchDropdownData = async () => {
+    try {
+      const [statusesData, categoriesData] = await Promise.all([
+        getAllDocStatuses(),
+        getAllSectionCategories()
+      ])
+      setDocStatuses(Array.isArray(statusesData) ? statusesData : [])
+      setSectionCategories(Array.isArray(categoriesData) ? categoriesData : [])
+    } catch (err) {
+      console.error('Load dropdown data error:', err)
+    }
   }
 
   const fetchDocs = async () => {
@@ -130,6 +155,7 @@ const CommonDocDetailsComponent = () => {
         sectionCode
       })
       setDocsPage(res)
+      console.log("reponse",)
     } catch {
       setError(t('commonDocDetails.fetchError'))
     } finally {
@@ -139,7 +165,7 @@ const CommonDocDetailsComponent = () => {
 
   useEffect(() => {
     fetchSectionCategory()
- 
+    fetchDropdownData()
   }, [sectionCode])
 
   useEffect(() => {
@@ -158,37 +184,74 @@ const CommonDocDetailsComponent = () => {
     setFormData({
       reference: doc.reference ?? '',
       description: doc.description ?? '',
-      status: doc.status ?? 'DRAFT',
+      status: doc.status?.name ?? '',
       dateTime: toDateOnly(doc.dateTime),
       expirationDate: toDateOnly(doc.expirationDate),
-      sectionId: String(doc.sectionId ?? '')
+      sectionCategoryId: String(doc.sectionCategory?.id ?? currentSection?.id ?? ''),
+      statusId: String(doc.status?.id ?? '')
     })
+    setSelectedFile(null)
     setShowModal(true)
+  }
+
+  const handleViewDetails = (doc) => {
+    setSelectedDocForDetails(doc)
+    setShowDetailsModal(true)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const payload = {
-      reference: formData.reference.trim(),
-      description: formData.description.trim(),
-      status: formData.status,
-      sectionCategoryId: Number(formData.sectionId),
-      dateTime: toLocalDateTime(formData.dateTime),
-      expirationDate: toLocalDateTime(formData.expirationDate)
-    }
-
+    
     try {
-      if (editingDoc) {
-        await updateCommonDocDetails(editingDoc.id, payload)
+      if (selectedFile || !editingDoc) {
+        // CREATE or UPDATE with file
+        const formDataToSend = new FormData()
+        if (selectedFile) {
+          formDataToSend.append('file', selectedFile)
+        }
+
+        const commonDocDetailsData = {
+          reference: formData.reference.trim(),
+          description: formData.description.trim(),
+          status: formData.status,
+          dateTime: toLocalDateTime(formData.dateTime),
+          expirationDate: toLocalDateTime(formData.expirationDate),
+          sectionCategoryId: Number(formData.sectionCategoryId),
+          statusId: formData.statusId ? Number(formData.statusId) : null,
+          doneById: CurrentUserId
+        }
+
+        formDataToSend.append('commonDocDetails', new Blob([JSON.stringify(commonDocDetailsData)], {
+          type: 'application/json'
+        }))
+
+        if (editingDoc) {
+          await updateCommonDocDetailsWithFile(editingDoc.id, formDataToSend)
+        } else {
+          await createCommonDocDetailsWithFile(formDataToSend)
+        }
       } else {
-        await createCommonDocDetails(payload)
+        // UPDATE without file
+        const payload = {
+          reference: formData.reference.trim(),
+          description: formData.description.trim(),
+          status: formData.status,
+          dateTime: toLocalDateTime(formData.dateTime),
+          expirationDate: toLocalDateTime(formData.expirationDate),
+          sectionCategoryId: Number(formData.sectionCategoryId),
+          statusId: formData.statusId ? Number(formData.statusId) : null,
+          doneById: CurrentUserId
+        }
+        await updateCommonDocDetails(editingDoc.id, payload)
       }
 
       showToast(t('commonDocDetails.saveSuccess'))
       setShowModal(false)
       setEditingDoc(null)
+      setSelectedFile(null)
       fetchDocs()
-    } catch {
+    } catch (err) {
+      console.error('Save error:', err)
       showToast(t('commonDocDetails.saveError'), 'danger')
     }
   }
@@ -201,15 +264,24 @@ const CommonDocDetailsComponent = () => {
   }
 
   const handleResetForm = () => {
-    setFormData(prev => ({
-      ...prev,
+    setFormData({
       reference: '',
       description: '',
-      status: 'DRAFT',
+      status: '',
       dateTime: '',
-      expirationDate: ''
-    }))
+      expirationDate: '',
+      sectionCategoryId: currentSection?.id ? String(currentSection.id) : '',
+      statusId: ''
+    })
     setEditingDoc(null)
+    setSelectedFile(null)
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setSelectedFile(file)
+    }
   }
 
   const handleChange = (e) => {
@@ -218,7 +290,8 @@ const CommonDocDetailsComponent = () => {
   }
 
   const getStatusBadgeColor = (status) => {
-    switch(status) {
+    const statusName = typeof status === 'object' ? status?.name : status
+    switch(statusName) {
       case 'ACTIVE': return 'success'
       case 'INACTIVE': return 'secondary'
       case 'DRAFT': return 'info'
@@ -230,7 +303,8 @@ const CommonDocDetailsComponent = () => {
   }
 
   const getStatusTranslation = (status) => {
-    return t(`commonDocDetails.statusOptions.${status}`) || status
+    const statusName = typeof status === 'object' ? status?.name : status
+    return t(`commonDocDetails.statusOptions.${statusName}`) || statusName
   }
 
 const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
@@ -248,11 +322,13 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
         <Card.Header>
           <Row className="align-items-center">
             <Col>
-              <h5>
-                { <SectionIcon />}
-                {currentSection?.name || t('commonDocDetails.title')}
-              </h5>
-              <small className="text-muted">{currentSection?.description}</small>
+              <div className="page-title-group">
+                <h5>
+                  { <SectionIcon />}
+                  {currentSection?.name || t('commonDocDetails.title')}
+                </h5>
+                <small className="text-muted">{currentSection?.description}</small>
+              </div>
             </Col>
             <Col className="text-end">
               <Button size="sm" onClick={() => { handleResetForm(); setShowModal(true) }}>
@@ -295,8 +371,8 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
                       <th>{t('commonDocDetails.description')}</th>
                       <th>{t('commonDocDetails.dateTime')}</th>
                       <th>{t('commonDocDetails.expirationDate')}</th>
-                        <th>{t('commonDocDetails.status')}</th>
-                           <th>{t('commonDocDetails.section')}</th>  
+                      <th>{t('commonDocDetails.status')}</th>
+                      <th>{t('commonDocDetails.section')}</th>
                       <th>{t('commonDocDetails.actions')}</th>
                     </tr>
                   </thead>
@@ -313,24 +389,33 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
                             </span>
                           ) : '-'}
                         </td>
-                       
                         <td>
                           <span className={`badge bg-${getStatusBadgeColor(d.status)}`}>
                             {getStatusTranslation(d.status)}
                           </span>
                         </td>
-                               <td>
-                      {d.sectionCategoryName}
+                        <td>
+                          {d.sectionCategory?.name}
                         </td>
                         <td>
+                          <Button 
+                            size="sm" 
+                            variant="outline-info" 
+                            onClick={() => handleViewDetails(d)}
+                            title={t('common.viewDetails')}
+                            className="me-1"
+                          >
+                            <FaEye />
+                          </Button>
                           <Button 
                             size="sm" 
                             variant="outline-primary" 
                             onClick={() => handleEdit(d)}
                             title={t('common.edit')}
+                            className="me-1"
                           >
                             <FaEdit />
-                          </Button>{' '}
+                          </Button>
                           <Button 
                             size="sm" 
                             variant="outline-danger" 
@@ -356,42 +441,17 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
                 </Col>
               ) : (
                 docsPage.content.map(d => (
-                  <Col md={4} className="mb-3" key={d.id}>
-                    <Card>
-                      <Card.Body>
-                        <div className="d-flex align-items-center mb-2">
-                          <SectionIcon className="me-2" size={24} />
-                          <strong>{d.reference}</strong>
-                        </div>
-                        <p>{d.description}</p>
-                        <small className="text-muted d-block">
-                          {toDateOnly(d.dateTime)} - {d.expirationDate ? toDateOnly(d.expirationDate) : '-'}
-                        </small>
-                        <div className="mt-2">
-                          <span className={`badge bg-${getStatusBadgeColor(d.status)}`}>
-                            {getStatusTranslation(d.status)}
-                          </span>
-                        </div>
-                        <div className="mt-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline-primary" 
-                            className="me-2"
-                            onClick={() => handleEdit(d)}
-                          >
-                            <FaEdit /> {t('common.edit')}
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline-danger"
-                            onClick={() => { setDocToDelete(d); setShowDeleteModal(true) }}
-                          >
-                            <FaTrash /> {t('common.delete')}
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
+             
+                    <DocumentCard
+                      item={d}
+                      onEdit={() => handleEdit(d)}
+                      onDelete={() => { setDocToDelete(d); setShowDeleteModal(true) }}
+                      onViewDetails={() => handleViewDetails(d)}
+                      getStatusBadgeColor={getStatusBadgeColor}
+                      getStatusTranslation={getStatusTranslation}
+                      SectionIcon={SectionIcon}
+                    />
+                 
                 ))
               )}
             </Row>
@@ -439,14 +499,33 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label>{t('commonDocDetails.status')}</Form.Label>
-                  <Form.Select name="status" value={formData.status} onChange={handleChange}>
-                    <option value="DRAFT">{t('commonDocDetails.statusOptions.DRAFT')}</option>
-                    <option value="ACTIVE">{t('commonDocDetails.statusOptions.ACTIVE')}</option>
-                    <option value="INACTIVE">{t('commonDocDetails.statusOptions.INACTIVE')}</option>
-                    <option value="ARCHIVED">{t('commonDocDetails.statusOptions.ARCHIVED')}</option>
-                    <option value="EXPIRED">{t('commonDocDetails.statusOptions.EXPIRED')}</option>
-                    <option value="UNDER_REVIEW">{t('commonDocDetails.statusOptions.UNDER_REVIEW')}</option>
+                  <Form.Select name="statusId" value={formData.statusId} onChange={handleChange}>
+                    <option value="">{t('common.select')}</option>
+                    {docStatuses.map(status => (
+                      <option key={status.id} value={status.id}>{status.name}</option>
+                    ))}
                   </Form.Select>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>{t('document.fields.docId')} {!editingDoc && '*'}</Form.Label>
+                  <Form.Control
+                    type="file"
+                    onChange={handleFileChange}
+                    required={!editingDoc}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                  />
+                  {selectedFile && (
+                    <Form.Text className="text-success">
+                      <i className="bi bi-check-circle me-1"></i>
+                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                    </Form.Text>
+                  )}
+                  {editingDoc && !selectedFile && (
+                    <Form.Text className="text-muted">
+                      <i className="bi bi-file-earmark me-1"></i>
+                      {t('document.currentDocumentRetained') || 'Current document retained'}
+                    </Form.Text>
+                  )}
                 </Form.Group>
               </Col>
 
@@ -469,7 +548,12 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
 
                 <Form.Group className="mb-3">
                   <Form.Label>{t('commonDocDetails.section')}</Form.Label>
-                  <Form.Control type="text" value={currentSection?.name || ''} disabled />
+                  <Form.Select name="sectionCategoryId" value={formData.sectionCategoryId} onChange={handleChange} disabled>
+                    <option value="">{t('common.select')}</option>
+                    {sectionCategories.map(category => (
+                      <option key={category.id} value={category.id}>{category.name}</option>
+                    ))}
+                  </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
@@ -503,6 +587,16 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* ---------------- DOCUMENT DETAILS MODAL ---------------- */}
+      {selectedDocForDetails && (
+        <GenericDocumentDetailsModal
+          show={showDetailsModal}
+          onHide={() => setShowDetailsModal(false)}
+          document={selectedDocForDetails}
+          documentType="commonDocDetails"
+        />
+      )}
     </>
   )
 }

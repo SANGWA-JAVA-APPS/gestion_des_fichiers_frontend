@@ -196,10 +196,12 @@ const SectionsComponent = () => {
     <Container fluid>
       <Row className="mb-4 align-items-center">
         <Col>
-          <h4>{t('sections.management')}</h4>
-          <p className="text-muted">
-            {t('sections.subtitle')}
-          </p>
+          <div className='page-title-group'>
+            <h4>{t('sections.management')}</h4>
+            <p className='text-muted'>
+              {t('sections.subtitle')}
+            </p>
+          </div>
         </Col>
         <Col xs="auto">
           <Button variant="primary" onClick={() => handleShowModal()}>

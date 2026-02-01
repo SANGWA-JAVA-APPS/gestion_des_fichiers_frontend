@@ -6,6 +6,7 @@ import {
   useNavigate
 } from 'react-router-dom'
 import DashboardLayout from './components/dashboardComponents/DashboardLayout'
+import DashboardHome from './components/dashboardComponents/Dashboard'
 import RolesComponent from './components/user/RolesComponent'
 import AccountComponent from './components/user/AccountComponent'
 import CountryComponent from './components/location/CountryComponent'
@@ -64,8 +65,8 @@ export default function App () {
           path='/dashboard'
           element={
             <ProtectedRoutes>
-              {/* <DashboardLayout /> */}
-              <AdminDashboardRoute />
+              <DashboardLayout />
+              {/* <AdminDashboardRoute/> */}
             </ProtectedRoutes>
           }
         >
@@ -83,8 +84,8 @@ export default function App () {
             <Route path='modules' element={<ModulesComponent />} />
             <Route path='sections' element={<SectionsComponent />} />
           </Route>
-          {/* Default redirect */}
-          <Route index element={<Navigate to='/dashboard' replace />} />
+          {/* Default dashboard */}
+          <Route index element={<DashboardHome />} />
 
           {/* Dashboard / Main */}
           <Route path='docstatus' element={<DocStatusComponent />} />
