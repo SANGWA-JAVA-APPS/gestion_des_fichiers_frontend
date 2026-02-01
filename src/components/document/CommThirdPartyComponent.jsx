@@ -423,18 +423,20 @@ useEffect(() => {
             <Card.Header>
               <Row className="align-items-center">
                 <Col xs={12} md={6} lg={4}>
-                  <HeaderTitle>
-                    <div className="d-flex align-items-center">
-                      <SectionIcon className="me-2" size={24} />
-                      {currentSection 
-                        ? `${currentSection.name} - ${t('document.commThirdParty') || 'Commercial Third Parties'}`
-                        : t('document.commThirdParty') || 'Commercial Third Parties'
-                      }
-                    </div>
-                  </HeaderTitle>
-                  {currentSection?.description && (
-                    <small className="text-muted">{currentSection.description}</small>
-                  )}
+                  <div className="page-title-group">
+                    <HeaderTitle>
+                      <div className="d-flex align-items-center">
+                        <SectionIcon className="me-2" size={24} />
+                        {currentSection 
+                          ? `${currentSection.name} - ${t('document.commThirdParty') || 'Commercial Third Parties'}`
+                          : t('document.commThirdParty') || 'Commercial Third Parties'
+                        }
+                      </div>
+                    </HeaderTitle>
+                    {currentSection?.description && (
+                      <small className="text-muted">{currentSection.description}</small>
+                    )}
+                  </div>
                 </Col>
                 <Col xs={12} md={6} lg={8} className="text-end">
                   <Button

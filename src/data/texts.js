@@ -961,8 +961,8 @@ export const texts = {
   // Add this to your texts object in texts.js
   entities: {
     management: {
-      fr: 'Gestion des Entités Géographiques',
-      en: 'Location Entity Management'
+      fr: 'Gestion des entreprises',
+      en: 'Companies management'
     },
     subtitle: {
       fr:

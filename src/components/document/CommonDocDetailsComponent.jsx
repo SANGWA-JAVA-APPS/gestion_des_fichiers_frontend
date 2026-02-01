@@ -97,7 +97,7 @@ const CommonDocDetailsComponent = () => {
 
   const [toast, setToast] = useState({ show: false, message: '', variant: 'success' })
 
-  const [activeView, setActiveView] = useState('table')
+  const [activeView, setActiveView] = useState('cards')
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -248,11 +248,13 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
         <Card.Header>
           <Row className="align-items-center">
             <Col>
-              <h5>
-                { <SectionIcon />}
-                {currentSection?.name || t('commonDocDetails.title')}
-              </h5>
-              <small className="text-muted">{currentSection?.description}</small>
+              <div className="page-title-group">
+                <h5>
+                  { <SectionIcon />}
+                  {currentSection?.name || t('commonDocDetails.title')}
+                </h5>
+                <small className="text-muted">{currentSection?.description}</small>
+              </div>
             </Col>
             <Col className="text-end">
               <Button size="sm" onClick={() => { handleResetForm(); setShowModal(true) }}>

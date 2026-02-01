@@ -43,7 +43,7 @@ const CertLicensesComponent = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [activeView, setActiveView] = useState('table'); // 'table' or 'cards'
+  const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards'
   const [totalElements, setTotalElements] = useState(0);
 
   const [searchParams] = useSearchParams();

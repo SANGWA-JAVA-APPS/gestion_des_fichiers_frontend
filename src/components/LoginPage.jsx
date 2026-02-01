@@ -35,9 +35,13 @@ const LoginPage = () => {
       const response = await loginUser(formData);
 
       if (response.success) {
-        // setUserInfo(response);
-
-        navigate('/dashboard', { replace: true });
+        setUserInfo(response);
+        const role = (response.role || response.account?.categoryName || response.account?.role || '').toUpperCase();
+        if (role.includes('ADMIN')) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
       } else {
         setError(response.message || t("auth.loginFailed"));
       }

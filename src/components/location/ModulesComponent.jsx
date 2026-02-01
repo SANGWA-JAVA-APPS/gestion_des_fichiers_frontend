@@ -258,16 +258,24 @@ const getModuleTypeBadge = (type) => {
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
+            <Col>
+              <div className='page-title-group'>
+                <h4>{t('modules.management')}</h4>
+                <p className='text-muted'>
+                  {t('modules.subtitle')}
+                </p>
+              </div>
+            </Col>
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>{t('modules.name')} *</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    name="name" 
-                    value={formData.name} 
-                    onChange={handleChange} 
-                    required 
+                  <Form.Control
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
                     placeholder={language === 'fr' ? "Entrez le nom du module" : "Enter module name"}
                   />
                 </Form.Group>
@@ -275,10 +283,10 @@ const getModuleTypeBadge = (type) => {
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>{t('modules.locationEntity')} *</Form.Label>
-                  <Form.Select 
-                    name="locationEntityId" 
-                    value={formData.locationEntityId} 
-                    onChange={handleChange} 
+                  <Form.Select
+                    name="locationEntityId"
+                    value={formData.locationEntityId}
+                    onChange={handleChange}
                     required
                   >
                     <option value="">{t('modules.selectEntity')}</option>
