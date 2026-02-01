@@ -33,9 +33,9 @@ const Login = ({ onLoginSuccess }) => {
         setUserInfo(response);
         
         console.log('Login successful:', {
-          username: response.username,
-          role: response.role,
-          fullName: response.fullName
+          username: response.account?.username,
+          role: response.account?.categoryName,
+          fullName: response.account?.fullName
         });
         
         // Call success callback to redirect to dashboard

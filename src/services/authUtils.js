@@ -24,14 +24,26 @@ export const getRefreshToken = () => {
 
 // Store user information after login
 export const setUserInfo = (userData) => {
-  localStorage.setItem('authToken', userData.token);
-  localStorage.setItem('refreshToken', userData.refreshToken);
+  const account = userData?.account || userData || {};
+  const token = userData?.token || account?.token;
+  const refreshToken = userData?.refreshToken || account?.refreshToken;
+
+  if (token) {
+    localStorage.setItem('authToken', token);
+  }
+
+  if (refreshToken) {
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+
   localStorage.setItem('userInfo', JSON.stringify({
-    userId: userData.userId,
-    username: userData.username,
-    fullName: userData.fullName,
-    email: userData.email,
-    role: userData.role
+    userId: account.id ?? account.userId ?? null,
+    username: account.username ?? null,
+    fullName: account.fullName ?? null,
+    email: account.email ?? null,
+    role: account.categoryName ?? account.role ?? null,
+    categoryId: account.categoryId ?? null,
+    permissions: account.permissions ?? userData?.permissions ?? []
   }));
 };
 

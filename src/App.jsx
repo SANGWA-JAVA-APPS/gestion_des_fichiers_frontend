@@ -34,8 +34,11 @@ function App() {
   const renderDashboard = () => {
     const role = userRole?.toUpperCase();
     
+
+    console.log('----------------- We are rendering the dashboard:', role);
     // Admin Dashboard
     if (role?.includes('ADMIN')) {
+      console.log('----------------- Rendering Admin Dashboard');
       return <AdminDashboard onLogout={handleLogout} />;
     }
     
