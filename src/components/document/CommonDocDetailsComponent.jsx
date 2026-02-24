@@ -125,6 +125,34 @@ const CommonDocDetailsComponent = () => {
     statusId: ''
   })
 
+  const normalizeDocsPage = (res) => {
+    if (res && Array.isArray(res.content)) {
+      return {
+        content: res.content,
+        totalPages: res.totalPages ?? 0,
+        totalElements: res.totalElements ?? res.content.length
+      }
+    }
+
+    if (res && Array.isArray(res.data)) {
+      return {
+        content: res.data,
+        totalPages: res.pagination?.totalPages ?? 0,
+        totalElements: res.pagination?.totalElements ?? res.data.length
+      }
+    }
+
+    if (Array.isArray(res)) {
+      return {
+        content: res,
+        totalPages: 0,
+        totalElements: res.length
+      }
+    }
+
+    return { content: [], totalPages: 0, totalElements: 0 }
+  }
+
 
   const fetchSectionCategory = async () => {
     const section = await getSectionCategoryByCode(sectionCode)
@@ -154,8 +182,7 @@ const CommonDocDetailsComponent = () => {
         search,
         sectionCode
       })
-      setDocsPage(res)
-      console.log("reponse",)
+      setDocsPage(normalizeDocsPage(res))
     } catch {
       setError(t('commonDocDetails.fetchError'))
     } finally {
@@ -361,7 +388,7 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
 
           {activeView === 'table' && (
             <>
-              {docsPage.content.length === 0 ? (
+              {docsPage.content?.length === 0 ? (
                 <Alert variant="info">{t('commonDocDetails.noData')}</Alert>
               ) : (
                 <Table bordered hover responsive>
@@ -377,7 +404,7 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
                     </tr>
                   </thead>
                   <tbody>
-                    {docsPage.content.map(d => (
+                    {docsPage.content?.map(d => (
                       <tr key={d.id}>
                         <td>{d.reference}</td>
                         <td>{d.description}</td>
@@ -435,12 +462,12 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
 
           {activeView === 'cards' && (
             <Row>
-              {docsPage.content.length === 0 ? (
+              {docsPage.content?.length === 0 ? (
                 <Col>
                   <Alert variant="info">{t('commonDocDetails.noData')}</Alert>
                 </Col>
               ) : (
-                docsPage.content.map(d => (
+                docsPage.content?.map(d => (
              
                     <DocumentCard
                       item={d}

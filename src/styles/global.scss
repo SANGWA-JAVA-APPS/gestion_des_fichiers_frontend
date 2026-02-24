@@ -894,10 +894,15 @@ main .container-fluid > .row > .col > p.text-muted,
   font-weight: 600;
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--border-radius);
+  border: 1px solid transparent;
   transition: background var(--transition-fast), color var(--transition-fast);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+
+  svg {
+    color: #0d6efd;
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.14);
@@ -907,6 +912,7 @@ main .container-fluid > .row > .col > p.text-muted,
   &.active {
     background: rgba(255, 255, 255, 0.22);
     color: var(--text-light);
+    border-color: #ffffff;
   }
 }
 

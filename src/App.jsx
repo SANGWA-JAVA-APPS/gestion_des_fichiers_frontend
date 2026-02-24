@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import DashboardLayout from './components/dashboardComponents/DashboardLayout'
 import DashboardHome from './components/dashboardComponents/Dashboard'
+import StoragePage from './components/dashboardComponents/StoragePage'
 import RolesComponent from './components/user/RolesComponent'
 import AccountComponent from './components/user/AccountComponent'
 import CountryComponent from './components/location/CountryComponent'
@@ -93,6 +94,7 @@ export default function App () {
           <Route path='archive' element={<ArchivedDocuments />} />
           <Route path='expiry' element={<ExpiringDocuments />} />
           <Route path='reporting' element={<ReportingDashboard />} />
+          <Route path='storage' element={<StoragePage />} />
 
           {/* Documents */}
           <Route path='docsCategories' element={<SectionCategoryComponent />} />

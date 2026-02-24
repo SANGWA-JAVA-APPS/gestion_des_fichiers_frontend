@@ -21,7 +21,7 @@ const groupedCards = [
     cards: [
       { title: "Documents", icon: FileText, path: "/dashboard/sectionCategory" },
       { title: "Reporting", icon: BarChart3, path: "/dashboard/reporting" },
-      { title: "Disk usage", icon: HardDrive, path: "/dashboard/reporting" },
+      { title: "Disk usage", icon: HardDrive, path: "/dashboard/storage" },
       { title: "Expiring", icon: Clock, path: "/dashboard/expiry" },
       { title: "Archived", icon: Archive, path: "/dashboard/archive" }
     ]
