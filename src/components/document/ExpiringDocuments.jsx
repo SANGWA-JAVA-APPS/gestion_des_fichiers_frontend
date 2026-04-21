@@ -19,7 +19,7 @@ const ExpiringDocuments = () => {
             <Card.Body>
               <SimpleSearchComponent />
 
-              <Alert variant='warning' className='mb-0'>
+              <Alert variant='warning' className='mb-0 d-none'>
                 <strong>Coming Soon:</strong> Expiry tracking and filters will
                 appear here.
               </Alert>

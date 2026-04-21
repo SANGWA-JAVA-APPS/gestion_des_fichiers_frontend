@@ -30,11 +30,18 @@ import {
   EstateComponent,
   CertLicensesComponent,
   CargoDamageComponent,
+  LegacyComponent,
+  AssEquipmentComponent,
+  InductionComponent,
+  CompliancePoliciesComponent,
   ArchivedDocuments,
   ExpiringDocuments
 } from './components/document'
 import CommonDocDetailsComponent from './components/document/CommonDocDetailsComponent'
 import CommThirdPartyComponent from './components/document/CommThirdPartyComponent'
+import LitigationFollowupComponent from './components/document/LitigationFollowupComponent'
+import InsuranceComponent from './components/document/InsuranceComponent'
+import ThirdPartyClaimsComponent from './components/document/ThirdPartyClaimsComponent'
 import TestRedirection from './components/TestRedirection'
 import UsersPage from './components/user/UsersPage'
 import { ReportingDashboard } from './components/reporting'
@@ -57,20 +64,17 @@ const AdminDashboardRoute = () => {
 
 export default function App () {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/ingenzi">
       <Routes>
         <Route path='/login' element={<LoginPage />} />
         <Route path='/' element={<Navigate to='/dashboard' replace />} />
 
-        <Route
-          path='/dashboard'
-          element={
+        <Route  path='/dashboard'  element={
             <ProtectedRoutes>
               <DashboardLayout />
               {/* <AdminDashboardRoute/> */}
             </ProtectedRoutes>
-          }
-        >
+          }>
           {/* <Route
           path='/newdashboard/*'
           element={
@@ -80,10 +84,10 @@ export default function App () {
           }
         > */}
           <Route path='locations'>
-            <Route path='countries' element={<CountryComponent />} />
-            <Route path='entities' element={<EntityComponent />} />
-            <Route path='modules' element={<ModulesComponent />} />
-            <Route path='sections' element={<SectionsComponent />} />
+            <Route path='countries' element={<CountryComponent />}  />
+            <Route path='entities'  element={<EntityComponent />}   />
+            <Route path='modules'   element={<ModulesComponent />}  />
+            <Route path='sections'  element={<SectionsComponent />} />
           </Route>
           {/* Default dashboard */}
           <Route index element={<DashboardHome />} />
@@ -123,8 +127,17 @@ export default function App () {
           />
 
           <Route path='estate' element={<EstateComponent />} />
+          <Route path='legacy' element={<LegacyComponent />} />
+          <Route path='ass-equipment' element={<AssEquipmentComponent />} />
+          <Route path='induction' element={<InductionComponent />} />
+          <Route path='compliance-policies' element={<CompliancePoliciesComponent />} />
           <Route path='certLicenses' element={<CertLicensesComponent />} />
           <Route path='cargoDamage' element={<CargoDamageComponent />} />
+
+          {/* Risks */}
+          <Route path='litigation-followup' element={<LitigationFollowupComponent />} />
+          <Route path='insurance' element={<InsuranceComponent />} />
+          <Route path='third-party-claims' element={<ThirdPartyClaimsComponent />} />
 
           {/* Accounts */}
           <Route path='AccountCategories' element={<RolesComponent />} />

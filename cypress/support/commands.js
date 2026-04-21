@@ -261,16 +261,39 @@ Cypress.Commands.add('mockAppApis', () => {
 		}
 	}).as('getDocStatus')
 
-	cy.intercept('GET', '**/api/document/section-category/code/*', {
-		statusCode: 200,
-		body: {
-			success: true,
-			data: {
-				id: 1,
-				code: 'ORG_FIN',
-				name: 'Financial'
-			}
+	cy.intercept('GET', '**/api/document/section-category/code/*', (req) => {
+		const code = req.url.split('/').pop()
+		const sectionNames = {
+			ORG_FIN: 'Financial',
+			ORG_PROC: 'Procurement',
+			ORG_HR: 'Human Resources',
+			ORG_TECH: 'Technical',
+			ORG_IT: 'IT',
+			ORG_RE: 'Real Estate',
+			ORG_SH: 'Shareholders',
+			ORG_LEGAL: 'Legal',
+			ORG_QUAL: 'Quality',
+			ORG_HSE: 'HSE',
+			ORG_EQUIP: 'Equipment',
+			ORG_DA: 'Drug & Alcohol',
+			ORG_INC: 'Incident Reports',
+			ORG_SOP: 'SOP',
+			ORG_RENT_CON: 'Rental Contracts',
+			ORG_SUPP: 'Suppliers',
+			ORG_CLIENT: 'Client Commercial',
+			ORG_RENT_ASSET: 'Rental Assets',
 		}
+		req.reply({
+			statusCode: 200,
+			body: {
+				success: true,
+				data: {
+					id: 1,
+					code: code,
+					name: sectionNames[code] || code
+				}
+			}
+		})
 	}).as('getSectionCategoryByCode')
 
 	cy.intercept('GET', '**/api/document/section-category*', {
@@ -414,6 +437,7 @@ Cypress.Commands.add('visitAuthed', (path = '/dashboard', overrides = {}) => {
 	}
 
 	cy.visit(path, {
+		failOnStatusCode: false,
 		onBeforeLoad(win) {
 			win.localStorage.setItem('authToken', 'fake-jwt-token')
 			win.localStorage.setItem('refreshToken', 'fake-refresh-token')
@@ -424,9 +448,29 @@ Cypress.Commands.add('visitAuthed', (path = '/dashboard', overrides = {}) => {
 
 Cypress.Commands.add('loginThroughUi', (username = 'mamadou', password = 'password123') => {
 	cy.mockLoginApi()
-	cy.visit('/login')
+	cy.visit('/login', { failOnStatusCode: false })
 	cy.get('input[name="username"]').clear().type(username)
 	cy.get('input[name="password"]').clear().type(password)
 	cy.get('button[type="submit"]').click()
 	cy.wait('@loginRequest')
+})
+
+Cypress.Commands.add('mockSaveApis', () => {
+	const saveSuccess = (idField = 'id') => ({
+		statusCode: 201,
+		body: { success: true, data: { [idField]: 99, message: 'Created successfully' } }
+	})
+
+	cy.intercept('POST', '**/api/location/entities*', saveSuccess()).as('saveEntity')
+	cy.intercept('POST', '**/api/accounts*', saveSuccess()).as('saveAccount')
+	cy.intercept('POST', '**/api/document/norme-loi*', saveSuccess()).as('saveNormeLoi')
+	cy.intercept('POST', '**/api/document/comm-asset-land*', saveSuccess()).as('saveCommAssetLand')
+	cy.intercept('POST', '**/api/document/permi-construction*', saveSuccess()).as('savePermiConstruction')
+	cy.intercept('POST', '**/api/document/accord-concession*', saveSuccess()).as('saveAccordConcession')
+	cy.intercept('POST', '**/api/document/estate*', saveSuccess()).as('saveEstate')
+	cy.intercept('POST', '**/api/document/cert-licenses*', saveSuccess()).as('saveCertLicenses')
+	cy.intercept('POST', '**/api/document/cargo-damage*', saveSuccess()).as('saveCargoDamage')
+	cy.intercept('POST', '**/api/document/common-doc-details*', saveSuccess()).as('saveCommonDocDetails')
+	cy.intercept('POST', '**/api/document/comm-third-party*', saveSuccess()).as('saveCommThirdParty')
+	cy.intercept('POST', '**/api/document/doc-status*', saveSuccess()).as('saveDocStatus')
 })

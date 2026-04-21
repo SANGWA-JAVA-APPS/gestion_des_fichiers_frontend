@@ -1,41 +1,52 @@
-/**
- * Download Service - Reusable utilities for file downloads
- * Handles file downloads from the backend static file server
- */
-
-import { API_BASE_URL } from './apiConfig';
+import { BASE_URL } from './apiConfig';
 
 /**
- * Downloads a file from the backend uploads directory
+ * Downloads a file from the backend via API
  * 
- * @param {Object} documentObj - Document object containing filePath and originalFileName
- * @param {string} documentObj.filePath - Backend file path (e.g., "uploads\\norme_loi\\file.pdf")
+ * @param {Object} documentObj - Document object containing id and originalFileName
+ * @param {number} documentObj.id - Document ID
  * @param {string} documentObj.originalFileName - Original filename for download
  * @returns {Promise<boolean>} - Returns true if download was successful
  */
 export const downloadFile = async (documentObj) => {
   try {
-    if (!documentObj || !documentObj.filePath) {
-      throw new Error('Document or file path is missing');
+    if (!documentObj || !documentObj.id) {
+      throw new Error('Document or ID is missing');
     }
 
-    // Convert Windows backslashes to forward slashes for URL
-    const filePath = documentObj.filePath.replace(/\\/g, '/');
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    // Fetch the file with auth headers
+    const response = await fetch(`${BASE_URL}/documents/download/${documentObj.id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+
+    // Get the blob
+    const blob = await response.blob();
     
-    // Construct the download URL without /api since static files are served from root
-    const baseUrl = API_BASE_URL.replace('/api', '');
-    const downloadUrl = `${baseUrl}/${filePath}`;
-    
-    console.log('Downloading from:', downloadUrl);
+    // Create a blob URL
+    const blobUrl = window.URL.createObjectURL(blob);
     
     // Create a temporary link and trigger download
     const link = window.document.createElement('a');
-    link.href = downloadUrl;
+    link.href = blobUrl;
     link.download = documentObj.originalFileName || 'download';
-    link.target = '_blank';
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
+    
+    // Clean up the blob URL
+    window.URL.revokeObjectURL(blobUrl);
 
     return true;
   } catch (error) {
@@ -61,7 +72,7 @@ export const downloadFileWithCustomName = async (filePath, customFileName) => {
     const normalizedPath = filePath.replace(/\\/g, '/');
     
     // Construct the download URL without /api
-    const baseUrl = API_BASE_URL.replace('/api', '');
+    const baseUrl = BASE_URL.replace('/api', '');
     const downloadUrl = `${baseUrl}/${normalizedPath}`;
     
     console.log('Downloading from:', downloadUrl);
@@ -100,7 +111,7 @@ export const openFileInNewTab = async (documentObj) => {
     const filePath = documentObj.filePath.replace(/\\/g, '/');
     
     // Construct the URL without /api
-    const baseUrl = API_BASE_URL.replace('/api', '');
+    const baseUrl = BASE_URL.replace('/api', '');
     const fileUrl = `${baseUrl}/${filePath}`;
     
     console.log('Opening file from:', fileUrl);
@@ -128,7 +139,7 @@ export const getFileUrl = (filePath) => {
   const normalizedPath = filePath.replace(/\\/g, '/');
   
   // Construct the URL without /api
-  const baseUrl = API_BASE_URL.replace('/api', '');
+  const baseUrl = BASE_URL.replace('/api', '');
   return `${baseUrl}/${normalizedPath}`;
 };
 

@@ -37,6 +37,7 @@ import DocumentCard from '../DocumentCard'
 import GenericDocumentDetailsModal from '../GenericDocumentDetailsModal'
 
 import {
+  LandmarkIcon,
   DollarSign,
   ShoppingCart,
   UsersIcon,
@@ -59,6 +60,7 @@ import {
 import { FaPlus } from 'react-icons/fa6'
 
 const sectionIcons = {
+  ORG_LEGACY: LandmarkIcon,
   ORG_FIN: DollarSign,
   ORG_PROC: ShoppingCart,
   ORG_HR: UsersIcon,
@@ -71,8 +73,14 @@ const sectionIcons = {
   ORG_HSE: ShieldCheck,
   ORG_EQUIP: ToolCase,
   ORG_DA: Pill,
+  ORG_IND: ShieldCheck,
   ORG_INC: AlertCircle,
+  ORG_AUDIT: FileTextIcon,
   ORG_SOP: FileTextIcon,
+  ORG_SOP_OPS: FileTextIcon,
+  ORG_COMP: BadgeCheckIcon,
+  ORG_AUDIT_FOLLOWUP: FileTextIcon,
+  ORG_DUE: ScaleIcon,
   ORG_SUPP: HandshakeIcon,
   ORG_RENT_CON: Package,
   ORG_CLIENT: Building2Icon,
@@ -228,6 +236,12 @@ const CommonDocDetailsComponent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    const lockedSectionCategoryId = Number(currentSection?.id || formData.sectionCategoryId)
+    if (!lockedSectionCategoryId) {
+      showToast(t('commonDocDetails.saveError'), 'danger')
+      return
+    }
     
     try {
       if (selectedFile || !editingDoc) {
@@ -243,7 +257,7 @@ const CommonDocDetailsComponent = () => {
           status: formData.status,
           dateTime: toLocalDateTime(formData.dateTime),
           expirationDate: toLocalDateTime(formData.expirationDate),
-          sectionCategoryId: Number(formData.sectionCategoryId),
+          sectionCategoryId: lockedSectionCategoryId,
           statusId: formData.statusId ? Number(formData.statusId) : null,
           doneById: CurrentUserId
         }
@@ -265,7 +279,7 @@ const CommonDocDetailsComponent = () => {
           status: formData.status,
           dateTime: toLocalDateTime(formData.dateTime),
           expirationDate: toLocalDateTime(formData.expirationDate),
-          sectionCategoryId: Number(formData.sectionCategoryId),
+          sectionCategoryId: lockedSectionCategoryId,
           statusId: formData.statusId ? Number(formData.statusId) : null,
           doneById: CurrentUserId
         }
@@ -368,13 +382,13 @@ const SectionIcon = sectionIcons[currentSection?.code] || FaFileAlt
 
           <Nav variant="tabs" activeKey={activeView} onSelect={setActiveView} className="mt-2">
             <Nav.Item>
-              <Nav.Link eventKey="table">
-                <FaEdit /> {t('common.tableView')}
+              <Nav.Link eventKey="cards">
+                <FaEye /> {t('common.cardsView')}
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="cards">
-                <FaEye /> {t('common.cardsView')}
+              <Nav.Link eventKey="table">
+                <FaEdit /> {t('common.tableView')}
               </Nav.Link>
             </Nav.Item>
           </Nav>

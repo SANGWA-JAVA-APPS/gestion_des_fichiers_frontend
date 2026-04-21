@@ -1,0 +1,124 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 2,
+    "passes": 2,
+    "pending": 0,
+    "failures": 0,
+    "start": "2026-02-24T11:21:54.508Z",
+    "end": "2026-02-24T11:22:00.657Z",
+    "duration": 6149,
+    "testsRegistered": 2,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "0e39e70a-d38e-41fd-b822-5a27eb8557d6",
+      "title": "",
+      "fullFile": "cypress\\e2e\\home.cy.js",
+      "file": "cypress\\e2e\\home.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "fb5968de-53a4-4b54-a7cd-4ffcf8de9e8f",
+          "title": "Home page",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "loads login page",
+              "fullTitle": "Home page loads login page",
+              "timedOut": null,
+              "duration": 3444,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.visit('/login');\ncy.get('input[name=\"username\"]').should('be.visible');\ncy.get('input[name=\"password\"]').should('be.visible');\ncy.get('button[type=\"submit\"]').should('be.visible');",
+              "err": {},
+              "uuid": "77b056d5-68b6-464c-8196-0f9fcc3046ab",
+              "parentUUID": "fb5968de-53a4-4b54-a7cd-4ffcf8de9e8f",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "loads dashboard when authenticated",
+              "fullTitle": "Home page loads dashboard when authenticated",
+              "timedOut": null,
+              "duration": 2494,
+              "state": "passed",
+              "speed": "fast",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "cy.visitAuthed('/dashboard');\ncy.contains('Admin dashboard').should('be.visible');\ncy.contains('a', 'Dashboard').should('be.visible');",
+              "err": {},
+              "uuid": "9fc9da07-b37d-4198-9ca8-cf889ef24283",
+              "parentUUID": "fb5968de-53a4-4b54-a7cd-4ffcf8de9e8f",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "77b056d5-68b6-464c-8196-0f9fcc3046ab",
+            "9fc9da07-b37d-4198-9ca8-cf889ef24283"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 5938,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.3.2"
+    }
+  }
+}

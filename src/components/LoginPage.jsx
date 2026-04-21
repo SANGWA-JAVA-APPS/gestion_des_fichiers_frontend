@@ -77,7 +77,7 @@ const LoginPage = () => {
     style={{ backgroundColor: "#236873" }}
   >
     <div>
-      <h3 className="mb-0 fw-bold">{t("appName")}</h3>
+      <h3 className="mb-0 fw-bold">INGENZI</h3>
       <small className="text-light opacity-75" style={{ fontSize: "0.75rem" }}>
         {t("common.welcome")}
       </small>
@@ -173,10 +173,23 @@ const LoginPage = () => {
       <Row className="g-0 position-relative" style={{ zIndex: 10 }}>
         <Col xs={12} className="py-2 bg-dark bg-opacity-90 text-white backdrop-blur">
           <Container fluid>
-            <Row>
-              <Col xs={12} md={6} className="text-center text-md-start">
-                <small style={{ fontSize: '0.7rem' }}>
+            <Row className="align-items-center">
+              <Col xs={12} md={6} className="text-center text-md-start mb-1 mb-md-0">
+                <small className="text-light opacity-75" style={{ fontSize: '0.6rem' }}>
                   © 2025 {t("appName")}
+                </small>
+              </Col>
+              <Col xs={12} md={6} className="text-center text-md-end">
+                <small style={{ fontSize: '0.6rem' }}>
+                  <span className="text-light opacity-75 me-1">Powered by</span>
+                  <a 
+                    href="https://codeguru-pro.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-decoration-none text-white fw-semibold"
+                  >
+                    CODEGURU
+                  </a>
                 </small>
               </Col>
             </Row>

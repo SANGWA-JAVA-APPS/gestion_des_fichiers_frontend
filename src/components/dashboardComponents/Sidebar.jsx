@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react'
 
 import { SidebarItem } from './SidebarItem'
 import { hasAnyRole, getUserInfo } from '../../services/authUtils'
-import { useSidebarData } from './sidebarData'
+import { useSidebarData, resolveIcon } from './sidebarData'
 
 
 export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
     const sidebarData = useSidebarData()
   const [expandedGroups, setExpandedGroups] = useState([])
-  const [permissionCodes, setPermissionCodes] = useState([])
-  const [permissionBlockMap, setPermissionBlockMap] = useState({})
+  const [permissions, setPermissions] = useState([])
   const [permissionsLoading, setPermissionsLoading] = useState(true)
 
   const isIconOnly = sidebarState === 'icon-only'
@@ -37,20 +36,10 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
     const loadPermissions = () => {
       const userInfo = getUserInfo()
-      const permissions = userInfo?.permissions
-      if (Array.isArray(permissions)) {
-        const codes = permissions
-          .map(permission => permission?.code)
-          .filter(Boolean)
-        const blockMap = permissions.reduce((acc, permission) => {
-          if (permission?.code && permission?.blockName) {
-            acc[permission.code] = permission.blockName
-          }
-          return acc
-        }, {})
+      const perms = userInfo?.permissions
+      if (Array.isArray(perms) && perms.length > 0) {
         if (isMounted) {
-          setPermissionCodes(codes)
-          setPermissionBlockMap(blockMap)
+          setPermissions(perms)
           setPermissionsLoading(false)
         }
         return true
@@ -88,6 +77,51 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
 
   const sidebarWidth = isHidden ? '0' : isIconOnly ? '70px' : '230px'
 
+  /**
+   * Build document menu items dynamically from user permissions.
+   * Groups permissions by blockName, sorts blocks by blockDisplayOrder,
+   * and sorts items within each block by displayOrder.
+   */
+  const buildDynamicDocumentItems = () => {
+    if (!permissions.length) return []
+
+    // Group permissions by block
+    const blockGroups = {}
+    permissions.forEach(perm => {
+      if (!perm.blockName || !perm.url) return
+      const key = perm.blockCode || perm.blockName
+      if (!blockGroups[key]) {
+        blockGroups[key] = {
+          blockName: perm.blockName,
+          blockDisplayOrder: perm.blockDisplayOrder ?? 999,
+          blockIconName: null,
+          items: []
+        }
+      }
+      blockGroups[key].items.push({
+        title: perm.name,
+        url: perm.url,
+        icon: resolveIcon(perm.iconName),
+        permissionCode: perm.code,
+        displayOrder: perm.displayOrder ?? 999
+      })
+    })
+
+    // Sort items within each block by displayOrder
+    Object.values(blockGroups).forEach(group => {
+      group.items.sort((a, b) => a.displayOrder - b.displayOrder)
+    })
+
+    // Sort blocks by blockDisplayOrder, then return as sub-menu groups
+    return Object.values(blockGroups)
+      .sort((a, b) => a.blockDisplayOrder - b.blockDisplayOrder)
+      .map(group => ({
+        title: group.blockName,
+        icon: group.items[0]?.icon,
+        items: group.items
+      }))
+  }
+
   const visibleNavGroups = sidebarData.navGroups.map(group => ({
     ...group,
     items: group.items
@@ -106,31 +140,9 @@ export function Sidebar({ sidebarState, activeUrl, onNavigate }) {
             }
           }
 
-          const filteredChildren = item.items
-            ? item.items
-                .filter(child => !child.roles || hasAnyRole(child.roles))
-                .filter(child => !child.permissionCode || permissionCodes.includes(child.permissionCode))
-            : []
-
-          const groupedChildren = filteredChildren.reduce((acc, child) => {
-            const blockName = child.permissionCode
-              ? permissionBlockMap[child.permissionCode]
-              : null
-            const groupKey = blockName || 'Other'
-            acc[groupKey] = acc[groupKey] || []
-            acc[groupKey].push(child)
-            return acc
-          }, {})
-
-          const groupedItems = Object.entries(groupedChildren).map(([blockName, children]) => ({
-            title: blockName,
-            icon: children[0]?.icon,
-            items: children
-          }))
-
           return {
             ...item,
-            items: groupedItems
+            items: buildDynamicDocumentItems()
           }
         }
 

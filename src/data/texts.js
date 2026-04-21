@@ -200,8 +200,8 @@ export const texts = {
       en: 'Table'
     },
     cardView: {
-      fr: 'Cartes',
-      en: 'Cards'
+      fr: 'Carte',
+      en: 'Card'
     },
     selectSection: {
       fr: 'Sélectionner une section',
@@ -527,6 +527,14 @@ export const texts = {
     cargoDamage: {
       fr: 'Dommages de Cargaison',
       en: 'Cargo Damage'
+    },
+    assetEquipment: {
+      fr: 'Actifs et Equipements',
+      en: 'Asset Equipment'
+    },
+    equipment: {
+      fr: 'Equipement',
+      en: 'Equipment'
     },
     enterprise: {
       fr: 'Entreprise',
@@ -1648,8 +1656,8 @@ export const texts = {
       en: 'Filter'
     },
     cardsView: {
-      fr: 'Vue Cartes',
-      en: 'Cards View'
+      fr: 'Vue Carte',
+      en: 'Card View'
     },
     view: {
       fr: 'Voir',
@@ -1659,7 +1667,7 @@ export const texts = {
       fr: 'Vue Tableau',
       en: 'Table View'
     },
-    cards: { fr: 'Cartes', en: 'Cards' },
+    cards: { fr: 'Carte', en: 'Card' },
     table: { fr: 'Tableau', en: 'Table' },
     confirmDelete: {
       fr: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
@@ -1713,6 +1721,10 @@ export const texts = {
     edit: {
       fr: 'Modifier',
       en: 'Edit'
+    },
+    actions: {
+      fr: 'Actions',
+      en: 'Actions'
     },
     add: {
       fr: 'Ajouter',
@@ -1821,6 +1833,10 @@ export const texts = {
         fr: 'Emplacement',
         en: 'Location'
       },
+      statuts: {
+        fr: 'Statuts',
+        en: 'Statuses'
+      },
 
       numeroPermis: {
         fr: 'Numéro de Permis',
@@ -1911,7 +1927,15 @@ export const texts = {
         fr: "Date d'Achat",
         en: 'Purchase Date'
       },
+      dateDachat: {
+        fr: "Date d'Achat",
+        en: 'Purchase Date'
+      },
       dateVisiteTechnique: {
+        fr: 'Date de Visite Technique',
+        en: 'Technical Inspection Date'
+      },
+      dateDeVisiteTechnique: {
         fr: 'Date de Visite Technique',
         en: 'Technical Inspection Date'
       },
@@ -1974,6 +1998,14 @@ export const texts = {
       dateDueDiligence: {
         fr: 'Date de Diligence Raisonnable',
         en: 'Due Diligence Date'
+      },
+      dateMiseAJourDeLaPolice: {
+        fr: 'Date de Mise a Jour de la Politique',
+        en: 'Policy Update Date'
+      },
+      dateDeMiseAJourDeLaPolice: {
+        fr: 'Date de Mise a Jour de la Politique',
+        en: 'Policy Update Date'
       },
       creationDate: {
         fr: 'Date de Création',
@@ -2302,13 +2334,25 @@ export const texts = {
         fr: 'Équipement',
         en: 'Equipment'
       },
+      legacy: {
+        fr: 'Legacy',
+        en: 'Legacy'
+      },
       drugAlcohol: {
         fr: 'Drogue et Alcool',
         en: 'Drug and Alcohol'
       },
+      induction: {
+        fr: 'Induction',
+        en: 'Induction'
+      },
       incident: {
         fr: 'Incident',
         en: 'Incident'
+      },
+      auditReport: {
+        fr: "Rapport d'Audit",
+        en: 'Audit Report'
       },
       newsletter: {
         fr: "Bulletin d'Information",
@@ -2317,6 +2361,22 @@ export const texts = {
       sop: {
         fr: 'Procédure Opératoire Standard',
         en: 'SOP'
+      },
+      sopOps: {
+        fr: 'SOP (OPS)',
+        en: 'SOP (OPS)'
+      },
+      compliancePolicies: {
+        fr: 'Politiques de Conformité',
+        en: 'Compliance Policies'
+      },
+      auditFollowUp: {
+        fr: "Audit / Suivi",
+        en: 'Audit Report / Follow Up'
+      },
+      dueDiligence: {
+        fr: 'Diligence Raisonnable',
+        en: 'Due Diligence'
       }
     },
 

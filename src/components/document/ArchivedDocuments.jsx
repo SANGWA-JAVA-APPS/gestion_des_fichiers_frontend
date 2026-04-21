@@ -18,8 +18,7 @@ const ArchivedDocuments = () => {
             </Card.Header>
             <Card.Body>
               <SimpleSearchComponent showDateRange={false} />
-
-              <Alert variant='info' className='mb-0'>
+              <Alert variant='info' className='mb-0 d-none'>
                 <strong>Coming Soon:</strong> Archive management tools will be
                 available here.
               </Alert>

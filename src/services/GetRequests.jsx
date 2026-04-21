@@ -776,6 +776,54 @@ export const getAllDueDiligence = async (page = 0, size = 20, sort = 'reference'
   }
 };
 
+export const getAllLegacy = async ({ page = 0, size = 20, sort = 'dateTime', direction = 'desc', statusId, documentId, search } = {}) => {
+  try {
+    const response = await apiClient.get('/document/legacy', {
+      params: { page, size, sort, direction, statusId, documentId, search }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Get legacy error:', error)
+    throw error.response?.data || { message: 'Failed to get legacy records' }
+  }
+}
+
+export const getAllAssEquipment = async ({ page = 0, size = 20, sort = 'equipmentType', direction = 'asc', statusId, documentId, search } = {}) => {
+  try {
+    const response = await apiClient.get('/document/ass-equipment', {
+      params: { page, size, sort, direction, statusId, documentId, search }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Get ass equipment error:', error)
+    throw error.response?.data || { message: 'Failed to get ass equipment records' }
+  }
+}
+
+export const getAllInduction = async ({ page = 0, size = 20, sort = 'reference', direction = 'asc', statusId, documentId, search } = {}) => {
+  try {
+    const response = await apiClient.get('/document/induction', {
+      params: { page, size, sort, direction, statusId, documentId, search }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Get induction error:', error)
+    throw error.response?.data || { message: 'Failed to get induction records' }
+  }
+}
+
+export const getAllCompliancePolicies = async ({ page = 0, size = 20, sort = 'reference', direction = 'asc', statusId, documentId, search } = {}) => {
+  try {
+    const response = await apiClient.get('/document/compliance-policies', {
+      params: { page, size, sort, direction, statusId, documentId, search }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Get compliance policies error:', error)
+    throw error.response?.data || { message: 'Failed to get compliance policies records' }
+  }
+}
+
 // services/GetRequests.ts
 
 export const getAllCommThirdParty = async ({
@@ -839,9 +887,18 @@ export const getAllCargoDamage = async ({
 }
 
 // Get all litigation followup
-export const getAllLitigationFollowup = async (page = 0, size = 20, sort = 'concern', direction = 'asc') => {
+export const getAllLitigationFollowup = async ({
+  page = 0,
+  size = 20,
+  sort = 'concern',
+  direction = 'asc',
+  statusId,
+  search
+} = {}) => {
   try {
-    const response = await apiClient.get(`/document/litigation-followup?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/litigation-followup', {
+      params: { page, size, sort, direction, statusId, search }
+    });
     return response.data;
   } catch (error) {
     console.error('Get litigation followup error:', error);
@@ -850,9 +907,18 @@ export const getAllLitigationFollowup = async (page = 0, size = 20, sort = 'conc
 };
 
 // Get all insurance
-export const getAllInsurance = async (page = 0, size = 20, sort = 'concerns', direction = 'asc') => {
+export const getAllInsurance = async ({page = 0, size = 20, sort = 'concerns', direction = 'asc', statusId, search} = {}) => {
   try {
-    const response = await apiClient.get(`/document/insurance?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/insurance', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        ...(statusId && { statusId }),
+        ...(search && { search }),
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Get insurance error:', error);
@@ -861,9 +927,18 @@ export const getAllInsurance = async (page = 0, size = 20, sort = 'concerns', di
 };
 
 // Get all third party claims
-export const getAllThirdPartyClaims = async (page = 0, size = 20, sort = 'reference', direction = 'asc') => {
+export const getAllThirdPartyClaims = async ({page = 0, size = 20, sort = 'reference', direction = 'asc', statusId, search} = {}) => {
   try {
-    const response = await apiClient.get(`/document/third-party-claims?page=${page}&size=${size}&sort=${sort}&direction=${direction}`);
+    const response = await apiClient.get('/document/third-party-claims', {
+      params: {
+        page,
+        size,
+        sort,
+        direction,
+        ...(statusId && { statusId }),
+        ...(search && { search }),
+      },
+    });
     return response.data;
   } catch (error) {
     console.error('Get third party claims error:', error);

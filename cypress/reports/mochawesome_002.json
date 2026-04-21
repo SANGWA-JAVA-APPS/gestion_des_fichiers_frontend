@@ -1,0 +1,105 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 1,
+    "pending": 0,
+    "failures": 0,
+    "start": "2026-02-24T11:22:04.232Z",
+    "end": "2026-02-24T11:23:04.075Z",
+    "duration": 59843,
+    "testsRegistered": 1,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "ead170b4-89db-4bee-97f5-93f3ce5e69f8",
+      "title": "",
+      "fullFile": "cypress\\e2e\\sidebar-links.cy.js",
+      "file": "cypress\\e2e\\sidebar-links.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "2a5c2b86-8fb1-492b-9e78-5ea12d8e4fbd",
+          "title": "Sidebar links coverage (route + axios retrieval)",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "visits each sidebar linked page and verifies expected axios calls",
+              "fullTitle": "Sidebar links coverage (route + axios retrieval) visits each sidebar linked page and verifies expected axios calls",
+              "timedOut": null,
+              "duration": 59535,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "sidebarRouteChecks.forEach(({\n  path,\n  aliases\n}) => {\n  cy.visitAuthed(path);\n  cy.location('pathname').should('eq', path);\n  aliases.forEach(alias => {\n    cy.wait(alias);\n  });\n});",
+              "err": {},
+              "uuid": "beac5d25-bb16-4362-acde-73330c9e1a58",
+              "parentUUID": "2a5c2b86-8fb1-492b-9e78-5ea12d8e4fbd",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "beac5d25-bb16-4362-acde-73330c9e1a58"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 59535,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "cypress/reports",
+        "overwrite": false,
+        "html": false,
+        "json": true
+      },
+      "version": "6.3.2"
+    }
+  }
+}

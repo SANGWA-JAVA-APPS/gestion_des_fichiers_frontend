@@ -316,7 +316,7 @@ const CertLicensesComponent = () => {
                     <Nav.Item>
                       <Nav.Link eventKey="cards">
                         <i className="bi bi-grid-3x3-gap me-1"></i>
-                        {t('common.cardsView') || t('common.cards') || 'Cards'}
+                        {t('common.cardsView') || t('common.cards') || 'Card'}
                       </Nav.Link>
                     </Nav.Item>
                     <Nav.Item>

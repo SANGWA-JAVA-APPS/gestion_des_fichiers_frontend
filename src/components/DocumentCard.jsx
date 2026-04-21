@@ -1,10 +1,7 @@
 
 import React, { useState } from 'react';
 import { Col, Card, Button, Badge, ListGroup } from 'react-bootstrap';
-import pdf from '../assets/documents_icons/pdf.png';
-import excel from '../assets/documents_icons/excel.png';
-import word from '../assets/documents_icons/word.png';
-import powerpoint from '../assets/documents_icons/powerpoint.png';
+import { getDocumentIcon } from './document/documentIconUtils';
 import DownloadConfirmationModal from './document/DownloadConfirmationModal';
 import * as downloadService from '../services/downloadService';
 
@@ -21,46 +18,6 @@ const DocumentCard = ({
   showEditButton = true,
   showDeleteButton = true
 }) => {
-  // Helper function to get document icon
-  const getDocumentIcon = (document) => {
-    if (!document) return null;
-    
-    const fileName = (document.originalFileName || document.fileName || '').toLowerCase();
-    const contentType = (document.contentType || '').toLowerCase();
-    
-    // Check for PDF
-    if (fileName.endsWith('.pdf') || contentType.includes('pdf')) {
-      return pdf;
-    }
-    
-    // Check for Excel
-    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx') || 
-        fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') ||
-        fileName.endsWith('.xltx') || fileName.endsWith('.xltm') ||
-        fileName.endsWith('.csv') ||
-        contentType.includes('spreadsheet') || contentType.includes('excel')) {
-      return excel;
-    }
-    
-    // Check for Word
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx') || 
-        fileName.endsWith('.docm') || fileName.endsWith('.dotx') ||
-        fileName.endsWith('.dotm') ||
-        contentType.includes('word') || contentType.includes('document')) {
-      return word;
-    }
-    
-    // Check for PowerPoint
-    if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx') || 
-        fileName.endsWith('.pptm') || fileName.endsWith('.potx') ||
-        fileName.endsWith('.potm') ||
-        contentType.includes('powerpoint') || contentType.includes('presentation')) {
-      return powerpoint;
-    }
-    
-    return null;
-  };
-
   // Helper to remove file extension
   const removeFileExtension = (filename) => {
     if (!filename) return '';
@@ -133,6 +90,16 @@ const DocumentCard = ({
             <strong>{language === 'fr' ? 'Fichier:' : 'File:'}</strong>{' '}
             <small className="text-truncate d-block">
               {item.document?.originalFileName || '-'}
+            </small>
+          </ListGroup.Item>
+          <ListGroup.Item>
+            <small className="text-muted d-block mb-2">
+              <i className="bi bi-person-check me-1"></i>
+              {item.doneBy?.fullName || '—'}
+            </small>
+            <small className="text-muted d-block mb-2">
+              <i className="bi bi-tag me-1"></i>
+              {item.status?.name || '—'}
             </small>
           </ListGroup.Item>
           <ListGroup.Item>

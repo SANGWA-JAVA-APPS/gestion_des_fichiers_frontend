@@ -341,7 +341,7 @@ const loadData = async () => {
                 <Nav.Item>
                   <Nav.Link eventKey="cards">
                     <i className="bi bi-grid-3x3-gap me-2"></i>
-                    {language === 'fr' ? 'Cartes' : 'Cards'}
+                    {language === 'fr' ? 'Vue Carte' : 'Card View'}
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>

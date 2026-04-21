@@ -702,6 +702,18 @@ export const deleteLitigationFollowup = async (id) => {
   }
 };
 
+export const updateLitigationFollowupWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/litigation-followup/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update litigation followup with file error:', error);
+    throw error.response?.data || { message: 'Failed to update litigation followup with file' };
+  }
+};
+
 // Update/Delete insurance
 export const updateInsurance = async (id, data) => {
   try {
@@ -720,6 +732,18 @@ export const deleteInsurance = async (id) => {
   } catch (error) {
     console.error('Delete insurance error:', error);
     throw error.response?.data || { message: 'Failed to delete insurance' };
+  }
+};
+
+export const updateInsuranceWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/insurance/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update insurance with file error:', error);
+    throw error.response?.data || { message: 'Failed to update insurance with file' };
   }
 };
 
@@ -743,3 +767,149 @@ export const deleteThirdPartyClaims = async (id) => {
     throw error.response?.data || { message: 'Failed to delete third party claims' };
   }
 };
+
+export const updateThirdPartyClaimsWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/third-party-claims/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update third party claims with file error:', error);
+    throw error.response?.data || { message: 'Failed to update third party claims with file' };
+  }
+};
+
+export const updateLegacy = async (id, data) => {
+  try {
+    const response = await apiClient.put(`/document/legacy/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('Update legacy error:', error)
+    throw error.response?.data || { message: 'Failed to update legacy record' }
+  }
+}
+
+export const updateLegacyWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/legacy/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Update legacy with file error:', error)
+    throw error.response?.data || { message: 'Failed to update legacy record with file' }
+  }
+}
+
+export const deleteLegacy = async (id) => {
+  try {
+    const response = await apiClient.delete(`/document/legacy/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('Delete legacy error:', error)
+    throw error.response?.data || { message: 'Failed to delete legacy record' }
+  }
+}
+
+export const updateAssEquipment = async (id, data) => {
+  try {
+    const response = await apiClient.put(`/document/ass-equipment/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('Update ass equipment error:', error)
+    throw error.response?.data || { message: 'Failed to update ass equipment record' }
+  }
+}
+
+export const updateAssEquipmentWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/ass-equipment/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Update ass equipment with file error:', error)
+    throw error.response?.data || { message: 'Failed to update ass equipment record with file' }
+  }
+}
+
+export const deleteAssEquipment = async (id) => {
+  try {
+    const response = await apiClient.delete(`/document/ass-equipment/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('Delete ass equipment error:', error)
+    throw error.response?.data || { message: 'Failed to delete ass equipment record' }
+  }
+}
+
+export const updateInduction = async (id, data) => {
+  try {
+    const response = await apiClient.put(`/document/induction/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('Update induction error:', error)
+    throw error.response?.data || { message: 'Failed to update induction record' }
+  }
+}
+
+export const updateInductionWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/induction/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Update induction with file error:', error)
+    throw error.response?.data || { message: 'Failed to update induction record with file' }
+  }
+}
+
+export const deleteInduction = async (id) => {
+  try {
+    const response = await apiClient.delete(`/document/induction/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('Delete induction error:', error)
+    throw error.response?.data || { message: 'Failed to delete induction record' }
+  }
+}
+
+export const updateCompliancePolicies = async (id, data) => {
+  try {
+    const response = await apiClient.put(`/document/compliance-policies/${id}`, data)
+    return response.data
+  } catch (error) {
+    console.error('Update compliance policies error:', error)
+    throw error.response?.data || { message: 'Failed to update compliance policy record' }
+  }
+}
+
+export const updateCompliancePoliciesWithFile = async (id, formData) => {
+  try {
+    const response = await apiClient.put(`/document/compliance-policies/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Update compliance policies with file error:', error)
+    throw error.response?.data || { message: 'Failed to update compliance policy record with file' }
+  }
+}
+
+export const deleteCompliancePolicies = async (id) => {
+  try {
+    const response = await apiClient.delete(`/document/compliance-policies/${id}`)
+    return response.data
+  } catch (error) {
+    console.error('Delete compliance policies error:', error)
+    throw error.response?.data || { message: 'Failed to delete compliance policy record' }
+  }
+}

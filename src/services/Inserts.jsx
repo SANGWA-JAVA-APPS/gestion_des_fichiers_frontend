@@ -475,6 +475,18 @@ export const createLitigationFollowup = async (data) => {
   }
 };
 
+export const createLitigationFollowupWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/litigation-followup', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create litigation followup with file error:', error);
+    throw error.response?.data || { message: 'Failed to create litigation followup with file' };
+  }
+};
+
 // Create insurance
 export const createInsurance = async (data) => {
   try {
@@ -483,6 +495,18 @@ export const createInsurance = async (data) => {
   } catch (error) {
     console.error('Create insurance error:', error);
     throw error.response?.data || { message: 'Failed to create insurance' };
+  }
+};
+
+export const createInsuranceWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/insurance', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create insurance with file error:', error);
+    throw error.response?.data || { message: 'Failed to create insurance with file' };
   }
 };
 
@@ -496,3 +520,109 @@ export const createThirdPartyClaims = async (data) => {
     throw error.response?.data || { message: 'Failed to create third party claims' };
   }
 };
+
+export const createThirdPartyClaimsWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/third-party-claims', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Create third party claims with file error:', error);
+    throw error.response?.data || { message: 'Failed to create third party claims with file' };
+  }
+};
+
+export const createLegacy = async (data) => {
+  try {
+    const response = await apiClient.post('/document/legacy', data)
+    return response.data
+  } catch (error) {
+    console.error('Create legacy error:', error)
+    throw error.response?.data || { message: 'Failed to create legacy record' }
+  }
+}
+
+export const createLegacyWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/legacy', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Create legacy with file error:', error)
+    throw error.response?.data || { message: 'Failed to create legacy record with file' }
+  }
+}
+
+export const createAssEquipment = async (data) => {
+  try {
+    const response = await apiClient.post('/document/ass-equipment', data)
+    return response.data
+  } catch (error) {
+    console.error('Create ass equipment error:', error)
+    throw error.response?.data || { message: 'Failed to create ass equipment record' }
+  }
+}
+
+export const createAssEquipmentWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/ass-equipment', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Create ass equipment with file error:', error)
+    throw error.response?.data || { message: 'Failed to create ass equipment record with file' }
+  }
+}
+
+export const createInduction = async (data) => {
+  try {
+    const response = await apiClient.post('/document/induction', data)
+    return response.data
+  } catch (error) {
+    console.error('Create induction error:', error)
+    throw error.response?.data || { message: 'Failed to create induction record' }
+  }
+}
+
+export const createInductionWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/induction', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return response.data
+  } catch (error) {
+    console.error('Create induction with file error:', error)
+    throw error.response?.data || { message: 'Failed to create induction record with file' }
+  }
+}
+
+export const createCompliancePolicies = async (data) => {
+  try {
+    const response = await apiClient.post('/document/compliance-policies', data)
+    return response.data
+  } catch (error) {
+    console.error('Create compliance policies error:', error)
+    throw error.response?.data || { message: 'Failed to create compliance policy record' }
+  }
+}
+
+export const createCompliancePoliciesWithFile = async (formData) => {
+  try {
+    const response = await apiClient.post('/document/compliance-policies', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Create compliance policies with file error:', error)
+    throw error.response?.data || { message: 'Failed to create compliance policy record with file' }
+  }
+}

@@ -1,48 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Table, Modal, Form, Alert, Spinner, Badge, Dropdown, ListGroup, Nav } from 'react-bootstrap';
-import { getAllNormeLoi } from '../../services/GetRequests';
-import { createNormeLoiWithFile } from '../../services/Inserts';
-import { updateNormeLoi, updateNormeLoiWithFile, deleteNormeLoi } from '../../services/UpdRequests';
-import { getAllDocStatuses } from '../../services/GetRequests';
-import { getText } from '../../data/texts';
-import SearchComponent from '../SearchComponent';
-import HeaderTitle from '../HeaderTitle';
-import DocumentDetailsView from './DocumentDetailsView';
-import DownloadConfirmationModal from './DownloadConfirmationModal';
-import { downloadFile, formatFileSize, removeFileExtension as removeExtension, openFileInNewTab } from '../../services/downloadService';
-import pdfIcon from '../../assets/documents_icons/pdf.png';
-import excelIcon from '../../assets/documents_icons/excel.png';
-import wordIcon from '../../assets/documents_icons/word.png';
-import powerpointIcon from '../../assets/documents_icons/powerpoint.png';
-import { getUserInfo } from '../../services/authUtils';
-import { useLanguage } from '../../i18n/LanguageContext';
-import PaginationControl from '../PaginationControl';
-import {  useSearchParams } from 'react-router-dom';
-import SimpleSearchComponent from '../SimpleSearchComponent';
+import React, { useState, useEffect } from "react";
+import {
+  Row,
+  Col,
+  Card,
+  Button,
+  Table,
+  Modal,
+  Form,
+  Alert,
+  Spinner,
+  Badge,
+  Dropdown,
+  ListGroup,
+  Nav,
+} from "react-bootstrap";
+import { getAllNormeLoi } from "../../services/GetRequests";
+import { createNormeLoiWithFile } from "../../services/Inserts";
+import {
+  updateNormeLoi,
+  updateNormeLoiWithFile,
+  deleteNormeLoi,
+} from "../../services/UpdRequests";
+import { getAllDocStatuses } from "../../services/GetRequests";
+import { getText } from "../../data/texts";
+import SearchComponent from "../SearchComponent";
+import HeaderTitle from "../HeaderTitle";
+import PageHeaderCard from "../PageHeaderCard";
+import DocumentDetailsView from "./DocumentDetailsView";
+import DownloadConfirmationModal from "./DownloadConfirmationModal";
+import {
+  downloadFile,
+  formatFileSize,
+  removeFileExtension as removeExtension,
+  openFileInNewTab,
+} from "../../services/downloadService";
+
+import { getUserInfo } from "../../services/authUtils";
+import { useLanguage } from "../../i18n/LanguageContext";
+import PaginationControl from "../PaginationControl";
+import { useSearchParams } from "react-router-dom";
+import SimpleSearchComponent from "../SimpleSearchComponent";
+import DocumentCard from "../DocumentCard";
 
 const NormeLoiComponent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [docStatuses, setDocStatuses] = useState([]);
 
-    const CurrentUserId = getUserInfo().userId
+  const CurrentUserId = getUserInfo().userId;
   const [formData, setFormData] = useState({
-    reference: '',
-    description: '',
-    dateVigueur: '',
-    domaineApplication: '',
-    doneBy: { id: '' },
-    document: { id: '' },
-    status: { id: '' }
+    reference: "",
+    description: "",
+    dateVigueur: "",
+    domaineApplication: "",
+    doneBy: { id: "" },
+    document: { id: "" },
+    status: { id: "" },
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const { language } = useLanguage();
-
 
   // Modal states
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -55,94 +76,80 @@ const NormeLoiComponent = () => {
   const [fileToDownload, setFileToDownload] = useState(null);
 
   // View mode state
-  const [activeView, setActiveView] = useState('cards'); // 'table' or 'cards' - default is cards
+  const [activeView, setActiveView] = useState("cards"); // 'table' or 'cards' - default is cards
 
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [searchParams, setSearchParams] = useSearchParams()
-  
-  const page = parseInt(searchParams.get('page') || '0', 10)
-const size = parseInt(searchParams.get('size') || '20', 10)
-const search = searchParams.get('search') || null
-const statusId = searchParams.get('statusId')
-  ? Number(searchParams.get('statusId'))
-  : null
-useEffect(() => {
-  loadData()
-  loadDropdownData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [searchParams])
-const loadData = async () => {
-  try {
-    
-
-    setLoading(true)
-    setError('')
-
-    const response = await getAllNormeLoi({
-      page,
-      size,
-      search,
-      statusId
-    })
-
-    setData(response.content || [])
-
-
-  
-    setTotalPages(response.totalPages)
-    setTotalElements(response.totalElements)
-
-    
-
-  } catch (err) {
-    setError(
-      getText('document.messages.loadError', language) +
-        ': ' +
-        (err.message || 'Unknown error')
-    )
-  } finally {
-    setLoading(false)
-  }
-}
-
-  const loadDropdownData = async () => {
+  const page = parseInt(searchParams.get("page") || "0", 10);
+  const size = parseInt(searchParams.get("size") || "20", 10);
+  const search = searchParams.get("search") || null;
+  const statusId = searchParams.get("statusId")
+    ? Number(searchParams.get("statusId"))
+    : null;
+  useEffect(() => {
+    loadData();
+    loadDropdownData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+  const loadData = async () => {
     try {
-      const [statusesData] = await Promise.all([
-        getAllDocStatuses(),
-   
-      ]);
-      setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
-     
+      setLoading(true);
+      setError("");
+
+      const response = await getAllNormeLoi({
+        page,
+        size,
+        search,
+        statusId,
+      });
+
+      setData(response.content || []);
+
+      setTotalPages(response.totalPages);
+      setTotalElements(response.totalElements);
     } catch (err) {
-      console.error('Load dropdown data error:', err);
+      setError(
+        getText("document.messages.loadError", language) +
+          ": " +
+          (err.message || "Unknown error"),
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-
+  const loadDropdownData = async () => {
+    try {
+      const [statusesData] = await Promise.all([getAllDocStatuses()]);
+      setDocStatuses(Array.isArray(statusesData) ? statusesData : []);
+    } catch (err) {
+      console.error("Load dropdown data error:", err);
+    }
+  };
 
   const handleShowModal = (item = null) => {
     if (item) {
       setEditingItem(item);
       setFormData({
-        reference: item.reference || '',
-        description: item.description || '',
-        dateVigueur: item.dateVigueur ? item.dateVigueur.split('T')[0] : '',
-        domaineApplication: item.domaineApplication || '',
-     
-        document: { id: item.document?.id || '' },
-        status: { id: item.status?.id || '' }
+        reference: item.reference || "",
+        description: item.description || "",
+        dateVigueur: item.dateVigueur ? item.dateVigueur.split("T")[0] : "",
+        domaineApplication: item.domaineApplication || "",
+
+        document: { id: item.document?.id || "" },
+        status: { id: item.status?.id || "" },
       });
       setSelectedFile(null);
     } else {
       setEditingItem(null);
       setFormData({
-        reference: '',
-        description: '',
-        dateVigueur: '',
-        domaineApplication: '',
- 
-        document: { id: '' },
-        status: { id: '' }
+        reference: "",
+        description: "",
+        dateVigueur: "",
+        domaineApplication: "",
+
+        document: { id: "" },
+        status: { id: "" },
       });
       setSelectedFile(null);
     }
@@ -153,30 +160,30 @@ const loadData = async () => {
     setShowModal(false);
     setEditingItem(null);
     setFormData({
-      reference: '',
-      description: '',
-      dateVigueur: '',
-      domaineApplication: '',
-   
-      document: { id: '' },
-      status: { id: '' }
+      reference: "",
+      description: "",
+      dateVigueur: "",
+      domaineApplication: "",
+
+      document: { id: "" },
+      status: { id: "" },
     });
     setSelectedFile(null);
-    setError('');
+    setError("");
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
         ...prev,
-        [parent]: { ...prev[parent], [child]: value }
+        [parent]: { ...prev[parent], [child]: value },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -191,11 +198,15 @@ const loadData = async () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setError('');
+      setError("");
 
       // Check if file is required for new entries
       if (!editingItem && !selectedFile) {
-        setError(language === 'fr' ? 'Veuillez sélectionner un fichier' : 'Please select a file');
+        setError(
+          language === "fr"
+            ? "Veuillez sélectionner un fichier"
+            : "Please select a file",
+        );
         return;
       }
 
@@ -205,39 +216,55 @@ const loadData = async () => {
         const formDataToSend = new FormData();
 
         // Add file
-        formDataToSend.append('file', selectedFile);
+        formDataToSend.append("file", selectedFile);
 
         // Build normeLoi object as JSON
         const normeLoiData = {
           reference: formData.reference,
           description: formData.description || null,
-          dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
+          dateVigueur: formData.dateVigueur
+            ? new Date(formData.dateVigueur).toISOString()
+            : null,
           domaineApplication: formData.domaineApplication || null,
-          doneBy: { id: CurrentUserId},
-          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+          doneBy: { id: CurrentUserId },
+          status: formData.status.id
+            ? { id: parseInt(formData.status.id) }
+            : null,
         };
 
         // Add normeLoi as JSON blob
-        formDataToSend.append('normeLoi', new Blob([JSON.stringify(normeLoiData)], {
-          type: 'application/json'
-        }));
+        formDataToSend.append(
+          "normeLoi",
+          new Blob([JSON.stringify(normeLoiData)], {
+            type: "application/json",
+          }),
+        );
 
         await createNormeLoiWithFile(formDataToSend);
       } else if (editingItem) {
         const dataToSubmit = {
           ...formData,
-          dateVigueur: formData.dateVigueur ? new Date(formData.dateVigueur).toISOString() : null,
-          doneBy: { id: CurrentUserId},
-          document: formData.document.id ? { id: parseInt(formData.document.id) } : null,
-          status: formData.status.id ? { id: parseInt(formData.status.id) } : null
+          dateVigueur: formData.dateVigueur
+            ? new Date(formData.dateVigueur).toISOString()
+            : null,
+          doneBy: { id: CurrentUserId },
+          document: formData.document.id
+            ? { id: parseInt(formData.document.id) }
+            : null,
+          status: formData.status.id
+            ? { id: parseInt(formData.status.id) }
+            : null,
         };
 
         if (selectedFile) {
           const formDataToSend = new FormData();
-          formDataToSend.append('file', selectedFile);
-          formDataToSend.append('normeLoi', new Blob([JSON.stringify(dataToSubmit)], {
-            type: 'application/json'
-          }));
+          formDataToSend.append("file", selectedFile);
+          formDataToSend.append(
+            "normeLoi",
+            new Blob([JSON.stringify(dataToSubmit)], {
+              type: "application/json",
+            }),
+          );
 
           await updateNormeLoiWithFile(editingItem.id, formDataToSend);
         } else {
@@ -248,8 +275,12 @@ const loadData = async () => {
       handleCloseModal();
       loadData();
     } catch (err) {
-      setError(getText('document.messages.saveError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Save error:', err);
+      setError(
+        getText("document.messages.saveError", language) +
+          ": " +
+          (err.message || "Unknown error"),
+      );
+      console.error("Save error:", err);
     }
   };
 
@@ -262,14 +293,18 @@ const loadData = async () => {
     if (!itemToDelete) return;
 
     try {
-      setError('');
+      setError("");
       await deleteNormeLoi(itemToDelete.id);
       loadData();
       setShowDeleteModal(false);
       setItemToDelete(null);
     } catch (err) {
-      setError(getText('document.messages.deleteError', language) + ': ' + (err.message || 'Unknown error'));
-      console.error('Delete error:', err);
+      setError(
+        getText("document.messages.deleteError", language) +
+          ": " +
+          (err.message || "Unknown error"),
+      );
+      console.error("Delete error:", err);
     }
   };
 
@@ -294,7 +329,9 @@ const loadData = async () => {
       setFileToDownload(item);
       setShowDownloadModal(true);
     } else {
-      alert(language === 'fr' ? 'Aucun fichier disponible' : 'No file available');
+      alert(
+        language === "fr" ? "Aucun fichier disponible" : "No file available",
+      );
     }
   };
 
@@ -304,13 +341,17 @@ const loadData = async () => {
 
     try {
       await downloadFile(fileToDownload.document);
-      
+
       // Close the modal
       setShowDownloadModal(false);
       setFileToDownload(null);
     } catch (err) {
-      console.error('Download error:', err);
-      alert(language === 'fr' ? `Erreur lors du téléchargement: ${err.message}` : `Download error: ${err.message}`);
+      console.error("Download error:", err);
+      alert(
+        language === "fr"
+          ? `Erreur lors du téléchargement: ${err.message}`
+          : `Download error: ${err.message}`,
+      );
     }
   };
 
@@ -320,52 +361,13 @@ const loadData = async () => {
     setFileToDownload(null);
   };
 
-  // Helper function to get document icon based on file extension
-  const getDocumentIcon = (document) => {
-    if (!document) return null;
-    
-    const fileName = (document.originalFileName || document.fileName || '').toLowerCase();
-    const contentType = (document.contentType || '').toLowerCase();
-    
-    // Check for PDF
-    if (fileName.endsWith('.pdf') || contentType.includes('pdf')) {
-      return pdfIcon;
-    }
-    
-    // Check for Excel (.xls, .xlsx, .xlsm, .xlsb, .xltx, .xltm, .csv)
-    if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx') || 
-        fileName.endsWith('.xlsm') || fileName.endsWith('.xlsb') ||
-        fileName.endsWith('.xltx') || fileName.endsWith('.xltm') ||
-        fileName.endsWith('.csv') ||
-        contentType.includes('spreadsheet') || contentType.includes('excel')) {
-      return excelIcon;
-    }
-    
-    // Check for Word (.doc, .docx, .docm, .dotx, .dotm)
-    if (fileName.endsWith('.doc') || fileName.endsWith('.docx') ||
-        fileName.endsWith('.docm') || fileName.endsWith('.dotx') ||
-        fileName.endsWith('.dotm') ||
-        contentType.includes('word') || contentType.includes('document')) {
-      return wordIcon;
-    }
-    
-    // Check for PowerPoint (.ppt, .pptx, .pptm, .potx, .potm, .ppsx, .ppsm)
-    if (fileName.endsWith('.ppt') || fileName.endsWith('.pptx') ||
-        fileName.endsWith('.pptm') || fileName.endsWith('.potx') ||
-        fileName.endsWith('.potm') || fileName.endsWith('.ppsx') ||
-        fileName.endsWith('.ppsm') ||
-        contentType.includes('presentation') || contentType.includes('powerpoint')) {
-      return powerpointIcon;
-    }
-    
-    return null;
-  };
-
   if (loading) {
     return (
       <div className="text-center my-5">
         <Spinner animation="border" role="status">
-          <span className="visually-hidden">{getText('common.loading', language)}</span>
+          <span className="visually-hidden">
+            {getText("common.loading", language)}
+          </span>
         </Spinner>
       </div>
     );
@@ -382,7 +384,7 @@ const loadData = async () => {
         }
         .action-buttons .btn:hover {
           transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .action-buttons .btn-outline-primary:hover {
           background-color: #0d6efd;
@@ -405,81 +407,68 @@ const loadData = async () => {
             font-size: 0.75rem;
           }
         }
-        
       `}</style>
       <Row className="mb-4">
         <Col>
           <Card>
             <Card.Header>
-              <Row className="align-items-center mb-3">
-                <Col xs={12} md={6} lg={3}>
-                  <HeaderTitle>{getText('document.normeLoi', language)}</HeaderTitle>
-                </Col>
-                <Col xs={12} md={6} lg={9} className="text-end">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleShowModal()}>
-                    <i className="bi bi-plus-circle me-1"></i>
-                    {getText('common.add', language)}
-                  </Button>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={loadData}>
-                    <i className="bi bi-arrow-clockwise me-1"></i>
-                    {getText('document.actions.refresh', language)}
-                  </Button>
-                </Col>
-              </Row>
-              
-              {/* View Toggle Tabs */}
-              <Nav variant="tabs" activeKey={activeView} onSelect={(k) => setActiveView(k)}>
-                <Nav.Item>
-                  <Nav.Link eventKey="cards">
-                    <i className="bi bi-grid-3x3-gap me-2"></i>
-                    {language === 'fr' ? 'Vue Doc' : 'Doc View'}
-                  </Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="table">
-                    <i className="bi bi-table me-2"></i>
-                    {language === 'fr' ? 'Vue Tableau' : 'Table View'}
-                  </Nav.Link>
-                </Nav.Item>
-              </Nav>
+              <PageHeaderCard
+                title={getText("document.normeLoi", language)}
+                language={language}
+                onAdd={() => handleShowModal()}
+                onRefresh={loadData}
+                activeView={activeView}
+                onViewChange={(k) => setActiveView(k)}
+              />
             </Card.Header>
             <Card.Body>
               {/* Search Component */}
-       
-<SimpleSearchComponent/>
+
+              <SimpleSearchComponent />
               {error && (
-                <Alert variant="danger" dismissible onClose={() => setError('')}>
+                <Alert
+                  variant="danger"
+                  dismissible
+                  onClose={() => setError("")}>
                   {error}
                 </Alert>
               )}
 
               {/* Table View */}
-              {activeView === 'table' && (
+              {activeView === "table" && (
                 <div className="table-responsive">
                   <Table striped bordered hover>
                     <thead>
                       <tr>
                         <th>ID</th>
-                        <th>{getText('document.fields.reference', language)}</th>
-                        <th>{getText('document.fields.description', language)}</th>
-                        <th>{getText('document.fields.dateVigueur', language)}</th>
-                        <th>{getText('document.fields.domaineApplication', language)}</th>
-                        <th>{getText('document.fields.status', language)}</th>
-                        <th className="text-center" style={{ width: '200px' }}>Actions</th>
+                        <th>
+                          {getText("document.fields.reference", language)}
+                        </th>
+                        <th>
+                          {getText("document.fields.description", language)}
+                        </th>
+                        <th>
+                          {getText("document.fields.dateVigueur", language)}
+                        </th>
+                        <th>
+                          {getText(
+                            "document.fields.domaineApplication",
+                            language,
+                          )}
+                        </th>
+                        <th>{getText("document.fields.status", language)}</th>
+                        <th className="text-center" style={{ width: "200px" }}>
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.length === 0 ? (
                         <tr>
                           <td colSpan="7" className="text-center text-muted">
-                            {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                            {language === "fr"
+                              ? "Aucune donnée disponible"
+                              : "No data available"}
                           </td>
                         </tr>
                       ) : (
@@ -487,15 +476,23 @@ const loadData = async () => {
                           <tr key={item.id}>
                             <td>{item.id}</td>
                             <td>{item.reference}</td>
-                            <td className="text-truncate" style={{ maxWidth: '200px' }}>
+                            <td
+                              className="text-truncate"
+                              style={{ maxWidth: "200px" }}>
                               {item.description}
                             </td>
                             <td>
-                              {item.dateVigueur ? new Date(item.dateVigueur).toLocaleDateString(language) : '-'}
+                              {item.dateVigueur
+                                ? new Date(item.dateVigueur).toLocaleDateString(
+                                    language,
+                                  )
+                                : "-"}
                             </td>
                             <td>{item.domaineApplication}</td>
                             <td>
-                              <Badge bg="info">{item.status?.name || '-'}</Badge>
+                              <Badge bg="info">
+                                {item.status?.name || "-"}
+                              </Badge>
                             </td>
                             <td className="text-center">
                               <div className="d-flex gap-1 justify-content-center action-buttons">
@@ -505,11 +502,14 @@ const loadData = async () => {
                                   size="sm"
                                   onClick={() => handleShowDetails(item)}
                                   className="d-flex align-items-center"
-                                  title={language === 'fr' ? 'Voir les détails' : 'View Details'}
-                                >
+                                  title={
+                                    language === "fr"
+                                      ? "Voir les détails"
+                                      : "View Details"
+                                  }>
                                   <i className="bi bi-eye me-1"></i>
                                   <span className="d-none d-sm-inline">
-                                    {language === 'fr' ? 'Voir' : 'View'}
+                                    {language === "fr" ? "Voir" : "View"}
                                   </span>
                                 </Button>
 
@@ -519,11 +519,10 @@ const loadData = async () => {
                                   size="sm"
                                   onClick={() => handleShowModal(item)}
                                   className="d-flex align-items-center"
-                                  title={getText('common.edit', language)}
-                                >
+                                  title={getText("common.edit", language)}>
                                   <i className="bi bi-pencil me-1"></i>
                                   <span className="d-none d-sm-inline">
-                                    {getText('common.edit', language)}
+                                    {getText("common.edit", language)}
                                   </span>
                                 </Button>
 
@@ -533,11 +532,10 @@ const loadData = async () => {
                                   size="sm"
                                   onClick={() => handleDeleteClick(item)}
                                   className="d-flex align-items-center"
-                                  title={getText('common.delete', language)}
-                                >
+                                  title={getText("common.delete", language)}>
                                   <i className="bi bi-trash me-1"></i>
                                   <span className="d-none d-sm-inline">
-                                    {getText('common.delete', language)}
+                                    {getText("common.delete", language)}
                                   </span>
                                 </Button>
                               </div>
@@ -545,125 +543,56 @@ const loadData = async () => {
                           </tr>
                         ))
                       )}
-                      
                     </tbody>
                   </Table>
                 </div>
               )}
 
               {/* Cards Grid (Doc View) */}
-              {activeView === 'cards' && (
+              {activeView === "cards" && (
                 <Row className="g-4">
                   {data.length === 0 ? (
                     <Col xs={12}>
                       <Alert variant="info" className="text-center">
                         <i className="bi bi-info-circle me-2"></i>
-                        {language === 'fr' ? 'Aucune donnée disponible' : 'No data available'}
+                        {language === "fr"
+                          ? "Aucune donnée disponible"
+                          : "No data available"}
                       </Alert>
                     </Col>
                   ) : (
-                    data.map((item) => {
-                      const docIcon = getDocumentIcon(item.document);
-                      return (
-                        <Col  key={item.id} xs={12} sm={6} md={4} lg={3}>
-                          <Card className={`h-100 shadow-sm hover-shadow ${docIcon ? 'doc-card-with-icon' : ''}`}>
-                            {docIcon && (
-                              <div className="doc-icon-badge">
-                                <img src={docIcon} alt="Document Type" />
-                              </div>
-                            )}
-                            <Card.Body>
-                              <Card.Title 
-                                className="text-primary text-truncate-single" 
-                                title={item.document?.originalFileName || item.reference}
-                                onClick={() => handleTitleClick(item)}
-                                style={{ cursor: 'pointer' }} >
-                                <i className="bi bi-file-earmark-text me-2"></i>
-                                {removeExtension(item.document?.originalFileName) || item.reference}
-                              </Card.Title>
-                              <Card.Text className="text-muted small text-clamp-3" style={{ minHeight: '60px' }}>
-                                {item.description || (language === 'fr' ? 'Aucune description' : 'No description')}
-                              </Card.Text>
-                            </Card.Body>
-                          <ListGroup className="list-group-flush">
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
-                              {item.document?.version || '-'}
-                            </ListGroup.Item>
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Fichier:' : 'File:'}</strong>{' '}
-                              <small className="text-truncate d-block">
-                                {item.document?.originalFileName || '-'}
-                              </small>
-                              </ListGroup.Item>
-                              <ListGroup.Item>
-                                <small className="text-muted d-block mb-2">
-  <i className="bi bi-person-check me-1"></i>
-  {item.doneBy?.fullName || '—'}
-</small>
-
-<small className="text-muted d-block mb-2">
-  <i className="bi bi-tag me-1"></i>
-  {item.status?.name || '—'}
-</small>
-                                
-                                </ListGroup.Item >
-                                    
-                            <ListGroup.Item>
-                              <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
-                              <Badge bg={item.document?.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                                {item.document?.status || '-'}
-                              </Badge>
-                            </ListGroup.Item>
-                          </ListGroup>
-                          <Card.Body>
-                            <div className="d-flex gap-2 flex-wrap">
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleShowDetails(item)}
-                                className="p-0 text-decoration-none"
-                              >
-                                <i className="bi bi-eye me-1"></i>
-                                {language === 'fr' ? 'Détails' : 'Details'}
-                              </Button>
-                              <Button
-                                variant="link"
-                                size="sm"
-                                onClick={() => handleShowModal(item)}         className="p-0 text-decoration-none"                              >
-                                <i className="bi bi-pencil me-1"></i>
-                                {language === 'fr' ? 'Modifier' : 'Edit'}
-                              </Button>
-                              <Button
-                                variant="link"  size="sm"
-                                onClick={() => handleDeleteClick(item)}
-                                className="p-0 text-decoration-none text-danger"                              >
-                                <i className="bi bi-trash me-1"></i>
-                                {language === 'fr' ? 'Supprimer' : 'Delete'}
-                              </Button>
-                              </div>
-                        
-
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                      );
-                    })
+                    data.map((item) => (
+                      <DocumentCard
+                        key={item.id}
+                        item={item}
+                        language={language}
+                        onViewDetails={handleShowDetails}
+                        onEdit={handleShowModal}
+                        onDelete={handleDeleteClick}
+                        getDisplayName={(it) =>
+                          it.document?.originalFileName || it.reference
+                        }
+                        getDescription={(it) => it.description || ""}
+                      />
+                    ))
                   )}
                 </Row>
               )}
-<PaginationControl totalElements={totalElements} totalPages={totalPages}/>
+              <PaginationControl
+                totalElements={totalElements}
+                totalPages={totalPages}
+              />
               <style jsx>{`
                 .hover-shadow {
-                  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+                  transition:
+                    box-shadow 0.3s ease-in-out,
+                    transform 0.3s ease-in-out;
                 }
                 .hover-shadow:hover {
-                  box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+                  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
                   transform: translateY(-4px);
                 }
               `}</style>
-
-     
             </Card.Body>
           </Card>
         </Col>
@@ -674,15 +603,14 @@ const loadData = async () => {
         <Modal.Header closeButton>
           <Modal.Title>
             {editingItem
-              ? `${getText('common.edit', language)} ${getText('document.normeLoi', language)}`
-              : `${getText('common.add', language)} ${getText('document.normeLoi', language)}`
-            }
+              ? `${getText("common.edit", language)} ${getText("document.normeLoi", language)}`
+              : `${getText("common.add", language)} ${getText("document.normeLoi", language)}`}
           </Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             {error && (
-              <Alert variant="danger" dismissible onClose={() => setError('')}>
+              <Alert variant="danger" dismissible onClose={() => setError("")}>
                 {error}
               </Alert>
             )}
@@ -690,20 +618,26 @@ const loadData = async () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.reference', language)} *</Form.Label>
+                  <Form.Label>
+                    {getText("document.fields.reference", language)} *
+                  </Form.Label>
                   <Form.Control
                     type="text"
                     name="reference"
                     value={formData.reference}
                     onChange={handleChange}
                     required
-                    placeholder={language === 'fr' ? 'Ex: NL-2024-001' : 'Ex: NL-2024-001'}
+                    placeholder={
+                      language === "fr" ? "Ex: NL-2024-001" : "Ex: NL-2024-001"
+                    }
                   />
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.dateVigueur', language)}</Form.Label>
+                  <Form.Label>
+                    {getText("document.fields.dateVigueur", language)}
+                  </Form.Label>
                   <Form.Control
                     type="date"
                     name="dateVigueur"
@@ -715,52 +649,67 @@ const loadData = async () => {
             </Row>
 
             <Form.Group className="mb-3">
-              <Form.Label>{getText('document.fields.description', language)}</Form.Label>
+              <Form.Label>
+                {getText("document.fields.description", language)}
+              </Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder={language === 'fr' ? 'Description détaillée...' : 'Detailed description...'}
+                placeholder={
+                  language === "fr"
+                    ? "Description détaillée..."
+                    : "Detailed description..."
+                }
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>{getText('document.fields.domaineApplication', language)}</Form.Label>
+              <Form.Label>
+                {getText("document.fields.domaineApplication", language)}
+              </Form.Label>
               <Form.Control
                 type="text"
                 name="domaineApplication"
                 value={formData.domaineApplication}
                 onChange={handleChange}
-                placeholder={language === 'fr' ? 'Domaine d\'application' : 'Application domain'}
+                placeholder={
+                  language === "fr"
+                    ? "Domaine d'application"
+                    : "Application domain"
+                }
               />
             </Form.Group>
 
             <Row>
               {/* {!editingItem && ( */}
-                
+
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.docId', language)} *</Form.Label>
+                  <Form.Label>
+                    {getText("document.fields.docId", language)} *
+                  </Form.Label>
                   <Form.Control
                     type="file"
                     onChange={handleFileChange}
                     required={!editingItem}
-                
-                    
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
                   />
                   {selectedFile && (
                     <Form.Text className="text-success">
                       <i className="bi bi-check-circle me-1"></i>
-                      {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                      {selectedFile.name} (
+                      {(selectedFile.size / 1024).toFixed(2)} KB)
                     </Form.Text>
                   )}
                   {editingItem && formData.document?.id && !selectedFile && (
                     <Form.Text className="text-muted">
                       <i className="bi bi-file-earmark me-1"></i>
-                      {language === 'fr' ? 'Document actuel conservé' : 'Current document retained'}
+                      {language === "fr"
+                        ? "Document actuel conservé"
+                        : "Current document retained"}
                     </Form.Text>
                   )}
                 </Form.Group>
@@ -768,18 +717,21 @@ const loadData = async () => {
               {/* )
               
               } */}
-   
+
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>{getText('document.fields.status', language)} *</Form.Label>
+                  <Form.Label>
+                    {getText("document.fields.status", language)} *
+                  </Form.Label>
                   <Form.Select
                     name="status.id"
                     value={formData.status.id}
                     onChange={handleChange}
-                    required
-                  >
-                    <option value="">{getText('common.select', language)}</option>
-                    {docStatuses.map(status => (
+                    required>
+                    <option value="">
+                      {getText("common.select", language)}
+                    </option>
+                    {docStatuses.map((status) => (
                       <option key={status.id} value={status.id}>
                         {status.name}
                       </option>
@@ -791,10 +743,10 @@ const loadData = async () => {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
-              {getText('common.cancel', language)}
+              {getText("common.cancel", language)}
             </Button>
             <Button variant="primary" type="submit">
-              {getText('common.save', language)}
+              {getText("common.save", language)}
             </Button>
           </Modal.Footer>
         </Form>
@@ -805,29 +757,41 @@ const loadData = async () => {
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title className="d-flex align-items-center">
             <i className="bi bi-exclamation-triangle me-2"></i>
-            {getText('common.confirmDelete', language)}
+            {getText("common.confirmDelete", language)}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <div className="text-center">
-            <i className="bi bi-trash text-danger" style={{ fontSize: '3rem' }}></i>
+            <i
+              className="bi bi-trash text-danger"
+              style={{ fontSize: "3rem" }}></i>
             <h5 className="mt-3 mb-3">
-              {language === 'fr' ? 'Êtes-vous sûr de vouloir supprimer cet élément ?' : 'Are you sure you want to delete this item?'}
+              {language === "fr"
+                ? "Êtes-vous sûr de vouloir supprimer cet élément ?"
+                : "Are you sure you want to delete this item?"}
             </h5>
             {itemToDelete && (
               <div className="bg-light p-3 rounded">
-                <strong>{getText('document.fields.reference', language)}:</strong> {itemToDelete.reference}
+                <strong>
+                  {getText("document.fields.reference", language)}:
+                </strong>{" "}
+                {itemToDelete.reference}
                 {itemToDelete.description && (
                   <>
                     <br />
-                    <strong>{getText('document.fields.description', language)}:</strong> {itemToDelete.description}
+                    <strong>
+                      {getText("document.fields.description", language)}:
+                    </strong>{" "}
+                    {itemToDelete.description}
                   </>
                 )}
               </div>
             )}
             <p className="text-muted mt-3 mb-0">
               <i className="bi bi-info-circle me-1"></i>
-              {language === 'fr' ? 'Cette action est irréversible.' : 'This action cannot be undone.'}
+              {language === "fr"
+                ? "Cette action est irréversible."
+                : "This action cannot be undone."}
             </p>
           </div>
         </Modal.Body>
@@ -835,11 +799,11 @@ const loadData = async () => {
           <div className="d-flex gap-2 w-100 justify-content-end">
             <Button variant="outline-secondary" onClick={handleDeleteCancel}>
               <i className="bi bi-x-circle me-2"></i>
-              {getText('common.cancel', language)}
+              {getText("common.cancel", language)}
             </Button>
             <Button variant="danger" onClick={handleDeleteConfirm}>
               <i className="bi bi-trash me-2"></i>
-              {getText('common.delete', language)}
+              {getText("common.delete", language)}
             </Button>
           </div>
         </Modal.Footer>
@@ -849,85 +813,138 @@ const loadData = async () => {
       <DocumentDetailsView
         show={showDetailsModal}
         onHide={handleCloseDetails}
-        title={selectedDocument?.document?.originalFileName || 'Document Details'}
-        closeButtonText={language === 'fr' ? 'Fermer' : 'Close'}      >
+        title={
+          selectedDocument?.document?.originalFileName || "Document Details"
+        }
+        closeButtonText={language === "fr" ? "Fermer" : "Close"}>
         {selectedDocument && (
           <div>
             <Row className="mb-3">
               <Col md={6}>
-                <h6 className="text-muted">{language === 'fr' ? 'Informations Générales' : 'General Information'}</h6>
+                <h6 className="text-muted">
+                  {language === "fr"
+                    ? "Informations Générales"
+                    : "General Information"}
+                </h6>
                 <ListGroup variant="flush">
                   <ListGroup.Item>
-                    <strong>{getText('document.fields.reference', language)}:</strong> {selectedDocument.reference}
+                    <strong>
+                      {getText("document.fields.reference", language)}:
+                    </strong>{" "}
+                    {selectedDocument.reference}
                   </ListGroup.Item>
                   <ListGroup.Item>
-                    <strong>{getText('document.fields.description', language)}:</strong>{' '}
-                    {selectedDocument.description || '-'}
+                    <strong>
+                      {getText("document.fields.description", language)}:
+                    </strong>{" "}
+                    {selectedDocument.description || "-"}
                   </ListGroup.Item>
                   <ListGroup.Item>
-                    <strong>{getText('document.fields.dateVigueur', language)}:</strong>{' '}
-                    {selectedDocument.dateVigueur ? new Date(selectedDocument.dateVigueur).toLocaleDateString(language) : '-'}
+                    <strong>
+                      {getText("document.fields.dateVigueur", language)}:
+                    </strong>{" "}
+                    {selectedDocument.dateVigueur
+                      ? new Date(
+                          selectedDocument.dateVigueur,
+                        ).toLocaleDateString(language)
+                      : "-"}
                   </ListGroup.Item>
                   <ListGroup.Item>
-                    <strong>{getText('document.fields.domaineApplication', language)}:</strong>{' '}
-                    {selectedDocument.domaineApplication || '-'}
+                    <strong>
+                      {getText("document.fields.domaineApplication", language)}:
+                    </strong>{" "}
+                    {selectedDocument.domaineApplication || "-"}
                   </ListGroup.Item>
                   <ListGroup.Item>
-                    <strong>{getText('document.fields.status', language)}:</strong>{' '}
-                    <Badge bg="info">{selectedDocument.status?.name || '-'}</Badge>
+                    <strong>
+                      {getText("document.fields.status", language)}:
+                    </strong>{" "}
+                    <Badge bg="info">
+                      {selectedDocument.status?.name || "-"}
+                    </Badge>
                   </ListGroup.Item>
                 </ListGroup>
               </Col>
               <Col md={6}>
-                <h6 className="text-muted">{language === 'fr' ? 'Informations du Document' : 'Document Information'}</h6>
+                <h6 className="text-muted">
+                  {language === "fr"
+                    ? "Informations du Document"
+                    : "Document Information"}
+                </h6>
                 {selectedDocument.document ? (
                   <ListGroup variant="flush">
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom du fichier:' : 'File name:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom du fichier:" : "File name:"}
+                      </strong>{" "}
                       <small>{selectedDocument.document.fileName}</small>
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom original:' : 'Original name:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom original:" : "Original name:"}
+                      </strong>{" "}
                       {selectedDocument.document.originalFileName}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Type:' : 'Type:'}</strong>{' '}
+                      <strong>{language === "fr" ? "Type:" : "Type:"}</strong>{" "}
                       {selectedDocument.document.contentType}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Taille:' : 'Size:'}</strong>{' '}
-                      {(selectedDocument.document.fileSize / 1024).toFixed(2)} KB
+                      <strong>{language === "fr" ? "Taille:" : "Size:"}</strong>{" "}
+                      {(selectedDocument.document.fileSize / 1024).toFixed(2)}{" "}
+                      KB
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Version:' : 'Version:'}</strong>{' '}
-                      {selectedDocument.document.version || '-'}
+                      <strong>
+                        {language === "fr" ? "Version:" : "Version:"}
+                      </strong>{" "}
+                      {selectedDocument.document.version || "-"}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Statut:' : 'Status:'}</strong>{' '}
-                      <Badge bg={selectedDocument.document.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                      <strong>
+                        {language === "fr" ? "Statut:" : "Status:"}
+                      </strong>{" "}
+                      <Badge
+                        bg={
+                          selectedDocument.document.status === "ACTIVE"
+                            ? "success"
+                            : "secondary"
+                        }>
                         {selectedDocument.document.status}
                       </Badge>
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Créé le:' : 'Created:'}</strong>{' '}
-                      {new Date(selectedDocument.document.createdAt).toLocaleString(language)}
+                      <strong>
+                        {language === "fr" ? "Créé le:" : "Created:"}
+                      </strong>{" "}
+                      {new Date(
+                        selectedDocument.document.createdAt,
+                      ).toLocaleString(language)}
                     </ListGroup.Item>
                     {selectedDocument.document.updatedAt && (
                       <ListGroup.Item>
-                        <strong>{language === 'fr' ? 'Modifié le:' : 'Updated:'}</strong>{' '}
-                        {new Date(selectedDocument.document.updatedAt).toLocaleString(language)}
+                        <strong>
+                          {language === "fr" ? "Modifié le:" : "Updated:"}
+                        </strong>{" "}
+                        {new Date(
+                          selectedDocument.document.updatedAt,
+                        ).toLocaleString(language)}
                       </ListGroup.Item>
                     )}
                     {selectedDocument.document.owner?.fullName && (
                       <ListGroup.Item>
-                        <strong>{language === 'fr' ? 'Propriétaire:' : 'Owner:'}</strong>{' '}
+                        <strong>
+                          {language === "fr" ? "Propriétaire:" : "Owner:"}
+                        </strong>{" "}
                         {selectedDocument.document.owner.fullName}
                       </ListGroup.Item>
                     )}
                   </ListGroup>
                 ) : (
                   <Alert variant="warning">
-                    {language === 'fr' ? 'Aucune information de document disponible' : 'No document information available'}
+                    {language === "fr"
+                      ? "Aucune information de document disponible"
+                      : "No document information available"}
                   </Alert>
                 )}
               </Col>
@@ -936,18 +953,26 @@ const loadData = async () => {
             {selectedDocument.document?.owner && (
               <Row className="mb-3">
                 <Col>
-                  <h6 className="text-muted">{language === 'fr' ? 'Propriétaire du Document' : 'Document Owner'}</h6>
+                  <h6 className="text-muted">
+                    {language === "fr"
+                      ? "Propriétaire du Document"
+                      : "Document Owner"}
+                  </h6>
                   <ListGroup variant="flush">
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom complet:" : "Full name:"}
+                      </strong>{" "}
                       {selectedDocument.document.owner.fullName}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom d'utilisateur:" : "Username:"}
+                      </strong>{" "}
                       {selectedDocument.document.owner.username}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Email:' : 'Email:'}</strong>{' '}
+                      <strong>{language === "fr" ? "Email:" : "Email:"}</strong>{" "}
                       {selectedDocument.document.owner.email}
                     </ListGroup.Item>
                   </ListGroup>
@@ -958,14 +983,20 @@ const loadData = async () => {
             {selectedDocument.doneBy && (
               <Row>
                 <Col>
-                  <h6 className="text-muted">{getText('document.fields.doneBy', language)}</h6>
+                  <h6 className="text-muted">
+                    {getText("document.fields.doneBy", language)}
+                  </h6>
                   <ListGroup variant="flush">
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom complet:' : 'Full name:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom complet:" : "Full name:"}
+                      </strong>{" "}
                       {selectedDocument.doneBy.fullName}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <strong>{language === 'fr' ? 'Nom d\'utilisateur:' : 'Username:'}</strong>{' '}
+                      <strong>
+                        {language === "fr" ? "Nom d'utilisateur:" : "Username:"}
+                      </strong>{" "}
                       {selectedDocument.doneBy.username}
                     </ListGroup.Item>
                   </ListGroup>
@@ -983,15 +1014,17 @@ const loadData = async () => {
                       await openFileInNewTab(selectedDocument.document);
                     }
                   } catch (err) {
-                    console.error('Error opening document:', err);
-                    alert(language === 'fr' 
-                      ? `Erreur lors de l'ouverture du document: ${err.message}` 
-                      : `Error opening document: ${err.message}`);
+                    console.error("Error opening document:", err);
+                    alert(
+                      language === "fr"
+                        ? `Erreur lors de l'ouverture du document: ${err.message}`
+                        : `Error opening document: ${err.message}`,
+                    );
                   }
                 }}
                 disabled={!selectedDocument?.document?.filePath}>
                 <i className="bi bi-eye me-2"></i>
-                {language === 'fr' ? 'Ouvrir le document' : 'Open Document'}
+                {language === "fr" ? "Ouvrir le document" : "Open Document"}
               </Button>
               <Button
                 variant="warning"
@@ -999,10 +1032,9 @@ const loadData = async () => {
                 onClick={() => {
                   handleCloseDetails();
                   handleShowModal(selectedDocument);
-                }}
-              >
+                }}>
                 <i className="bi bi-pencil me-2"></i>
-                {language === 'fr' ? 'Modifier' : 'Edit'}
+                {language === "fr" ? "Modifier" : "Edit"}
               </Button>
             </div>
           </div>
@@ -1014,8 +1046,12 @@ const loadData = async () => {
         show={showDownloadModal}
         onHide={handleCancelDownload}
         onConfirm={handleConfirmDownload}
-        fileName={fileToDownload?.document?.originalFileName || ''}
-        fileSize={fileToDownload?.document?.fileSize ? formatFileSize(fileToDownload.document.fileSize) : null}
+        fileName={fileToDownload?.document?.originalFileName || ""}
+        fileSize={
+          fileToDownload?.document?.fileSize
+            ? formatFileSize(fileToDownload.document.fileSize)
+            : null
+        }
         language={language}
       />
     </div>
